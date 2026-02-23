@@ -197,6 +197,28 @@
         .task-status { font-size: 12px; color: #999; }
         .task-item.completed .task-status { color: #52C41A; font-weight: 500; }
         
+        /* 收藏和错题本 */
+        .collection-header { display: flex; justify-content: space-between; padding: 12px 16px; background: white; border-bottom: 1px solid #eee; }
+        .collection-tabs { display: flex; gap: 8px; padding: 12px; background: white; }
+        .collection-tab { flex: 1; padding: 8px; text-align: center; border-radius: 8px; font-size: 13px; cursor: pointer; background: #f5f5f5; }
+        .collection-tab.active { background: #667eea; color: white; }
+        .word-card { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: white; border-bottom: 1px solid #f0f0f0; }
+        .word-card-word { font-weight: 500; font-size: 14px; }
+        .word-card-meaning { font-size: 12px; color: #999; }
+        .word-card-actions { display: flex; gap: 8px; }
+        .word-card-btn { padding: 4px 8px; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; }
+        .btn-remove { background: #fff1f0; color: #ff4d4f; }
+        .btn-review { background: #e6f7ff; color: #1890ff; }
+        
+        /* 提醒设置 */
+        .reminder-settings { padding: 16px; }
+        .reminder-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+        .reminder-label { font-size: 14px; }
+        .reminder-toggle { width: 44px; height: 24px; border-radius: 12px; background: #ccc; position: relative; cursor: pointer; }
+        .reminder-toggle.active { background: #667eea; }
+        .reminder-toggle::after { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
+        .reminder-toggle.active::after { left: 22px; }
+        
         /* 统计图表 */
         .stats-container { padding: 20px; }
         .stats-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
@@ -306,6 +328,9 @@
             <div class="tab" data-tab="dialogue">口语</div>
             <div class="tab" data-tab="stats">统计</div>
             <div class="tab" data-tab="speak">发音</div>
+            <div class="tab" data-tab="favorites">收藏</div>
+            <div class="tab" data-tab="wrongbook">错题</div>
+            <div class="tab" data-tab="reminder">提醒</div>
             <div class="tab" data-tab="history">记录</div>
             <div class="tab" data-tab="settings">设置</div>
         </div>
@@ -476,6 +501,46 @@
             </div>
         </div>
 
+        <!-- 收藏单词 -->
+        <div class="tab-content" id="tab-favorites">
+            <div class="collection-tabs">
+                <div class="collection-tab active" onclick="switchCollectionTab('favorites')">❤️ 收藏本</div>
+                <div class="collection-tab" onclick="switchCollectionTab('wrong')">❌ 错题本</div>
+            </div>
+            <div id="collectionList"></div>
+        </div>
+
+        <!-- 错题本 -->
+        <div class="tab-content" id="tab-wrongbook">
+            <div class="collection-header">
+                <span>❌ 错题本</span>
+                <span id="wrongCount" style="font-size:12px;color:#999;">0 题</span>
+            </div>
+            <div id="wrongList"></div>
+        </div>
+
+        <!-- 提醒设置 -->
+        <div class="tab-content" id="tab-reminder">
+            <div class="reminder-settings">
+                <div class="reminder-item">
+                    <span class="reminder-label">🔔 学习提醒</span>
+                    <div class="reminder-toggle" id="reminderToggle" onclick="toggleReminder()"></div>
+                </div>
+                <div class="reminder-item">
+                    <span class="reminder-label">⏰ 提醒时间</span>
+                    <input type="time" id="reminderTime" value="09:00" style="padding:8px;border:1px solid #ddd;border-radius:8px;">
+                </div>
+                <div class="reminder-item">
+                    <span class="reminder-label">🔄 重复</span>
+                    <select id="reminderRepeat" style="padding:8px;border:1px solid #ddd;border-radius:8px;">
+                        <option value="daily">每天</option>
+                        <option value="weekday">工作日</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" style="width:100%;margin-top:20px;" onclick="saveReminder()">保存设置</button>
+            </div>
+        </div>
+
         <div class="tab-content" id="tab-history">
             <div class="history-list" id="historyList">
                 <div class="empty-state">暂无学习记录</div>
@@ -551,6 +616,9 @@
             loadUser();
             loadHistory();
             loadChallenge();
+            loadFavorites();
+            loadWrongWords();
+            loadReminder();
             if (!user) {
                 document.getElementById('loginModal').classList.add('active');
             } else {
@@ -559,6 +627,136 @@
             showCard();
             updateStats();
             renderHistory();
+        }
+        
+        // ====== 收藏功能 ======
+        let favorites = [];
+        
+        function loadFavorites() {
+            const saved = localStorage.getItem('wordAI_favorites');
+            if (saved) favorites = JSON.parse(saved);
+        }
+        
+        function saveFavorites() {
+            localStorage.setItem('wordAI_favorites', JSON.stringify(favorites));
+        }
+        
+        function addToFavorites(word) {
+            if (!favorites.find(f => f.word === word.word)) {
+                favorites.push(word);
+                saveFavorites();
+                alert('已添加到收藏！');
+            }
+        }
+        
+        function removeFavorite(word) {
+            favorites = favorites.filter(f => f.word !== word);
+            saveFavorites();
+            renderFavorites();
+        }
+        
+        function renderFavorites() {
+            const list = document.getElementById('collectionList');
+            if (favorites.length === 0) {
+                list.innerHTML = '<div class="empty-state">暂无收藏单词</div>';
+                return;
+            }
+            list.innerHTML = favorites.map(w => `
+                <div class="word-card">
+                    <div>
+                        <div class="word-card-word">${w.word}</div>
+                        <div class="word-card-meaning">${w.meaning}</div>
+                    </div>
+                    <div class="word-card-actions">
+                        <button class="word-card-btn btn-remove" onclick="removeFavorite('${w.word}')">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function switchCollectionTab(tab) {
+            document.querySelectorAll('.collection-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            if (tab === 'favorites') renderFavorites();
+            else renderWrongWords();
+        }
+        
+        // ====== 错题本 ======
+        let wrongWords = [];
+        
+        function loadWrongWords() {
+            const saved = localStorage.getItem('wordAI_wrongWords');
+            if (saved) wrongWords = JSON.parse(saved);
+        }
+        
+        function saveWrongWords() {
+            localStorage.setItem('wordAI_wrongWords', JSON.stringify(wrongWords));
+        }
+        
+        function addToWrongBook(word) {
+            if (!wrongWords.find(w => w.word === word.word)) {
+                wrongWords.push({...word, wrongCount: 1});
+                saveWrongWords();
+            }
+        }
+        
+        function removeWrongWord(word) {
+            wrongWords = wrongWords.filter(w => w.word !== word);
+            saveWrongWords();
+            renderWrongWords();
+        }
+        
+        function renderWrongWords() {
+            const list = document.getElementById('wrongList');
+            document.getElementById('wrongCount').textContent = wrongWords.length + ' 题';
+            if (wrongWords.length === 0) {
+                list.innerHTML = '<div class="empty-state">暂无错题</div>';
+                return;
+            }
+            list.innerHTML = wrongWords.map(w => `
+                <div class="word-card">
+                    <div>
+                        <div class="word-card-word">${w.word}</div>
+                        <div class="word-card-meaning">${w.meaning}</div>
+                    </div>
+                    <div class="word-card-actions">
+                        <button class="word-card-btn btn-review" onclick="removeWrongWord('${w.word}')">掌握</button>
+                        <button class="word-card-btn btn-remove" onclick="removeWrongWord('${w.word}')">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // ====== 提醒功能 ======
+        let reminderEnabled = false;
+        
+        function loadReminder() {
+            const saved = localStorage.getItem('wordAI_reminder');
+            if (saved) {
+                const data = JSON.parse(saved);
+                reminderEnabled = data.enabled;
+                if (data.time) document.getElementById('reminderTime').value = data.time;
+                if (data.repeat) document.getElementById('reminderRepeat').value = data.repeat;
+            }
+            document.getElementById('reminderToggle').classList.toggle('active', reminderEnabled);
+        }
+        
+        function toggleReminder() {
+            reminderEnabled = !reminderEnabled;
+            document.getElementById('reminderToggle').classList.toggle('active', reminderEnabled);
+        }
+        
+        function saveReminder() {
+            const data = {
+                enabled: reminderEnabled,
+                time: document.getElementById('reminderTime').value,
+                repeat: document.getElementById('reminderRepeat').value
+            };
+            localStorage.setItem('wordAI_reminder', JSON.stringify(data));
+            if (reminderEnabled && 'Notification' in window) {
+                Notification.requestPermission();
+            }
+            alert('提醒设置已保存！');
         }
 
         function loadUser() {
@@ -659,10 +857,12 @@
             } else if (action === 'hard') {
                 quality = 2; // 困难
                 streak = Math.max(0, streak - 1);
+                addToWrongBook(w); // 添加到错题本
                 words.push(words.splice(currentIndex, 1)[0]);
             } else {
                 quality = 0; // 忘记
                 streak = 0;
+                addToWrongBook(w); // 添加到错题本
                 words.push(words.splice(currentIndex, 1)[0]);
             }
             
@@ -1262,6 +1462,8 @@
                 if (this.dataset.tab === 'stats') { renderStats(); }
                 if (this.dataset.tab === 'scenes') { nextSceneWord(); }
                 if (this.dataset.tab === 'dialogue') { currentDialogueTopic = dialogueTopics[Math.floor(Math.random() * dialogueTopics.length)]; }
+                if (this.dataset.tab === 'favorites') { renderFavorites(); }
+                if (this.dataset.tab === 'wrongbook') { renderWrongWords(); }
             });
         });
 
