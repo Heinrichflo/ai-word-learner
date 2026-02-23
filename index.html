@@ -606,6 +606,9 @@
                 <button class="btn btn-primary" onclick="saveApiKey()" style="width:100%;">保存 API Key</button>
                 <p id="apiKeyStatus" style="font-size:12px;margin-top:10px;color:#10b981;"></p>
                 
+                <h3 style="margin-top:24px;">🏆 排行榜</h3>
+                <button class="btn btn-primary" onclick="showRankings()" style="width:100%;margin-bottom:12px;">📊 查看排行榜</button>
+                
                 <h3 style="margin-top:24px;">📦 数据管理</h3>
                 <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
                     <button class="btn btn-primary" onclick="exportAllData()">📤 导出全部数据</button>
@@ -659,6 +662,24 @@
         <div class="tab-content" id="tab-history">
             <div class="history-list" id="historyList">
                 <div class="empty-state">暂无学习记录</div>
+            </div>
+        </div>
+
+        <!-- 排行榜 -->
+        <div class="tab-content" id="tab-rank">
+            <div class="profile-header">
+                <div class="profile-avatar">🏆</div>
+                <div class="profile-name">排行榜</div>
+                <div class="profile-level">与全国学习者比拼</div>
+            </div>
+            <div class="rank-tabs" style="display:flex;background:white;padding:10px;border-bottom:1px solid #eee;">
+                <div class="rank-tab active" onclick="switchRankTab('total')" style="flex:1;text-align:center;padding:8px;cursor:pointer;border-radius:8px;background:#667eea;color:white;">总榜</div>
+                <div class="rank-tab" onclick="switchRankTab('streak')" style="flex:1;text-align:center;padding:8px;cursor:pointer;border-radius:8px;">连胜榜</div>
+                <div class="rank-tab" onclick="switchRankTab('today')" style="flex:1;text-align:center;padding:8px;cursor:pointer;border-radius:8px;">今日榜</div>
+            </div>
+            <div id="rankList" style="padding:10px;max-height:400px;overflow-y:auto;"></div>
+            <div style="padding:20px;text-align:center;">
+                <p style="font-size:12px;color:#999;">📢 排行榜数据基于本地存储，学习数据越多排名越准确！</p>
             </div>
         </div>
 
@@ -1071,6 +1092,100 @@
             }
         }
 
+        // ====== 排行榜 ======
+        function showRankings() {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-rank').classList.add('active');
+            renderRankings('total');
+        }
+
+        function switchRankTab(type) {
+            document.querySelectorAll('.rank-tab').forEach(t => {
+                t.classList.remove('active');
+                t.style.background = 'white';
+                t.style.color = '#333';
+            });
+            event.target.classList.add('active');
+            event.target.style.background = '#667eea';
+            event.target.style.color = 'white';
+            renderRankings(type);
+        }
+
+        function renderRankings(type) {
+            const rankData = getRankData(type);
+            const list = document.getElementById('rankList');
+            if (rankData.length === 0) {
+                list.innerHTML = '<div class="empty-state">暂无排行数据</div>';
+                return;
+            }
+            
+            let html = '';
+            rankData.forEach((item, index) => {
+                const rankIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
+                const isMe = user && item.username === user.username;
+                html += `
+                    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:${isMe ? '#f0f7ff' : 'white'};border-radius:10px;margin-bottom:8px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                        <div style="font-size:20px;width:30px;text-align:center;">${rankIcon}</div>
+                        <div style="flex:1;">
+                            <div style="font-weight:500;font-size:14px;">${item.username} ${isMe ? '(我)' : ''}</div>
+                            <div style="font-size:11px;color:#999;">${item.level || '初学'}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-weight:bold;color:#667eea;font-size:16px;">${item.score}</div>
+                            <div style="font-size:10px;color:#999;">${type === 'total' ? '单词' : type === 'streak' ? '天' : '今日'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+
+        function getRankData(type) {
+            // 获取所有用户的学习数据
+            const allData = [];
+            
+            // 获取当前用户数据
+            const currentData = loadStats();
+            if (user) {
+                allData.push({
+                    username: user.username,
+                    score: type === 'total' ? currentData.total : type === 'streak' ? currentData.streak : currentData.today,
+                    level: getLevelName(user.level)
+                });
+            }
+            
+            // 模拟其他用户数据（实际项目中应该从服务器获取）
+            const mockUsers = [
+                { username: 'Alice', total: 856, streak: 23, today: 45, level: '高级' },
+                { username: 'Bob', total: 742, streak: 18, today: 32, level: '中级' },
+                { username: 'Charlie', total: 689, streak: 15, today: 28, level: '中级' },
+                { username: 'David', total: 521, streak: 12, today: 20, level: '初级' },
+                { username: 'Eve', total: 398, streak: 8, today: 15, level: '初级' },
+            ];
+            
+            mockUsers.forEach(u => {
+                allData.push({
+                    username: u.username,
+                    score: type === 'total' ? u.total : type === 'streak' ? u.streak : u.today,
+                    level: u.level
+                });
+            });
+            
+            // 排序
+            allData.sort((a, b) => b.score - a.score);
+            return allData.slice(0, 10);
+        }
+
+        function loadStats() {
+            const data = JSON.parse(localStorage.getItem('wordAI_stats') || '{"total":0,"correct":0,"streak":0,"lastDate":"","today":0}');
+            // 检查是否是同一天
+            const today = new Date().toDateString();
+            if (data.lastDate !== today) {
+                data.today = 0;
+            }
+            return data;
+        }
+
         // ====== 背单词 ======
         function showCard() {
             const card = document.getElementById('card');
@@ -1283,6 +1398,16 @@
         }
         
         function onWordLearned() {
+            // 更新今日学习统计
+            const data = JSON.parse(localStorage.getItem('wordAI_stats') || '{"total":0,"correct":0,"streak":0,"lastDate":"","today":0}');
+            const today = new Date().toDateString();
+            if (data.lastDate !== today) {
+                data.today = 0;
+            }
+            data.today++;
+            data.lastDate = today;
+            localStorage.setItem('wordAI_stats', JSON.stringify(data));
+            
             challengeData.wordsLearned++;
             if (challengeData.quizzesDone > 0) {
                 challengeData.accuracy = Math.round((correct / total) * 100);
