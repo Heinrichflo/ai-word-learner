@@ -426,7 +426,13 @@
             <div class="profile-header">
                 <div class="profile-avatar" id="profileAvatar">😀</div>
                 <div class="profile-name" id="profileName">学习者</div>
-                <div class="profile-level" id="profileLevel">初学者</div>
+                <div class="profile-level" id="profileLevel">初学者 Lv.1</div>
+                <div style="margin-top:8px;">
+                    <div style="height:8px;background:rgba(255,255,255,0.3);border-radius:4px;overflow:hidden;width:200px;margin:0 auto;">
+                        <div id="expProgressBar" style="height:100%;background:#FFD700;width:0%;border-radius:4px;transition:width 0.3s;"></div>
+                    </div>
+                    <div style="font-size:10px;margin-top:4px;" id="expProgressText">0 / 100 经验值</div>
+                </div>
             </div>
             <div class="profile-stats">
                 <div class="profile-stat">
@@ -780,6 +786,22 @@
 
     <script>
         // ====== 配置 ======
+        // 经验值系统配置
+        const expConfig = {
+            perWord: 10, // 每个单词10经验值
+            perQuiz: 5, // 每道题5经验值
+            perStreak: 20, // 连续打卡每天20经验值
+            levelThresholds: [0, 100, 300, 600, 1000, 1500, 2200, 3000, 4000, 5500], // 各级别所需经验
+            levelNames: ['初学者', '入门', '进阶', '熟练', '精通', '专家', '大师', '王者', '传奇', '神话']
+        };
+        
+        // 用户经验值数据
+        let userExp = {
+            total: 0,
+            level: 1,
+            todayExp: 0
+        };
+        
         const MINIMAX_API_KEY = localStorage.getItem('wordAI_apiKey') || ''; // 填入你的 MiniMax API Key
         const MINIMAX_BASE_URL = 'https://api.minimax.chat/v1';
         
@@ -923,6 +945,7 @@
         // ====== 用户系统 ======
         function init() {
             loadUser();
+            loadExp();
             loadHistory();
             loadChallenge();
             loadFavorites();
@@ -1253,6 +1276,69 @@
 
         function saveUser() {
             localStorage.setItem('wordAI_user', JSON.stringify(user));
+        }
+        
+        // ====== 经验值系统 ======
+        function loadExp() {
+            const saved = localStorage.getItem('wordAI_exp');
+            if (saved) {
+                userExp = JSON.parse(saved);
+            }
+            updateExpDisplay();
+        }
+        
+        function saveExp() {
+            localStorage.setItem('wordAI_exp', JSON.stringify(userExp));
+        }
+        
+        function addExp(amount) {
+            const oldLevel = userExp.level;
+            userExp.total += amount;
+            userExp.todayExp += amount;
+            
+            // 检查升级
+            while (userExp.level < expConfig.levelThresholds.length && 
+                   userExp.total >= expConfig.levelThresholds[userExp.level]) {
+                userExp.level++;
+            }
+            
+            saveExp();
+            updateExpDisplay();
+            
+            // 升级提示
+            if (userExp.level > oldLevel) {
+                showLevelUp(userExp.level);
+            }
+        }
+        
+        function updateExpDisplay() {
+            const currentLevelExp = expConfig.levelThresholds[userExp.level - 1] || 0;
+            const nextLevelExp = expConfig.levelThresholds[userExp.level] || expConfig.levelThresholds[expConfig.levelThresholds.length - 1];
+            const expInLevel = userExp.total - currentLevelExp;
+            const expNeeded = nextLevelExp - currentLevelExp;
+            const progress = Math.min((expInLevel / expNeeded) * 100, 100);
+            
+            const levelName = expConfig.levelNames[userExp.level - 1] || '神话';
+            document.getElementById('profileLevel').textContent = `${levelName} Lv.${userExp.level}`;
+            document.getElementById('expProgressBar').style.width = progress + '%';
+            document.getElementById('expProgressText').textContent = `${expInLevel} / ${expNeeded} 经验值 (Lv.${userExp.level} → Lv.${userExp.level + 1})`;
+        }
+        
+        function showLevelUp(newLevel) {
+            const levelName = expConfig.levelNames[newLevel - 1] || '神话';
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="text-align:center;">
+                    <div style="font-size:48px;margin-bottom:10px;">⬆️</div>
+                    <div class="modal-title">🎉 升级啦！</div>
+                    <p style="color:#667eea;font-size:24px;font-weight:bold;margin:10px 0;">${levelName}</p>
+                    <p style="color:#666;">当前等级: Lv.${newLevel}</p>
+                    <p style="color:#999;font-size:12px;margin-top:15px;">继续学习，冲击更高等级！</p>
+                    <button class="btn btn-primary" style="width:100%;margin-top:20px;" onclick="this.closest('.modal').remove()">继续学习</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
         }
 
         function handleLogin() {
@@ -1873,6 +1959,9 @@ ${statusText}
             data.lastDate = today;
             localStorage.setItem('wordAI_stats', JSON.stringify(data));
             
+            // 添加经验值
+            addExp(expConfig.perWord);
+            
             // 更新首页进度条
             updateLearnProgress();
             
@@ -1936,6 +2025,8 @@ ${statusText}
             saveChallenge();
             updateChallengeUI();
             checkBadges();
+            // 添加经验值
+            addExp(expConfig.perQuiz);
         }
         
         // ====== 艾宾浩斯遗忘曲线算法 ======
