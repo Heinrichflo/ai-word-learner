@@ -1791,9 +1791,50 @@
             speechSynthesis.speak(utterance);
         }
 
-        function showKnown() { recordAction('known'); onWordLearned(); }
-        function showHard() { recordAction('hard'); onWordLearned(); }
-        function showAgain() { recordAction('again'); onWordLearned(); }
+        function showKnown() { 
+            showExpPopup('+10', '#10b981');
+            recordAction('known'); onWordLearned(); 
+        }
+        function showHard() { 
+            showExpPopup('+5', '#f59e0b');
+            recordAction('hard'); onWordLearned(); 
+        }
+        function showAgain() { 
+            showExpPopup('+2', '#ef4444');
+            recordAction('again'); onWordLearned(); 
+        }
+        
+        // 经验值飘字效果
+        function showExpPopup(text, color) {
+            const popup = document.createElement('div');
+            popup.textContent = text;
+            popup.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 32px;
+                font-weight: bold;
+                color: ${color};
+                animation: expFloat 1s ease-out forwards;
+                pointer-events: none;
+                z-index: 1000;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            `;
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 1000);
+        }
+        
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes expFloat {
+                0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+                50% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); }
+                100% { opacity: 0; transform: translate(-50%, -120%) scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
 
         function recordAction(action) {
             const w = words[currentIndex];
