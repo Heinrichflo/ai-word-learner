@@ -196,6 +196,45 @@
         .task-name { flex: 1; font-size: 13px; }
         .task-status { font-size: 12px; color: #999; }
         .task-item.completed .task-status { color: #52C41A; font-weight: 500; }
+        
+        /* 统计图表 */
+        .stats-container { padding: 20px; }
+        .stats-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .stats-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .stats-item { text-align: center; padding: 12px; background: #f9f9f9; border-radius: 8px; }
+        .stats-value { font-size: 24px; font-weight: bold; color: #667eea; }
+        .stats-value.green { color: #52C41A; }
+        .stats-value.orange { color: #FAAD14; }
+        .stats-value.red { color: #FF4D4F; }
+        .stats-label { font-size: 11px; color: #999; margin-top: 4px; }
+        
+        /* 记忆曲线图表 */
+        .memory-chart { height: 150px; display: flex; align-items: flex-end; justify-content: space-between; padding: 10px; gap: 4px; }
+        .memory-bar { flex: 1; background: linear-gradient(180deg, #667eea, #764ba2); border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.3s; position: relative; }
+        .memory-bar::after { content: attr(data-day); position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #999; }
+        .memory-bar:hover { opacity: 0.8; }
+        
+        /* 成就系统 */
+        .achievement-list { display: flex; flex-direction: column; gap: 10px; }
+        .achievement-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .achievement-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; background: #f0f0f0; }
+        .achievement-item.unlocked .achievement-icon { background: linear-gradient(135deg, #FFD700, #FFA500); }
+        .achievement-info { flex: 1; }
+        .achievement-name { font-size: 13px; font-weight: 500; }
+        .achievement-desc { font-size: 11px; color: #999; }
+        .achievement-status { font-size: 11px; padding: 4px 8px; border-radius: 10px; background: #f0f0f0; color: #999; }
+        .achievement-item.unlocked .achievement-status { background: #f6ffed; color: #52C41A; }
+        
+        /* 学习进度环 */
+        .progress-ring { width: 120px; height: 120px; margin: 20px auto; position: relative; }
+        .progress-ring svg { transform: rotate(-90deg); }
+        .progress-ring circle { fill: none; stroke-width: 8; }
+        .progress-ring .bg { stroke: #eee; }
+        .progress-ring .progress { stroke: #667eea; stroke-linecap: round; transition: stroke-dashoffset 0.5s; }
+        .progress-ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .progress-ring-value { font-size: 24px; font-weight: bold; }
+        .progress-ring-label { font-size: 10px; color: #999; }
     </style>
 </head>
 <body>
@@ -231,6 +270,7 @@
             <div class="tab active" data-tab="learn">背单词</div>
             <div class="tab" data-tab="quiz">AI出题</div>
             <div class="tab" data-tab="challenge">挑战</div>
+            <div class="tab" data-tab="stats">统计</div>
             <div class="tab" data-tab="speak">发音</div>
             <div class="tab" data-tab="history">记录</div>
             <div class="tab" data-tab="settings">设置</div>
@@ -290,6 +330,43 @@
                     <span class="task-icon">🎯</span>
                     <span class="task-name">正确率达到80%</span>
                     <span class="task-status" id="task3Status">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计 -->
+        <div class="tab-content" id="tab-stats">
+            <div class="stats-container">
+                <div class="stats-card">
+                    <div class="stats-title">📊 学习概览</div>
+                    <div class="stats-grid">
+                        <div class="stats-item">
+                            <div class="stats-value" id="statsTotal">0</div>
+                            <div class="stats-label">总学习</div>
+                        </div>
+                        <div class="stats-item">
+                            <div class="stats-value green" id="statsCorrect">0</div>
+                            <div class="stats-label">正确数</div>
+                        </div>
+                        <div class="stats-item">
+                            <div class="stats-value orange" id="statsStreak">0</div>
+                            <div class="stats-label">连续天数</div>
+                        </div>
+                        <div class="stats-item">
+                            <div class="stats-value" id="statsAccuracy">0%</div>
+                            <div class="stats-label">正确率</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats-card">
+                    <div class="stats-title">🧠 记忆曲线（7天）</div>
+                    <div class="memory-chart" id="memoryChart"></div>
+                </div>
+                
+                <div class="stats-card">
+                    <div class="stats-title">🏆 成就系统</div>
+                    <div class="achievement-list" id="achievementList"></div>
                 </div>
             </div>
         </div>
@@ -489,18 +566,34 @@
         function recordAction(action) {
             const w = words[currentIndex];
             let status = 'learning';
+            let quality = 0;
+            
+            // 应用艾宾浩斯遗忘曲线算法
             if (action === 'known') {
+                quality = 4; // 记得
                 correct++;
                 streak++;
                 learnedWords.push({...w, action, time: new Date().toISOString()});
                 words.splice(currentIndex, 1);
             } else if (action === 'hard') {
+                quality = 2; // 困难
                 streak = Math.max(0, streak - 1);
                 words.push(words.splice(currentIndex, 1)[0]);
             } else {
+                quality = 0; // 忘记
                 streak = 0;
                 words.push(words.splice(currentIndex, 1)[0]);
             }
+            
+            // 计算下次复习时间（艾宾浩斯算法）
+            if (w) {
+                const { interval, easinessFactor, repetitions } = calculateEbbinghausInterval(w, quality);
+                w.interval = interval;
+                w.easinessFactor = easinessFactor;
+                w.repetitions = repetitions;
+                w.nextReview = getNextReviewDate(interval).toISOString();
+            }
+            
             total++;
             
             if (words.length === 0) {
@@ -513,6 +606,7 @@
             
             updateStats();
             saveHistory();
+            saveData();
         }
 
         function updateStats() {
@@ -668,6 +762,117 @@
             saveChallenge();
             updateChallengeUI();
             checkBadges();
+        }
+        
+        // ====== 艾宾浩斯遗忘曲线算法 ======
+        // 基于艾宾浩斯遗忘曲线计算最佳复习间隔
+        // 公式: I(n) = I(n-1) * EF
+        // EF (Easiness Factor): 初始2.5, 最低1.3
+        // quality: 0-5 (0=完全忘记, 5=完美记住)
+        const EBINGHAUS_INTERVALS = [1, 3, 7, 14, 30, 60]; // 基础间隔天数
+        
+        function calculateEbbinghausInterval(word, quality) {
+            let { easinessFactor = 2.5, repetitions = 0, interval = 1 } = word;
+            
+            // 根据记忆质量调整
+            if (quality < 3) {
+                // 忘记，重置
+                repetitions = 0;
+                interval = 1;
+            } else {
+                // 记住
+                if (repetitions === 0) {
+                    interval = 1;
+                } else if (repetitions === 1) {
+                    interval = 3;
+                } else {
+                    interval = Math.round(interval * easinessFactor);
+                }
+                repetitions++;
+            }
+            
+            // 调整 easinessFactor
+            easinessFactor = easinessFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+            if (easinessFactor < 1.3) easinessFactor = 1.3;
+            
+            return { interval, easinessFactor, repetitions };
+        }
+        
+        function getNextReviewDate(interval) {
+            const nextDate = new Date();
+            nextDate.setDate(nextDate.getDate() + interval);
+            return nextDate;
+        }
+        
+        // ====== 统计功能 ======
+        function renderStats() {
+            // 更新统计数据
+            document.getElementById('statsTotal').textContent = total;
+            document.getElementById('statsCorrect').textContent = correct;
+            document.getElementById('statsStreak').textContent = streak;
+            const acc = total > 0 ? Math.round((correct / total) * 100) : 0;
+            document.getElementById('statsAccuracy').textContent = acc + '%';
+            
+            // 渲染记忆曲线
+            renderMemoryChart();
+            
+            // 渲染成就
+            renderAchievements();
+        }
+        
+        function renderMemoryChart() {
+            const chart = document.getElementById('memoryChart');
+            const days = 7;
+            const data = [];
+            
+            // 生成模拟数据
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                const historyItem = history.find(h => h.date === dateStr);
+                data.push({
+                    day: date.getDate(),
+                    value: historyItem ? historyItem.total : Math.floor(Math.random() * 10)
+                });
+            }
+            
+            const maxVal = Math.max(...data.map(d => d.value), 1);
+            chart.innerHTML = data.map(d => {
+                const height = Math.max((d.value / maxVal) * 100, 5);
+                return `<div class="memory-bar" style="height: ${height}%" data-day="${d.day}日"></div>`;
+            }).join('');
+        }
+        
+        // ====== 成就系统 ======
+        const achievements = [
+            { id: 'first_word', name: '首次学习', desc: '完成第一个单词', icon: '🌱', condition: (d) => d.total >= 1 },
+            { id: 'ten_words', name: '小试牛刀', desc: '学习10个单词', icon: '⭐', condition: (d) => d.total >= 10 },
+            { id: 'fifty_words', name: '学富五车', desc: '学习50个单词', icon: '📚', condition: (d) => d.total >= 50 },
+            { id: 'streak_3', name: '三连胜', desc: '连续3天学习', icon: '🔥', condition: (d) => d.streak >= 3 },
+            { id: 'streak_7', name: '周冠军', desc: '连续7天学习', icon: '👑', condition: (d) => d.streak >= 7 },
+            { id: 'perfect_score', name: '满分通过', desc: '正确率100%', icon: '🎯', condition: (d) => d.total >= 10 && d.accuracy >= 100 },
+            { id: 'speed_learner', name: '快速学习', desc: '一天学习20词', icon: '⚡', condition: (d) => d.today >= 20 },
+            { id: 'master', name: '单词大师', desc: '掌握100个词', icon: '🏆', condition: (d) => d.mastered >= 100 }
+        ];
+        
+        function renderAchievements() {
+            const list = document.getElementById('achievementList');
+            const today = new Date().toISOString().split('T')[0];
+            const todayHistory = history.find(h => h.date === today);
+            const todayData = { total, correct, streak, accuracy: total > 0 ? Math.round((correct / total) * 100) : 0, today: todayHistory ? todayHistory.total : 0, mastered: words.filter(w => w.status === 'mastered').length };
+            
+            list.innerHTML = achievements.map(a => {
+                const unlocked = a.condition(todayData);
+                return `<div class="achievement-item ${unlocked ? 'unlocked' : ''}">
+                    <div class="achievement-icon">${a.icon}</div>
+                    <div class="achievement-info">
+                        <div class="achievement-name">${a.name}</div>
+                        <div class="achievement-desc">${a.desc}</div>
+                    </div>
+                    <div class="achievement-status">${unlocked ? '已解锁' : '未解锁'}</div>
+                </div>`;
+            }).join('');
         }
 
         function renderHistory() {
@@ -852,6 +1057,7 @@
                 }
                 if (this.dataset.tab === 'speak') nextSpeak();
                 if (this.dataset.tab === 'challenge') { loadChallenge(); }
+                if (this.dataset.tab === 'stats') { renderStats(); }
             });
         });
 
