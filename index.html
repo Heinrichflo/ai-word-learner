@@ -228,6 +228,16 @@
         .share-btn { padding: 12px 20px; border: none; border-radius: 20px; font-size: 14px; cursor: pointer; }
         .share-wechat { background: #07C160; color: white; }
         
+        /* 语言切换 */
+        .lang-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 16px; }
+        .lang-card { background: white; border-radius: 12px; padding: 16px; text-align: center; cursor: pointer; border: 2px solid transparent; }
+        .lang-card.active { border-color: #667eea; background: #f0f7ff; }
+        .lang-flag { font-size: 32px; margin-bottom: 8px; }
+        
+        /* 首页优化 */
+        .home-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px; }
+        .home-card { background: white; border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; }
+        
         /* 统计图表增强 */
         .chart-wrapper { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
         .chart-bar { display: flex; align-items: flex-end; height: 100px; gap: 4px; }
@@ -360,6 +370,7 @@
         <div class="tabs">
             <div class="tab active" data-tab="learn">背单词</div>
             <div class="tab" data-tab="profile">我的</div>
+            <div class="tab" data-tab="lang">语言</div>
             <div class="tab" data-tab="quiz">AI出题</div>
             <div class="tab" data-tab="challenge">挑战</div>
             <div class="tab" data-tab="scenes">场景</div>
@@ -416,6 +427,28 @@
                 <div class="modal-title">📊 学习报告</div>
                 <div id="reportContent"></div>
                 <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="document.getElementById('reportModal').classList.remove('active')">关闭</button>
+            </div>
+        </div>
+
+        <!-- 语言切换 -->
+        <div class="tab-content" id="tab-lang">
+            <div class="lang-grid">
+                <div class="lang-card active" onclick="switchLanguage('en')">
+                    <div class="lang-flag">🇺🇸</div>
+                    <div class="lang-name">英语</div>
+                </div>
+                <div class="lang-card" onclick="switchLanguage('ja')">
+                    <div class="lang-flag">🇯🇵</div>
+                    <div class="lang-name">日语</div>
+                </div>
+                <div class="lang-card" onclick="switchLanguage('ko')">
+                    <div class="lang-flag">🇰🇷</div>
+                    <div class="lang-name">韩语</div>
+                </div>
+                <div class="lang-card" onclick="switchLanguage('fr')">
+                    <div class="lang-flag">🇫🇷</div>
+                    <div class="lang-name">法语</div>
+                </div>
             </div>
         </div>
 
@@ -1354,11 +1387,15 @@
             { id: 'first_word', name: '首次学习', desc: '完成第一个单词', icon: '🌱', condition: (d) => d.total >= 1 },
             { id: 'ten_words', name: '小试牛刀', desc: '学习10个单词', icon: '⭐', condition: (d) => d.total >= 10 },
             { id: 'fifty_words', name: '学富五车', desc: '学习50个单词', icon: '📚', condition: (d) => d.total >= 50 },
+            { id: 'hundred_words', name: '百词斩', desc: '学习100个单词', icon: '💯', condition: (d) => d.total >= 100 },
             { id: 'streak_3', name: '三连胜', desc: '连续3天学习', icon: '🔥', condition: (d) => d.streak >= 3 },
             { id: 'streak_7', name: '周冠军', desc: '连续7天学习', icon: '👑', condition: (d) => d.streak >= 7 },
+            { id: 'streak_30', name: '月冠军', desc: '连续30天学习', icon: '🏅', condition: (d) => d.streak >= 30 },
             { id: 'perfect_score', name: '满分通过', desc: '正确率100%', icon: '🎯', condition: (d) => d.total >= 10 && d.accuracy >= 100 },
             { id: 'speed_learner', name: '快速学习', desc: '一天学习20词', icon: '⚡', condition: (d) => d.today >= 20 },
-            { id: 'master', name: '单词大师', desc: '掌握100个词', icon: '🏆', condition: (d) => d.mastered >= 100 }
+            { id: 'master', name: '单词大师', desc: '掌握100个词', icon: '🏆', condition: (d) => d.mastered >= 100 },
+            { id: 'collector', name: '收藏家', desc: '收藏10个单词', icon: '❤️', condition: (d) => d.favorites >= 10 },
+            { id: 'error_corrector', name: '错题清零', desc: '掌握全部错题', icon: '✅', condition: (d) => d.wrongCount === 0 }
         ];
         
         function renderAchievements() {
@@ -1378,6 +1415,49 @@
                     <div class="achievement-status">${unlocked ? '已解锁' : '未解锁'}</div>
                 </div>`;
             }).join('');
+        }
+        
+        // ====== 多语言单词库 ======
+        const languageWords = {
+            en: [
+                { word: 'hello', phonetic: '/həˈloʊ/', meaning: '你好' },
+                { word: 'world', phonetic: '/wɜːrld/', meaning: '世界' },
+                { word: 'love', phonetic: '/lʌv/', meaning: '爱' },
+                { word: 'happy', phonetic: '/ˈhæpi/', meaning: '快乐' },
+                { word: 'learn', phonetic: '/lɜːrn/', meaning: '学习' }
+            ],
+            ja: [
+                { word: 'こんにちは', phonetic: 'kon-ni-chi-wa', meaning: '你好' },
+                { word: 'さようなら', phonetic: 'sa-yo-na-ra', meaning: '再见' },
+                { word: 'ありがとう', phonetic: 'a-ri-ga-to', meaning: '谢谢' },
+                { word: '食べる', phonetic: 'ta-be-ru', meaning: '吃' },
+                { word: '飲む', phonetic: 'no-mu', meaning: '喝' }
+            ],
+            ko: [
+                { word: '안녕하세요', phonetic: 'an-nyeong-ha-se-yo', meaning: '你好' },
+                { word: '감사합니다', phonetic: 'gam-sa-ham-ni-da', meaning: '谢谢' },
+                { word: '再见', phonetic: 'an-nyeong', meaning: '再见' },
+                { word: '사랑', phonetic: 'sa-rang', meaning: '爱' },
+                { word: '음식', phonetic: 'eum-sik', meaning: '食物' }
+            ],
+            fr: [
+                { word: 'bonjour', phonetic: '/bɔ̃ʒuʁ/', meaning: '你好' },
+                { word: 'merci', phonetic: '/mɛʁsi/', meaning: '谢谢' },
+                { word: 'amour', phonetic: '/amuʁ/', meaning: '爱' },
+                { word: 'bon', phonetic: '/bɔ̃/', meaning: '好' },
+                { word: 'apprendre', phonetic: '/apʁɑ̃dʁ/', meaning: '学习' }
+            ]
+        };
+        
+        let currentLang = 'en';
+        
+        function switchLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-card').forEach(c => c.classList.remove('active'));
+            event.target.closest('.lang-card').classList.add('active');
+            words = [...languageWords[lang]];
+            showCard();
+            alert('已切换到' + {en:'英语',ja:'日语',ko:'韩语',fr:'法语'}[lang] + '学习模式！');
         }
         
         // ====== 场景化学习 ======
@@ -1689,6 +1769,7 @@
                 if (this.dataset.tab === 'favorites') { renderFavorites(); }
                 if (this.dataset.tab === 'wrongbook') { renderWrongWords(); }
                 if (this.dataset.tab === 'profile') { updateProfile(); }
+                if (this.dataset.tab === 'lang') { }
             });
         });
 
