@@ -476,6 +476,9 @@
                     <div class="challenge-progress-fill" id="challengeProgressFill"></div>
                 </div>
             </div>
+            <div style="text-align:center;padding:10px;">
+                <button class="btn" style="font-size:12px;padding:8px 16px;" onclick="showGoalSetting()">⚙️ 设置每日目标</button>
+            </div>
             <div class="challenge-status" id="challengeStatus">
                 <div class="challenge-status-icon">🔥</div>
                 <div class="challenge-status-text">学习中...</div>
@@ -757,7 +760,8 @@
             completed: false,
             badges: [], // 已解锁的徽章
             streakDays: 0, // 连续打卡天数
-            lastCompleteDate: '' // 上次完成挑战的日期
+            lastCompleteDate: '', // 上次完成挑战的日期
+            dailyGoal: 10 // 每日学习目标（单词数）
         };
         
         const badges = [
@@ -1320,6 +1324,17 @@
             if (saved) history = JSON.parse(saved);
         }
         
+        // ====== 每日目标设置 ======
+        function showGoalSetting() {
+            const goal = prompt('请设置每日学习目标（单词数）：', challengeData.dailyGoal || 10);
+            if (goal && !isNaN(goal) && goal > 0) {
+                challengeData.dailyGoal = parseInt(goal);
+                saveChallenge();
+                loadChallenge();
+                alert('每日目标已设置为 ' + goal + ' 个单词！');
+            }
+        }
+        
         // ====== 每日挑战 ======
         function loadChallenge() {
             const saved = localStorage.getItem('wordAI_challenge');
@@ -1389,15 +1404,15 @@
         }
         
         function updateChallengeUI() {
-            const goal = 10;
+            const goal = challengeData.dailyGoal || 10;
             const progress = challengeData.wordsLearned;
             document.getElementById('challengeProgress').textContent = progress;
             document.getElementById('challengeGoal').textContent = goal;
             document.getElementById('challengeProgressFill').style.width = Math.min((progress / goal) * 100, 100) + '%';
             
             // 更新任务状态
-            document.getElementById('task1Status').textContent = challengeData.wordsLearned + '/10';
-            document.getElementById('task1').classList.toggle('completed', challengeData.wordsLearned >= 10);
+            document.getElementById('task1Status').textContent = challengeData.wordsLearned + '/' + goal;
+            document.getElementById('task1').classList.toggle('completed', challengeData.wordsLearned >= goal);
             
             document.getElementById('task2Status').textContent = challengeData.quizzesDone + '/5';
             document.getElementById('task2').classList.toggle('completed', challengeData.quizzesDone >= 5);
