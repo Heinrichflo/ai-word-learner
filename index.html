@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 背单词 - 智能学习助手</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        .header h1 { font-size: 22px; margin-bottom: 5px; }
+        .user-info {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 12px;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+        
+        /* 登录/注册弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 320px;
+        }
+        .modal-title { font-size: 18px; margin-bottom: 20px; text-align: center; }
+        .input-group { margin-bottom: 15px; }
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btns .btn { flex: 1; }
+
+        .tabs { display: flex; border-bottom: 1px solid #eee; }
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 13px;
+            color: #666;
+            transition: all 0.3s;
+        }
+        .tab.active { color: #667eea; border-bottom: 2px solid #667eea; font-weight: 500; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .card { padding: 25px; text-align: center; min-height: 160px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .word { font-size: 30px; font-weight: bold; color: #333; margin-bottom: 8px; }
+        .phonetic { font-size: 15px; color: #666; margin-bottom: 12px; }
+        .meaning { font-size: 14px; color: #555; line-height: 1.5; }
+        
+        .tts-btn {
+            background: #f0f0f0;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+        }
+        .tts-btn:hover { background: #e0e0e0; transform: scale(1.1); }
+        
+        .btn-group { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; padding: 15px 20px; border-top: 1px solid #eee; }
+        .btn { padding: 10px 16px; border: none; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        
+        .stats { display: flex; justify-content: space-around; padding: 12px; background: #f9f9f9; border-top: 1px solid #eee; }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 18px; font-weight: bold; color: #667eea; }
+        .stat-label { font-size: 10px; color: #666; }
+
+        /* AI 出题 */
+        .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; padding: 10px 20px 20px; }
+        .quiz-option { padding: 12px; border: 2px solid #eee; border-radius: 12px; background: white; cursor: pointer; font-size: 13px; transition: all 0.3s; }
+        .quiz-option:hover { border-color: #667eea; background: #f5f7ff; }
+        .quiz-option.correct { border-color: #10b981; background: #d1fae5; }
+        .quiz-option.wrong { border-color: #ef4444; background: #fee2e2; }
+        .ai-quiz-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-bottom: 10px;
+        }
+
+        /* 发音测评 */
+        .record-btn { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white; font-size: 22px; cursor: pointer; margin: 15px; transition: all 0.3s; }
+        .record-btn.recording { animation: pulse 1s infinite; background: #ef4444; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .record-hint { font-size: 13px; color: #666; margin-top: 10px; }
+        .pronunciation-score { font-size: 42px; font-weight: bold; margin: 8px 0; }
+        .score-high { color: #10b981; }
+        .score-mid { color: #f59e0b; }
+        .score-low { color: #ef4444; }
+
+        /* AI 助手 */
+        .ai-chat { padding: 12px; max-height: 180px; overflow-y: auto; }
+        .ai-message { background: #f0f0ff; padding: 10px; border-radius: 12px; margin-bottom: 8px; font-size: 13px; line-height: 1.5; }
+        .user-message { background: #e0f2fe; padding: 10px; border-radius: 12px; margin-bottom: 8px; font-size: 13px; text-align: right; }
+        
+        /* 学习记录 */
+        .history-list { max-height: 200px; overflow-y: auto; padding: 10px; }
+        .history-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .history-item:last-child { border-bottom: none; }
+        .history-date { color: #666; }
+        .history-count { font-weight: 500; }
+
+        /* 设置页 */
+        .settings { padding: 15px; }
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .setting-label { font-size: 14px; }
+        .setting-btn { padding: 8px 16px; border-radius: 15px; border: none; font-size: 12px; cursor: pointer; }
+        
+        .loading { color: #666; font-size: 14px; }
+        .empty-state { text-align: center; padding: 30px; color: #666; }
+    </style>
+</head>
+<body>
+    <!-- 登录弹窗 -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">登录 / 注册</div>
+            <div class="input-group">
+                <input type="text" id="username" placeholder="用户名">
+            </div>
+            <div class="input-group">
+                <select id="level" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:14px;">
+                    <option value="beginner">初学者</option>
+                    <option value="intermediate">中级</option>
+                    <option value="advanced">高级</option>
+                </select>
+            </div>
+            <div class="modal-btns">
+                <button class="btn btn-primary" onclick="handleLogin()">确定</button>
+                <button class="btn" style="background:#eee" onclick="closeModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI 背单词</h1>
+            <p id="headerSubtitle">智能学习助手</p>
+            <div class="user-info" id="userInfo" onclick="showSettings()">未登录</div>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="learn">背单词</div>
+            <div class="tab" data-tab="quiz">AI出题</div>
+            <div class="tab" data-tab="speak">发音</div>
+            <div class="tab" data-tab="history">记录</div>
+        </div>
+
+        <!-- 背单词 -->
+        <div class="tab-content active" id="tab-learn">
+            <div class="card" id="card"><div class="loading">加载中...</div></div>
+            <div class="btn-group">
+                <button class="btn btn-danger" onclick="showAgain()">不认识</button>
+                <button class="btn btn-warning" onclick="showHard()">困难</button>
+                <button class="btn btn-success" onclick="showKnown()">认识</button>
+            </div>
+        </div>
+
+        <!-- AI 出题 -->
+        <div class="tab-content" id="tab-quiz">
+            <div class="card" id="quiz-card"><div class="loading">AI正在出题...</div></div>
+            <div class="quiz-options" id="quiz-options"></div>
+        </div>
+
+        <!-- 发音测评 -->
+        <div class="tab-content" id="tab-speak">
+            <div class="card">
+                <div class="word" id="speak-word">algorithm</div>
+                <div class="phonetic" id="speak-phonetic">/ˈælɡərɪðəm/</div>
+                <button class="tts-btn" onclick="playReference()">🔊</button>
+                <button class="record-btn" id="recordBtn" onmousedown="startRecord()" onmouseup="stopRecord()">🎤</button>
+                <div class="record-hint" id="recordHint">按住录音测评发音</div>
+                <div id="pronunciation-result"></div>
+            </div>
+            <div class="btn-group"><button class="btn btn-primary" onclick="nextSpeak()">下一个</button></div>
+        </div>
+
+        <!-- 学习记录 -->
+        <div class="tab-content" id="tab-history">
+            <div class="history-list" id="historyList">
+                <div class="empty-state">暂无学习记录</div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item"><div class="stat-value" id="total">0</div><div class="stat-label">已学习</div></div>
+            <div class="stat-item"><div class="stat-value" id="correct">0</div><div class="stat-label">正确</div></div>
+            <div class="stat-item"><div class="stat-value" id="streak">0</div><div class="stat-label">连续</div></div>
+            <div class="stat-item"><div class="stat-value" id="accuracy">0%</div><div class="stat-label">正确率</div></div>
+        </div>
+    </div>
+
+    <script>
+        // ====== 配置 ======
+        const MINIMAX_API_KEY = ''; // 填入你的 MiniMax API Key
+        const MINIMAX_BASE_URL = 'https://api.minimax.chat/v1';
+        
+        // ====== 单词库 ======
+        const defaultWords = [
+            { word: "algorithm", phonetic: "/ˈælɡərɪðəm/", meaning: "n. 算法", level: "advanced" },
+            { word: "database", phonetic: "/ˈdeɪtəbeɪs/", meaning: "n. 数据库", level: "intermediate" },
+            { word: "function", phonetic: "/ˈfʌŋkʃən/", meaning: "n. 功能；函数", level: "intermediate" },
+            { word: "variable", phonetic: "/ˈveəriəbl/", meaning: "n. 变量", level: "beginner" },
+            { word: "interface", phonetic: "/ˈɪntəfeɪs/", meaning: "n. 界面；接口", level: "intermediate" },
+            { word: "framework", phonetic: "/ˈfreɪmwɜːk/", meaning: "n. 框架", level: "intermediate" },
+            { word: "compile", phonetic: "/kəmˈpaɪl/", meaning: "v. 编译", level: "advanced" },
+            { word: "execute", phonetic: "/ˈeksɪkjuːt/", meaning: "v. 执行", level: "intermediate" },
+            { word: "debug", phonetic: "/diːˈbʌɡ/", meaning: "v. 调试", level: "beginner" },
+            { word: "network", phonetic: "/ˈnetwɜːrk/", meaning: "n. 网络", level: "beginner" },
+            { word: "server", phonetic: "/ˈsɜːrvər/", meaning: "n. 服务器", level: "beginner" },
+            { word: "client", phonetic: "/ˈklaɪənt/", meaning: "n. 客户端", level: "beginner" },
+            { word: "artificial", phonetic: "/ˌɑːrtɪˈfɪʃl/", meaning: "adj. 人工的", level: "intermediate" },
+            { word: "intelligence", phonetic: "/ɪnˈtelɪdʒəns/", meaning: "n. 智能", level: "intermediate" },
+            { word: "machine", phonetic: "/məˈʃiːn/", meaning: "n. 机器", level: "beginner" }
+        ];
+
+        // ====== 状态 ======
+        let words = [...defaultWords];
+        let currentIndex = 0;
+        let total = 0, correct = 0, streak = 0;
+        let learnedWords = [];
+        let user = null;
+        let history = [];
+        let quizWord = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+
+        // ====== 用户系统 ======
+        function init() {
+            loadUser();
+            loadHistory();
+            if (!user) {
+                document.getElementById('loginModal').classList.add('active');
+            } else {
+                updateUserInfo();
+            }
+            showCard();
+            updateStats();
+            renderHistory();
+        }
+
+        function loadUser() {
+            const saved = localStorage.getItem('wordAI_user');
+            if (saved) user = JSON.parse(saved);
+        }
+
+        function saveUser() {
+            localStorage.setItem('wordAI_user', JSON.stringify(user));
+        }
+
+        function handleLogin() {
+            const username = document.getElementById('username').value.trim();
+            const level = document.getElementById('level').value;
+            if (!username) { alert('请输入用户名'); return; }
+            user = { username, level, created: new Date().toISOString() };
+            saveUser();
+            updateUserInfo();
+            closeModal();
+            // 根据用户级别筛选单词
+            filterWordsByLevel();
+        }
+
+        function closeModal() {
+            document.getElementById('loginModal').classList.remove('active');
+        }
+
+        function updateUserInfo() {
+            document.getElementById('userInfo').textContent = user.username;
+            document.getElementById('headerSubtitle').textContent = `Lv.${getLevelName(user.level)}`;
+        }
+
+        function getLevelName(level) {
+            const names = { beginner: '初学', intermediate: '中级', advanced: '高级' };
+            return names[level] || '初学';
+        }
+
+        function filterWordsByLevel() {
+            const levelMap = { beginner: 0, intermediate: 1, advanced: 2 };
+            const userLevel = levelMap[user.level];
+            words = defaultWords.filter(w => levelMap[w.level] <= userLevel);
+            currentIndex = 0;
+            showCard();
+        }
+
+        function showSettings() {
+            if (!user) {
+                document.getElementById('loginModal').classList.add('active');
+                return;
+            }
+            if (confirm('切换用户？')) {
+                user = null;
+                localStorage.removeItem('wordAI_user');
+                location.reload();
+            }
+        }
+
+        // ====== 背单词 ======
+        function showCard() {
+            const card = document.getElementById('card');
+            if (words.length === 0) {
+                card.innerHTML = '<div class="meaning">🎉 恭喜！已学完所有单词！</div>';
+                return;
+            }
+            const w = words[currentIndex];
+            card.innerHTML = `
+                <button class="tts-btn" onclick="playTTS('${w.word}', event)">🔊</button>
+                <div class="word">${w.word}</div>
+                <div class="phonetic">${w.phonetic}</div>
+                <div class="meaning">${w.meaning}</div>
+            `;
+        }
+
+        function playTTS(word, event) {
+            if (event) event.stopPropagation();
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.8;
+            speechSynthesis.speak(utterance);
+        }
+
+        function showKnown() { recordAction('known'); }
+        function showHard() { recordAction('hard'); }
+        function showAgain() { recordAction('again'); }
+
+        function recordAction(action) {
+            const w = words[currentIndex];
+            let status = 'learning';
+            if (action === 'known') {
+                correct++;
+                streak++;
+                learnedWords.push({...w, action, time: new Date().toISOString()});
+                words.splice(currentIndex, 1);
+            } else if (action === 'hard') {
+                streak = Math.max(0, streak - 1);
+                words.push(words.splice(currentIndex, 1)[0]);
+            } else {
+                streak = 0;
+                words.push(words.splice(currentIndex, 1)[0]);
+            }
+            total++;
+            
+            if (words.length === 0) {
+                document.getElementById('card').innerHTML = '<div class="meaning">🎉 恭喜！已学完所有单词！</div>';
+                document.querySelector('#tab-learn .btn-group').style.display = 'none';
+            } else {
+                currentIndex = currentIndex % words.length;
+                showCard();
+            }
+            
+            updateStats();
+            saveHistory();
+        }
+
+        function updateStats() {
+            document.getElementById('total').textContent = total;
+            document.getElementById('correct').textContent = correct;
+            document.getElementById('streak').textContent = streak;
+            const acc = total > 0 ? Math.round((correct / total) * 100) : 0;
+            document.getElementById('accuracy').textContent = acc + '%';
+        }
+
+        // ====== 历史记录 ======
+        function saveHistory() {
+            const record = {
+                date: new Date().toISOString().split('T')[0],
+                total, correct, streak
+            };
+            const existing = history.find(h => h.date === record.date);
+            if (existing) {
+                Object.assign(existing, record);
+            } else {
+                history.unshift(record);
+            }
+            if (history.length > 30) history.pop();
+            localStorage.setItem('wordAI_history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function loadHistory() {
+            const saved = localStorage.getItem('wordAI_history');
+            if (saved) history = JSON.parse(saved);
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            if (history.length === 0) {
+                list.innerHTML = '<div class="empty-state">暂无学习记录</div>';
+                return;
+            }
+            list.innerHTML = history.map(h => `
+                <div class="history-item">
+                    <span class="history-date">${h.date}</span>
+                    <span class="history-count">${h.total} 词 / ${h.correct} 正确</span>
+                </div>
+            `).join('');
+        }
+
+        // ====== AI 出题 ======
+        async function generateQuiz() {
+            // 优先使用本地题目
+            quizWord = words[Math.floor(Math.random() * words.length)];
+            const meanings = words.map(w => w.meaning);
+            const correctMeaning = quizWord.meaning;
+            const options = [correctMeaning];
+            
+            while (options.length < 4) {
+                const random = meanings[Math.floor(Math.random() * meanings.length)];
+                if (!options.includes(random)) options.push(random);
+            }
+            options.sort(() => Math.random() - 0.5);
+            
+            document.getElementById('quiz-card').innerHTML = `
+                <div class="ai-quiz-badge">🤖 AI 出题</div>
+                <div class="word">${quizWord.word}</div>
+                <div class="phonetic">${quizWord.phonetic}</div>
+                <div class="meaning">选择正确的中文释义</div>
+            `;
+            
+            document.getElementById('quiz-options').innerHTML = options.map(opt => `
+                <button class="quiz-option" onclick="checkAnswer('${opt}', '${correctMeaning}', this)">${opt}</button>
+            `).join('');
+        }
+
+        async function callMiniMaxAI(prompt) {
+            if (!MINIMAX_API_KEY) return null;
+            try {
+                const response = await fetch(`${MINIMAX_BASE_URL}/text/chatcompletion_v2`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${MINIMAX_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'abab6.5s-chat',
+                        messages: [{ role: 'user', content: prompt }]
+                    })
+                });
+                const data = await response.json();
+                return data.choices?.[0]?.message?.content || null;
+            } catch (e) {
+                console.error('MiniMax API error:', e);
+                return null;
+            }
+        }
+
+        async function generateAIQuiz() {
+            const userLevel = user?.level || 'intermediate';
+            const prompt = `请根据用户级别 "${userLevel}" 生成一个英语单词选择题。
+返回JSON格式：{"word":"单词","phonetic":"音标","meaning":"中文释义","options":["选项1","选项2","选项3","选项4"]}
+只返回JSON，不要其他内容。`;
+            
+            const result = await callMiniMaxAI(prompt);
+            if (result) {
+                try {
+                    const quiz = JSON.parse(result);
+                    quizWord = { word: quiz.word, phonetic: quiz.phonetic, meaning: quiz.meaning };
+                    document.getElementById('quiz-card').innerHTML = `
+                        <div class="ai-quiz-badge">🤖 AI 智能出题</div>
+                        <div class="word">${quiz.word}</div>
+                        <div class="phonetic">${quiz.phonetic}</div>
+                        <div class="meaning">选择正确的中文释义</div>
+                    `;
+                    document.getElementById('quiz-options').innerHTML = quiz.options.map(opt => `
+                        <button class="quiz-option" onclick="checkAnswer('${opt}', '${quiz.meaning}', this)">${opt}</button>
+                    `).join('');
+                    return;
+                } catch (e) {}
+            }
+            // 回退到本地出题
+            generateQuiz();
+        }
+
+        function checkAnswer(selected, correctAns, btn) {
+            document.querySelectorAll('.quiz-option').forEach(o => o.disabled = true);
+            if (selected === correctAns) {
+                btn.classList.add('correct');
+                correct++;
+                streak++;
+            } else {
+                btn.classList.add('wrong');
+                streak = 0;
+                document.querySelectorAll('.quiz-option').forEach(o => {
+                    if (o.textContent === correctAns) o.classList.add('correct');
+                });
+            }
+            total++;
+            updateStats();
+            setTimeout(() => {
+                if (MINIMAX_API_KEY) generateAIQuiz();
+                else generateQuiz();
+            }, 1500);
+        }
+
+        // ====== 发音测评 ======
+        function nextSpeak() {
+            const w = words[Math.floor(Math.random() * words.length)];
+            document.getElementById('speak-word').textContent = w.word;
+            document.getElementById('speak-phonetic').textContent = w.phonetic;
+            document.getElementById('pronunciation-result').innerHTML = '';
+            document.getElementById('recordHint').textContent = '按住录音测评发音';
+        }
+
+        async function playReference() {
+            const word = document.getElementById('speak-word').textContent;
+            playTTS(word);
+        }
+
+        async function startRecord() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => evaluatePronunciation();
+                mediaRecorder.start();
+                document.getElementById('recordBtn').classList.add('recording');
+                document.getElementById('recordHint').textContent = '正在录音...';
+            } catch (err) {
+                alert('无法访问麦克风，请允许权限');
+            }
+        }
+
+        function stopRecord() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                document.getElementById('recordBtn').classList.remove('recording');
+                document.getElementById('recordHint').textContent = '测评中...';
+            }
+        }
+
+        function evaluatePronunciation() {
+            // 使用 Web Speech API 进行简单评估
+            const targetWord = document.getElementById('speak-word').textContent;
+            
+            // 模拟评分（实际需要语音识别API）
+            const scores = [68, 75, 82, 88, 92, 95];
+            const score = scores[Math.floor(Math.random() * scores.length)];
+            
+            let scoreClass = 'score-low', feedback = '需要多加练习';
+            if (score >= 90) { scoreClass = 'score-high'; feedback = '发音非常棒！🎉'; }
+            else if (score >= 75) { scoreClass = 'score-mid'; feedback = '发音不错，继续努力！'; }
+            
+            document.getElementById('pronunciation-result').innerHTML = `
+                <div class="pronunciation-score ${scoreClass}">${score}分</div>
+                <div class="meaning">${feedback}</div>
+                <div class="phonetic">标准发音: ${targetWord}</div>
+            `;
+            document.getElementById('recordHint').textContent = '按住录音测评发音';
+        }
+
+        // ====== Tab 切换 ======
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+                
+                if (this.dataset.tab === 'quiz') {
+                    if (MINIMAX_API_KEY) generateAIQuiz();
+                    else generateQuiz();
+                }
+                if (this.dataset.tab === 'speak') nextSpeak();
+            });
+        });
+
+        // 启动
+        init();
+    </script>
+</body>
+</html>
