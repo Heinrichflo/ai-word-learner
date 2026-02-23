@@ -372,6 +372,7 @@
             <div class="tab" data-tab="profile">我的</div>
             <div class="tab" data-tab="lang">语言</div>
             <div class="tab" data-tab="quiz">AI出题</div>
+            <div class="tab" data-tab="newwords">生词</div>
             <div class="tab" data-tab="challenge">挑战</div>
             <div class="tab" data-tab="scenes">场景</div>
             <div class="tab" data-tab="dialogue">口语</div>
@@ -453,6 +454,18 @@
                     <div class="lang-flag">🇫🇷</div>
                     <div class="lang-name">法语</div>
                 </div>
+            </div>
+        </div>
+
+        <!-- 生词本 -->
+        <div class="tab-content" id="tab-newwords">
+            <div class="collection-header">
+                <span>📝 生词本</span>
+                <span id="newWordsCount" style="font-size:12px;color:#999;">0 个</span>
+            </div>
+            <div id="newWordsList"></div>
+            <div style="padding:16px;">
+                <button class="btn btn-primary" style="width:100%;" onclick="reviewNewWords()">复习生词</button>
             </div>
         </div>
 
@@ -847,6 +860,7 @@
             loadChallenge();
             loadFavorites();
             loadWrongWords();
+            loadNewWords();
             loadReminder();
             loadTheme();
             if (!user) {
@@ -926,6 +940,63 @@
                     </div>
                 </div>
             `).join('');
+        }
+        
+        // ====== 生词本 ======
+        let newWords = [];
+        
+        function loadNewWords() {
+            const saved = localStorage.getItem('wordAI_newWords');
+            if (saved) newWords = JSON.parse(saved);
+        }
+        
+        function saveNewWords() {
+            localStorage.setItem('wordAI_newWords', JSON.stringify(newWords));
+        }
+        
+        function addToNewWords(word) {
+            if (!newWords.find(w => w.word === word.word)) {
+                newWords.push({...word, addTime: Date.now()});
+                saveNewWords();
+            }
+        }
+        
+        function removeNewWord(word) {
+            newWords = newWords.filter(w => w.word !== word);
+            saveNewWords();
+            renderNewWords();
+        }
+        
+        function renderNewWords() {
+            const list = document.getElementById('newWordsList');
+            document.getElementById('newWordsCount').textContent = newWords.length + ' 个';
+            if (newWords.length === 0) {
+                list.innerHTML = '<div class="empty-state">暂无生词</div>';
+                return;
+            }
+            list.innerHTML = newWords.map(w => `
+                <div class="word-card">
+                    <div>
+                        <div class="word-card-word">${w.word}</div>
+                        <div class="word-card-meaning">${w.meaning}</div>
+                    </div>
+                    <div class="word-card-actions">
+                        <button class="word-card-btn btn-review" onclick="removeNewWord('${w.word}')">掌握</button>
+                        <button class="word-card-btn btn-remove" onclick="removeNewWord('${w.word}')">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function reviewNewWords() {
+            if (newWords.length === 0) {
+                alert('生词本为空！');
+                return;
+            }
+            // Switch to learn tab with new words
+            words = [...newWords];
+            showCard();
+            alert('已切换到生词本复习模式！');
         }
         
         function switchCollectionTab(tab) {
@@ -1008,15 +1079,39 @@
             };
             localStorage.setItem('wordAI_reminder', JSON.stringify(data));
             if (reminderEnabled && 'Notification' in window) {
-                Notification.requestPermission();
+                Notification.requestPermission().then(perm => {
+                    if (perm === 'granted') {
+                        scheduleNotification(data.time);
+                    }
+                });
             }
             alert('提醒设置已保存！');
+        }
+        
+        function scheduleNotification(time) {
+            // Check every minute if it's time for notification
+            setInterval(() => {
+                const now = new Date();
+                const [hours, minutes] = time.split(':');
+                if (now.getHours() === parseInt(hours) && now.getMinutes() === parseInt(minutes)) {
+                    showStudyNotification();
+                }
+            }, 60000);
+        }
+        
+        function showStudyNotification() {
+            if (Notification.permission === 'granted') {
+                new Notification('🤖 AI 背单词', {
+                    body: '是时候学习啦！坚持打卡，养成好习惯～',
+                    icon: '📚'
+                });
+            }
         }
         
         // ====== 数据导出导入 ======
         function exportAllData() {
             const data = {
-                version: 'v0.7',
+                version: 'v1.0',
                 exportTime: new Date().toISOString(),
                 words: words,
                 favorites: favorites,
@@ -1262,11 +1357,13 @@
                 quality = 2; // 困难
                 streak = Math.max(0, streak - 1);
                 addToWrongBook(w); // 添加到错题本
+                addToNewWords(w); // 添加到生词本
                 words.push(words.splice(currentIndex, 1)[0]);
             } else {
                 quality = 0; // 忘记
                 streak = 0;
                 addToWrongBook(w); // 添加到错题本
+                addToNewWords(w); // 添加到生词本
                 words.push(words.splice(currentIndex, 1)[0]);
             }
             
@@ -1988,6 +2085,7 @@
                 if (this.dataset.tab === 'wrongbook') { renderWrongWords(); }
                 if (this.dataset.tab === 'profile') { updateProfile(); }
                 if (this.dataset.tab === 'lang') { }
+                if (this.dataset.tab === 'newwords') { renderNewWords(); }
             });
         });
 
