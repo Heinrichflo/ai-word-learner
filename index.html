@@ -238,6 +238,12 @@
         .home-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px; }
         .home-card { background: white; border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; }
         
+        /* 学习小组 */
+        .group-header { text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .ranking-list { padding: 16px; }
+        .ranking-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 10px; margin-bottom: 8px; }
+        .ranking-num { font-size: 18px; font-weight: bold; width: 30px; color: #667eea; }
+        
         /* 统计图表增强 */
         .chart-wrapper { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
         .chart-bar { display: flex; align-items: flex-end; height: 100px; gap: 4px; }
@@ -380,6 +386,7 @@
             <div class="tab active" data-tab="learn">背单词</div>
             <div class="tab" data-tab="profile">我的</div>
             <div class="tab" data-tab="lang">语言</div>
+            <div class="tab" data-tab="group">小组</div>
             <div class="tab" data-tab="quiz">AI出题</div>
             <div class="tab" data-tab="newwords">生词</div>
             <div class="tab" data-tab="challenge">挑战</div>
@@ -486,6 +493,23 @@
                     <div class="lang-flag">🇫🇷</div>
                     <div class="lang-name">法语</div>
                 </div>
+            </div>
+        </div>
+
+        <!-- 学习小组 -->
+        <div class="tab-content" id="tab-group">
+            <div class="group-header">
+                <div class="group-avatar">👥</div>
+                <div style="font-size:16px;font-weight:600;">学习小组</div>
+                <div style="font-size:12px;opacity:0.8;margin-top:4px;">和好友一起学习</div>
+            </div>
+            <div style="padding:16px;">
+                <button class="group-btn" style="width:100%;background:#667eea;" onclick="createGroup()">创建小组</button>
+                <button class="group-btn" style="width:100%;background:#fff;border:1px solid #667eea;color:#667eea;" onclick="joinGroup()">加入小组</button>
+            </div>
+            <div class="ranking-list">
+                <div style="font-size:14px;font-weight:600;margin-bottom:12px;">🏆 小组排行榜</div>
+                <div id="rankingList"></div>
             </div>
         </div>
 
@@ -1228,7 +1252,7 @@
         // ====== 数据导出导入 ======
         function exportAllData() {
             const data = {
-                version: 'v1.1',
+                version: 'v1.2',
                 exportTime: new Date().toISOString(),
                 words: words,
                 favorites: favorites,
@@ -2253,6 +2277,7 @@ ${statusText}
             { id: 'ten_words', name: '小试牛刀', desc: '学习10个单词', icon: '⭐', condition: (d) => d.total >= 10 },
             { id: 'fifty_words', name: '学富五车', desc: '学习50个单词', icon: '📚', condition: (d) => d.total >= 50 },
             { id: 'hundred_words', name: '百词斩', desc: '学习100个单词', icon: '💯', condition: (d) => d.total >= 100 },
+            { id: 'five_hundred', name: '词汇达人', desc: '学习500个单词', icon: '📖', condition: (d) => d.total >= 500 },
             { id: 'streak_3', name: '三连胜', desc: '连续3天学习', icon: '🔥', condition: (d) => d.streak >= 3 },
             { id: 'streak_7', name: '周冠军', desc: '连续7天学习', icon: '👑', condition: (d) => d.streak >= 7 },
             { id: 'streak_30', name: '月冠军', desc: '连续30天学习', icon: '🏅', condition: (d) => d.streak >= 30 },
@@ -2260,7 +2285,10 @@ ${statusText}
             { id: 'speed_learner', name: '快速学习', desc: '一天学习20词', icon: '⚡', condition: (d) => d.today >= 20 },
             { id: 'master', name: '单词大师', desc: '掌握100个词', icon: '🏆', condition: (d) => d.mastered >= 100 },
             { id: 'collector', name: '收藏家', desc: '收藏10个单词', icon: '❤️', condition: (d) => d.favorites >= 10 },
-            { id: 'error_corrector', name: '错题清零', desc: '掌握全部错题', icon: '✅', condition: (d) => d.wrongCount === 0 }
+            { id: 'error_corrector', name: '错题清零', desc: '掌握全部错题', icon: '✅', condition: (d) => d.wrongCount === 0 },
+            { id: 'early_bird', name: '早起鸟', desc: '早晨学习', icon: '🌅', condition: (d) => new Date().getHours() < 9 },
+            { id: 'night_owl', name: '夜猫子', desc: '深夜学习', icon: '🦉', condition: (d) => new Date().getHours() >= 22 },
+            { id: 'polyglot', name: '多语言者', desc: '学习3种语言', icon: '🌍', condition: (d) => d.languages >= 3 }
         ];
         
         function renderAchievements() {
@@ -2323,6 +2351,55 @@ ${statusText}
             words = [...languageWords[lang]];
             showCard();
             alert('已切换到' + {en:'英语',ja:'日语',ko:'韩语',fr:'法语'}[lang] + '学习模式！');
+        }
+        
+        // ====== 学习小组 ======
+        let groupData = null;
+        
+        function loadGroup() {
+            const saved = localStorage.getItem('wordAI_group');
+            if (saved) groupData = JSON.parse(saved);
+            renderRanking();
+        }
+        
+        function createGroup() {
+            const name = prompt('请输入小组名称:');
+            if (!name) return;
+            groupData = { name, members: [{name: user?.username || '我', score: total, avatar: '😀'}] };
+            localStorage.setItem('wordAI_group', JSON.stringify(groupData));
+            alert('小组创建成功！');
+            renderRanking();
+        }
+        
+        function joinGroup() {
+            alert('加入小组功能开发中，敬请期待！');
+        }
+        
+        function renderRanking() {
+            const list = document.getElementById('rankingList');
+            if (!groupData) {
+                // 模拟排行榜
+                const mockData = [
+                    {name: '学习达人', score: 520, avatar: '🏆'},
+                    {name: '坚持不懈', score: 380, avatar: '⭐'},
+                    {name: '进步飞快', score: 290, avatar: '📚'},
+                    {name: user?.username || '我', score: total, avatar: '😀'},
+                    {name: '新人学习', score: 50, avatar: '🌱'}
+                ];
+                mockData.sort((a,b) => b.score - a.score);
+                list.innerHTML = mockData.map((m, i) => `
+                    <div class="ranking-item">
+                        <div class="ranking-num ${i<3?'top3':''}">${i+1}</div>
+                        <div style="font-size:24px;">${m.avatar}</div>
+                        <div class="ranking-info">
+                            <div class="ranking-name">${m.name}</div>
+                            <div class="ranking-score">${m.score} 词</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                list.innerHTML = '<div class="ranking-item"><div class="ranking-info">小组成员: ' + groupData.members.length + '人</div></div>';
+            }
         }
         
         // ====== 场景化学习 ======
@@ -2717,6 +2794,7 @@ ${statusText}
                 if (this.dataset.tab === 'profile') { updateProfile(); }
                 if (this.dataset.tab === 'lang') { }
                 if (this.dataset.tab === 'newwords') { renderNewWords(); }
+                if (this.dataset.tab === 'group') { loadGroup(); }
                 if (this.dataset.tab === 'review') { loadReviewData(); }
             });
         });
