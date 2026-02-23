@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "AI 背单词",
+  "version": "1.0.0",
+  "description": "AI 驱动的背单词学习插件 - 智能出题、间隔重复、TTS发音",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "AI 背单词"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
