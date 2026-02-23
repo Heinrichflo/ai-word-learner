@@ -162,6 +162,40 @@
         
         .loading { color: #666; font-size: 14px; }
         .empty-state { text-align: center; padding: 30px; color: #666; }
+        
+        /* 每日挑战 */
+        .challenge-header { text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .challenge-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
+        .challenge-date { font-size: 12px; opacity: 0.8; }
+        .challenge-progress { padding: 20px; text-align: center; }
+        .challenge-progress-text { font-size: 16px; margin-bottom: 10px; font-weight: 500; }
+        .challenge-progress-bar { height: 12px; background: #eee; border-radius: 6px; overflow: hidden; }
+        .challenge-progress-fill { height: 100%; background: linear-gradient(90deg, #52C41A, #73D13D); border-radius: 6px; transition: width 0.3s; width: 0%; }
+        .challenge-status { text-align: center; padding: 15px; margin: 0 20px; background: #f9f9f9; border-radius: 12px; }
+        .challenge-status-icon { font-size: 32px; margin-bottom: 8px; }
+        .challenge-status-text { font-size: 14px; color: #666; }
+        .challenge-status.completed { background: #f6ffed; }
+        .challenge-status.completed .challenge-status-icon { animation: bounce 0.5s; }
+        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        
+        /* 徽章墙 */
+        .badges-section { padding: 20px; }
+        .badges-title { font-size: 14px; font-weight: 600; margin-bottom: 15px; }
+        .badges-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .badge-item { width: 60px; height: 70px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .badge-icon { width: 48px; height: 48px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 24px; filter: grayscale(1); opacity: 0.5; transition: all 0.3s; }
+        .badge-item.unlocked .badge-icon { filter: grayscale(0); opacity: 1; background: linear-gradient(135deg, #FFD700, #FFA500); box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4); }
+        .badge-name { font-size: 10px; color: #999; text-align: center; }
+        .badge-item.unlocked .badge-name { color: #333; }
+        
+        /* 今日任务 */
+        .today-tasks { padding: 0 20px 20px; }
+        .tasks-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+        .task-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: white; border-radius: 10px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .task-icon { font-size: 18px; }
+        .task-name { flex: 1; font-size: 13px; }
+        .task-status { font-size: 12px; color: #999; }
+        .task-item.completed .task-status { color: #52C41A; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -196,6 +230,7 @@
         <div class="tabs">
             <div class="tab active" data-tab="learn">背单词</div>
             <div class="tab" data-tab="quiz">AI出题</div>
+            <div class="tab" data-tab="challenge">挑战</div>
             <div class="tab" data-tab="speak">发音</div>
             <div class="tab" data-tab="history">记录</div>
             <div class="tab" data-tab="settings">设置</div>
@@ -215,6 +250,48 @@
         <div class="tab-content" id="tab-quiz">
             <div class="card" id="quiz-card"><div class="loading">AI正在出题...</div></div>
             <div class="quiz-options" id="quiz-options"></div>
+        </div>
+
+        <!-- 每日挑战 -->
+        <div class="tab-content" id="tab-challenge">
+            <div class="challenge-header">
+                <div class="challenge-title">🎯 每日挑战</div>
+                <div class="challenge-date" id="challengeDate"></div>
+            </div>
+            <div class="challenge-progress">
+                <div class="challenge-progress-text">
+                    <span id="challengeProgress">0</span> / <span id="challengeGoal">10</span> 单词
+                </div>
+                <div class="challenge-progress-bar">
+                    <div class="challenge-progress-fill" id="challengeProgressFill"></div>
+                </div>
+            </div>
+            <div class="challenge-status" id="challengeStatus">
+                <div class="challenge-status-icon">🔥</div>
+                <div class="challenge-status-text">学习中...</div>
+            </div>
+            <div class="badges-section">
+                <div class="badges-title">🏆 徽章墙</div>
+                <div class="badges-grid" id="badgesGrid"></div>
+            </div>
+            <div class="today-tasks">
+                <div class="tasks-title">📋 今日任务</div>
+                <div class="task-item" id="task1">
+                    <span class="task-icon">📚</span>
+                    <span class="task-name">学习10个单词</span>
+                    <span class="task-status" id="task1Status">0/10</span>
+                </div>
+                <div class="task-item" id="task2">
+                    <span class="task-icon">❓</span>
+                    <span class="task-name">完成5道选择题</span>
+                    <span class="task-status" id="task2Status">0/5</span>
+                </div>
+                <div class="task-item" id="task3">
+                    <span class="task-icon">🎯</span>
+                    <span class="task-name">正确率达到80%</span>
+                    <span class="task-status" id="task3Status">0%</span>
+                </div>
+            </div>
         </div>
 
         <!-- 发音测评 -->
@@ -289,11 +366,33 @@
         let quizWord = null;
         let mediaRecorder = null;
         let audioChunks = [];
+        
+        // ====== 每日挑战系统 ======
+        let challengeData = {
+            date: '',
+            wordsLearned: 0,
+            quizzesDone: 0,
+            accuracy: 0,
+            completed: false,
+            badges: [] // 已解锁的徽章
+        };
+        
+        const badges = [
+            { id: 'first', name: '初学者', icon: '🌱', condition: 'wordsLearned >= 1' },
+            { id: 'ten', name: '小试牛刀', icon: '⭐', condition: 'wordsLearned >= 10' },
+            { id: 'fifty', name: '坚持不懈', icon: '🏃', condition: 'wordsLearned >= 50' },
+            { id: 'streak3', name: '三连胜', icon: '🔥', condition: 'streak >= 3' },
+            { id: 'streak7', name: '周冠军', icon: '👑', condition: 'streak >= 7' },
+            { id: 'perfect', name: '全对', icon: '🎯', condition: 'accuracy >= 100 && quizzesDone >= 5' },
+            { id: 'quiz10', name: '刷题达人', icon: '📝', condition: 'quizzesDone >= 10' },
+            { id: 'month', name: '月度挑战', icon: '🏆', condition: 'streak >= 30' }
+        ];
 
         // ====== 用户系统 ======
         function init() {
             loadUser();
             loadHistory();
+            loadChallenge();
             if (!user) {
                 document.getElementById('loginModal').classList.add('active');
             } else {
@@ -383,9 +482,9 @@
             speechSynthesis.speak(utterance);
         }
 
-        function showKnown() { recordAction('known'); }
-        function showHard() { recordAction('hard'); }
-        function showAgain() { recordAction('again'); }
+        function showKnown() { recordAction('known'); onWordLearned(); }
+        function showHard() { recordAction('hard'); onWordLearned(); }
+        function showAgain() { recordAction('again'); onWordLearned(); }
 
         function recordAction(action) {
             const w = words[currentIndex];
@@ -444,6 +543,131 @@
         function loadHistory() {
             const saved = localStorage.getItem('wordAI_history');
             if (saved) history = JSON.parse(saved);
+        }
+        
+        // ====== 每日挑战 ======
+        function loadChallenge() {
+            const saved = localStorage.getItem('wordAI_challenge');
+            const today = new Date().toDateString();
+            if (saved) {
+                const data = JSON.parse(saved);
+                if (data.date === today) {
+                    challengeData = data;
+                } else {
+                    // 新的一天，重置挑战
+                    challengeData = { date: today, wordsLearned: 0, quizzesDone: 0, accuracy: 0, completed: false, badges: data.badges || [] };
+                }
+            } else {
+                challengeData.date = today;
+            }
+            document.getElementById('challengeDate').textContent = new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' });
+            updateChallengeUI();
+            renderBadges();
+        }
+        
+        function saveChallenge() {
+            localStorage.setItem('wordAI_challenge', JSON.stringify(challengeData));
+        }
+        
+        function updateChallengeUI() {
+            const goal = 10;
+            const progress = challengeData.wordsLearned;
+            document.getElementById('challengeProgress').textContent = progress;
+            document.getElementById('challengeGoal').textContent = goal;
+            document.getElementById('challengeProgressFill').style.width = Math.min((progress / goal) * 100, 100) + '%';
+            
+            // 更新任务状态
+            document.getElementById('task1Status').textContent = challengeData.wordsLearned + '/10';
+            document.getElementById('task1').classList.toggle('completed', challengeData.wordsLearned >= 10);
+            
+            document.getElementById('task2Status').textContent = challengeData.quizzesDone + '/5';
+            document.getElementById('task2').classList.toggle('completed', challengeData.quizzesDone >= 5);
+            
+            document.getElementById('task3Status').textContent = challengeData.accuracy + '%';
+            document.getElementById('task3').classList.toggle('completed', challengeData.accuracy >= 80);
+            
+            // 检查挑战完成
+            if (progress >= goal && !challengeData.completed) {
+                challengeData.completed = true;
+                saveChallenge();
+                showChallengeComplete();
+            }
+            
+            // 更新挑战状态显示
+            const statusEl = document.getElementById('challengeStatus');
+            if (challengeData.completed) {
+                statusEl.classList.add('completed');
+                statusEl.innerHTML = '<div class="challenge-status-icon">🎉</div><div class="challenge-status-text">挑战完成！</div>';
+            } else {
+                statusEl.classList.remove('completed');
+                statusEl.innerHTML = '<div class="challenge-status-icon">🔥</div><div class="challenge-status-text">学习中...</div>';
+            }
+        }
+        
+        function renderBadges() {
+            const grid = document.getElementById('badgesGrid');
+            grid.innerHTML = badges.map(b => {
+                const unlocked = challengeData.badges.includes(b.id);
+                return `<div class="badge-item ${unlocked ? 'unlocked' : ''}">
+                    <div class="badge-icon">${b.icon}</div>
+                    <div class="badge-name">${b.name}</div>
+                </div>`;
+            }).join('');
+        }
+        
+        function checkBadges() {
+            let updated = false;
+            badges.forEach(b => {
+                if (challengeData.badges.includes(b.id)) return;
+                const condition = new Function('wordsLearned', 'quizzesDone', 'accuracy', 'streak', 'return ' + b.condition);
+                if (condition(challengeData.wordsLearned, challengeData.quizzesDone, challengeData.accuracy, streak)) {
+                    challengeData.badges.push(b.id);
+                    updated = true;
+                    showBadgeUnlock(b);
+                }
+            });
+            if (updated) {
+                saveChallenge();
+                renderBadges();
+            }
+        }
+        
+        function showBadgeUnlock(badge) {
+            alert(`🏆 解锁新徽章：${badge.icon} ${badge.name}！`);
+        }
+        
+        function showChallengeComplete() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="text-align:center;">
+                    <div style="font-size:48px;margin-bottom:20px;">🎉</div>
+                    <div class="modal-title">每日挑战完成！</div>
+                    <p style="color:#666;margin-bottom:20px;">今天的学习任务已完成<br>继续加油，明天再来！</p>
+                    <button class="btn btn-primary" onclick="this.closest('.modal').remove()">确定</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function onWordLearned() {
+            challengeData.wordsLearned++;
+            if (challengeData.quizzesDone > 0) {
+                challengeData.accuracy = Math.round((correct / total) * 100);
+            }
+            saveChallenge();
+            updateChallengeUI();
+            checkBadges();
+        }
+        
+        function onQuizDone() {
+            challengeData.quizzesDone++;
+            if (total > 0) {
+                challengeData.accuracy = Math.round((correct / total) * 100);
+            }
+            saveChallenge();
+            updateChallengeUI();
+            checkBadges();
         }
 
         function renderHistory() {
@@ -550,6 +774,7 @@
             }
             total++;
             updateStats();
+            onQuizDone();
             setTimeout(() => {
                 if (MINIMAX_API_KEY) generateAIQuiz();
                 else generateQuiz();
@@ -626,6 +851,7 @@
                     else generateQuiz();
                 }
                 if (this.dataset.tab === 'speak') nextSpeak();
+                if (this.dataset.tab === 'challenge') { loadChallenge(); }
             });
         });
 
