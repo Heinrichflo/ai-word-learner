@@ -414,6 +414,10 @@
                     <div class="profile-stat-value" id="profileBadges">0</div>
                     <div class="profile-stat-label">徽章</div>
                 </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileChallengeStreak">0</div>
+                    <div class="profile-stat-label">挑战打卡</div>
+                </div>
             </div>
             <div style="padding:16px;">
                 <button class="btn btn-primary" style="width:100%;" onclick="showReport()">📊 学习报告</button>
@@ -698,21 +702,39 @@
         
         // ====== 单词库 ======
         const defaultWords = [
-            { word: "algorithm", phonetic: "/ˈælɡərɪðəm/", meaning: "n. 算法", level: "advanced" },
-            { word: "database", phonetic: "/ˈdeɪtəbeɪs/", meaning: "n. 数据库", level: "intermediate" },
-            { word: "function", phonetic: "/ˈfʌŋkʃən/", meaning: "n. 功能；函数", level: "intermediate" },
+            // 基础级
             { word: "variable", phonetic: "/ˈveəriəbl/", meaning: "n. 变量", level: "beginner" },
-            { word: "interface", phonetic: "/ˈɪntəfeɪs/", meaning: "n. 界面；接口", level: "intermediate" },
-            { word: "framework", phonetic: "/ˈfreɪmwɜːk/", meaning: "n. 框架", level: "intermediate" },
-            { word: "compile", phonetic: "/kəmˈpaɪl/", meaning: "v. 编译", level: "advanced" },
-            { word: "execute", phonetic: "/ˈeksɪkjuːt/", meaning: "v. 执行", level: "intermediate" },
             { word: "debug", phonetic: "/diːˈbʌɡ/", meaning: "v. 调试", level: "beginner" },
             { word: "network", phonetic: "/ˈnetwɜːrk/", meaning: "n. 网络", level: "beginner" },
             { word: "server", phonetic: "/ˈsɜːrvər/", meaning: "n. 服务器", level: "beginner" },
             { word: "client", phonetic: "/ˈklaɪənt/", meaning: "n. 客户端", level: "beginner" },
+            { word: "machine", phonetic: "/məˈʃiːn/", meaning: "n. 机器", level: "beginner" },
+            { word: "data", phonetic: "/ˈdeɪtə/", meaning: "n. 数据", level: "beginner" },
+            { word: "code", phonetic: "/koʊd/", meaning: "n. 代码", level: "beginner" },
+            { word: "bug", phonetic: "/bʌɡ/", meaning: "n. 缺陷", level: "beginner" },
+            { word: "web", phonetic: "/web/", meaning: "n. 网页", level: "beginner" },
+            // 中级
+            { word: "database", phonetic: "/ˈdeɪtəbeɪs/", meaning: "n. 数据库", level: "intermediate" },
+            { word: "function", phonetic: "/ˈfʌŋkʃən/", meaning: "n. 功能；函数", level: "intermediate" },
+            { word: "interface", phonetic: "/ˈɪntəfeɪs/", meaning: "n. 界面；接口", level: "intermediate" },
+            { word: "framework", phonetic: "/ˈfreɪmwɜːk/", meaning: "n. 框架", level: "intermediate" },
+            { word: "execute", phonetic: "/ˈeksɪkjuːt/", meaning: "v. 执行", level: "intermediate" },
             { word: "artificial", phonetic: "/ˌɑːrtɪˈfɪʃl/", meaning: "adj. 人工的", level: "intermediate" },
             { word: "intelligence", phonetic: "/ɪnˈtelɪdʒəns/", meaning: "n. 智能", level: "intermediate" },
-            { word: "machine", phonetic: "/məˈʃiːn/", meaning: "n. 机器", level: "beginner" }
+            { word: "algorithm", phonetic: "/ˈælɡərɪðəm/", meaning: "n. 算法", level: "intermediate" },
+            { word: "cloud", phonetic: "/klaʊd/", meaning: "n. 云", level: "intermediate" },
+            { word: "security", phonetic: "/sɪˈkjʊrəti/", meaning: "n. 安全", level: "intermediate" },
+            // 高级
+            { word: "algorithm", phonetic: "/ˈælɡərɪðəm/", meaning: "n. 算法", level: "advanced" },
+            { word: "compile", phonetic: "/kəmˈpaɪl/", meaning: "v. 编译", level: "advanced" },
+            { word: "paradigm", phonetic: "/ˈpærədaɪm/", meaning: "n. 范式", level: "advanced" },
+            { word: "optimize", phonetic: "/ˈɑːptɪmaɪz/", meaning: "v. 优化", level: "advanced" },
+            { word: "concurrent", phonetic: "/kənˈkɜːrənt/", meaning: "adj. 并发的", level: "advanced" },
+            { word: "architecture", phonetic: "/ˈɑːrkɪtektʃər/", meaning: "n. 架构", level: "advanced" },
+            { word: "deployment", phonetic: "/dɪˈplɔɪmənt/", meaning: "n. 部署", level: "advanced" },
+            { word: "scalability", phonetic: "/ˌskeɪləˈbɪləti/", meaning: "n. 可扩展性", level: "advanced" },
+            { word: "microservice", phonetic: "/ˌmaɪkroʊˈsɜːrvɪs/", meaning: "n. 微服务", level: "advanced" },
+            { word: "container", phonetic: "/kənˈteɪnər/", meaning: "n. 容器", level: "advanced" }
         ];
 
         // ====== 状态 ======
@@ -733,7 +755,9 @@
             quizzesDone: 0,
             accuracy: 0,
             completed: false,
-            badges: [] // 已解锁的徽章
+            badges: [], // 已解锁的徽章
+            streakDays: 0, // 连续打卡天数
+            lastCompleteDate: '' // 上次完成挑战的日期
         };
         
         const badges = [
@@ -742,9 +766,12 @@
             { id: 'fifty', name: '坚持不懈', icon: '🏃', condition: 'wordsLearned >= 50' },
             { id: 'streak3', name: '三连胜', icon: '🔥', condition: 'streak >= 3' },
             { id: 'streak7', name: '周冠军', icon: '👑', condition: 'streak >= 7' },
+            { id: 'streak30', name: '月度王者', icon: '🏅', condition: 'challengeData.streakDays >= 30' },
             { id: 'perfect', name: '全对', icon: '🎯', condition: 'accuracy >= 100 && quizzesDone >= 5' },
             { id: 'quiz10', name: '刷题达人', icon: '📝', condition: 'quizzesDone >= 10' },
-            { id: 'month', name: '月度挑战', icon: '🏆', condition: 'streak >= 30' }
+            { id: 'month', name: '月度挑战', icon: '🏆', condition: 'streak >= 30' },
+            { id: 'first_challenge', name: '首次挑战', icon: '🎖️', condition: 'challengeData.completed === true' },
+            { id: 'streak_7days', name: '一周打卡', icon: '📅', condition: 'challengeData.streakDays >= 7' }
         ];
 
         // ====== 个人中心 ======
@@ -756,6 +783,7 @@
             document.getElementById('profileTotal').textContent = total;
             document.getElementById('profileStreak').textContent = streak;
             document.getElementById('profileBadges').textContent = challengeData.badges ? challengeData.badges.length : 0;
+            document.getElementById('profileChallengeStreak').textContent = challengeData.streakDays || 0;
         }
         
         // ====== 学习报告 ======
@@ -1301,15 +1329,59 @@
                 if (data.date === today) {
                     challengeData = data;
                 } else {
-                    // 新的一天，重置挑战
-                    challengeData = { date: today, wordsLearned: 0, quizzesDone: 0, accuracy: 0, completed: false, badges: data.badges || [] };
+                    // 新的一天，检查是否是昨天完成（连续打卡）
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayStr = yesterday.toDateString();
+                    
+                    // 如果昨天已完成挑战且今天还未完成，增加连续天数
+                    if (data.lastCompleteDate === yesterdayStr) {
+                        challengeData = { 
+                            date: today, 
+                            wordsLearned: 0, 
+                            quizzesDone: 0, 
+                            accuracy: 0, 
+                            completed: false, 
+                            badges: data.badges || [],
+                            streakDays: (data.streakDays || 0) + 1,
+                            lastCompleteDate: ''
+                        };
+                    } else {
+                        // 中断了连续打卡，重置
+                        challengeData = { 
+                            date: today, 
+                            wordsLearned: 0, 
+                            quizzesDone: 0, 
+                            accuracy: 0, 
+                            completed: false, 
+                            badges: data.badges || [],
+                            streakDays: 1,
+                            lastCompleteDate: ''
+                        };
+                    }
                 }
             } else {
                 challengeData.date = today;
+                challengeData.streakDays = 1;
             }
             document.getElementById('challengeDate').textContent = new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' });
             updateChallengeUI();
             renderBadges();
+            renderStreakDays();
+        }
+        
+        // ====== 渲染连续打卡天数 ======
+        function renderStreakDays() {
+            // 在挑战页面显示连续打卡天数
+            const statusEl = document.getElementById('challengeStatus');
+            if (statusEl && challengeData.streakDays > 0) {
+                const streakHtml = `<div style="margin-top:8px;font-size:12px;color:#666;">🔥 连续打卡: ${challengeData.streakDays} 天</div>`;
+                if (!statusEl.querySelector('.streak-days')) {
+                    statusEl.insertAdjacentHTML('beforeend', `<div class="streak-days">${streakHtml}</div>`);
+                } else {
+                    statusEl.querySelector('.streak-days').innerHTML = streakHtml;
+                }
+            }
         }
         
         function saveChallenge() {
@@ -1333,21 +1405,35 @@
             document.getElementById('task3Status').textContent = challengeData.accuracy + '%';
             document.getElementById('task3').classList.toggle('completed', challengeData.accuracy >= 80);
             
+            // 计算完成的任务数
+            const completedTasks = [challengeData.wordsLearned >= 10, challengeData.quizzesDone >= 5, challengeData.accuracy >= 80].filter(Boolean).length;
+            
             // 检查挑战完成
             if (progress >= goal && !challengeData.completed) {
                 challengeData.completed = true;
                 saveChallenge();
                 showChallengeComplete();
-            }
-            
-            // 更新挑战状态显示
-            const statusEl = document.getElementById('challengeStatus');
-            if (challengeData.completed) {
-                statusEl.classList.add('completed');
-                statusEl.innerHTML = '<div class="challenge-status-icon">🎉</div><div class="challenge-status-text">挑战完成！</div>';
-            } else {
-                statusEl.classList.remove('completed');
-                statusEl.innerHTML = '<div class="challenge-status-icon">🔥</div><div class="challenge-status-text">学习中...</div>';
+            } else if (!challengeData.completed) {
+                // 更新挑战状态显示
+                const statusEl = document.getElementById('challengeStatus');
+                let statusIcon = '🔥';
+                let statusText = `进行中... (${completedTasks}/3 任务完成)`;
+                
+                if (completedTasks === 3) {
+                    statusIcon = '✨';
+                    statusText = '任务全部完成！等待挑战完成...';
+                } else if (progress >= goal) {
+                    statusIcon = '🎯';
+                    statusText = '单词任务已完成！';
+                }
+                
+                if (challengeData.completed) {
+                    statusEl.classList.add('completed');
+                    statusEl.innerHTML = '<div class="challenge-status-icon">🎉</div><div class="challenge-status-text">挑战完成！</div>';
+                } else {
+                    statusEl.classList.remove('completed');
+                    statusEl.innerHTML = `<div class="challenge-status-icon">${statusIcon}</div><div class="challenge-status-text">${statusText}</div>`;
+                }
             }
         }
         
@@ -1384,14 +1470,27 @@
         }
         
         function showChallengeComplete() {
+            // 记录完成日期
+            challengeData.lastCompleteDate = new Date().toDateString();
+            saveChallenge();
+            
             const modal = document.createElement('div');
             modal.className = 'modal active';
+            const streakText = challengeData.streakDays > 1 ? `<p style="color:#f59e0b;font-size:16px;margin:10px 0;">🔥 连续打卡 ${challengeData.streakDays} 天！</p>` : '';
             modal.innerHTML = `
                 <div class="modal-content" style="text-align:center;">
                     <div style="font-size:48px;margin-bottom:20px;">🎉</div>
                     <div class="modal-title">每日挑战完成！</div>
-                    <p style="color:#666;margin-bottom:20px;">今天的学习任务已完成<br>继续加油，明天再来！</p>
-                    <button class="btn btn-primary" onclick="this.closest('.modal').remove()">确定</button>
+                    <p style="color:#666;margin-bottom:10px;">今天的学习任务已完成<br>继续加油，明天再来！</p>
+                    ${streakText}
+                    <div style="margin:20px 0;padding:15px;background:#f9f9f9;border-radius:10px;">
+                        <div style="display:flex;justify-content:space-around;">
+                            <div><div style="font-size:24px;color:#667eea;font-weight:bold;">${challengeData.wordsLearned}</div><div style="font-size:11px;color:#999;">单词</div></div>
+                            <div><div style="font-size:24px;color:#10b981;font-weight:bold;">${challengeData.quizzesDone}</div><div style="font-size:11px;color:#999;">习题</div></div>
+                            <div><div style="font-size:24px;color:#f59e0b;font-weight:bold;">${challengeData.accuracy}%</div><div style="font-size:11px;color:#999;">正确率</div></div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="this.closest('.modal').remove();renderStreakDays();">确定</button>
                 </div>
             `;
             document.body.appendChild(modal);
@@ -1683,27 +1782,6 @@
                 messages.innerHTML += `<div class="dialogue-msg ai"><div class="dialogue-bubble">${reply}</div></div>`;
                 messages.scrollTop = messages.scrollHeight;
             }, 500);
-        }
-        
-        // ====== 发音评分 ======
-        let pronunciationScore = 0;
-        
-        function evaluatePronunciation(audioBlob, targetWord) {
-            // 模拟评分（实际需要语音识别API）
-            pronunciationScore = Math.floor(Math.random() * 30) + 70; // 70-100分
-            
-            let scoreClass = 'score-low';
-            let label = '需要练习';
-            if (pronunciationScore >= 90) { scoreClass = 'score-high'; label = '完美！'; }
-            else if (pronunciationScore >= 80) { scoreClass = 'score-mid'; label = '不错！'; }
-            
-            document.getElementById('pronunciation-result').innerHTML = `
-                <div class="pronunciation-score-display">
-                    <div class="score-circle ${scoreClass}">${pronunciationScore}</div>
-                    <div class="score-label">${label}</div>
-                    <div class="score-details">标准发音: ${targetWord}</div>
-                </div>
-            `;
         }
 
         function renderHistory() {
