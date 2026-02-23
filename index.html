@@ -490,8 +490,9 @@
                     <div class="challenge-progress-fill" id="challengeProgressFill"></div>
                 </div>
             </div>
-            <div style="text-align:center;padding:10px;">
-                <button class="btn" style="font-size:12px;padding:8px 16px;" onclick="showGoalSetting()">⚙️ 设置每日目标</button>
+            <div style="display:flex;gap:10px;padding:10px 20px;">
+                <button class="btn" style="flex:1;font-size:12px;padding:8px;" onclick="showGoalSetting()">⚙️ 设置目标</button>
+                <button class="btn btn-primary" style="flex:1;font-size:12px;padding:8px;" onclick="shareDailyChallenge()">📤 分享打卡</button>
             </div>
             <div class="challenge-status" id="challengeStatus">
                 <div class="challenge-status-icon">🔥</div>
@@ -1282,12 +1283,23 @@
                 return;
             }
             
+            // 找到我的排名
+            const myRank = rankData.findIndex(item => item.isMe) + 1;
+            
             let html = '';
+            // 如果用户不在前10名，显示我的排名信息
+            if (myRank > 10) {
+                html += `<div style="text-align:center;padding:10px;background:#f0f7ff;border-radius:10px;margin-bottom:10px;">
+                    <div style="font-size:12px;color:#666;">我的排名</div>
+                    <div style="font-size:24px;font-weight:bold;color:#667eea;">#${myRank}</div>
+                </div>`;
+            }
+            
             rankData.forEach((item, index) => {
                 const rankIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
-                const isMe = user && item.username === user.username;
+                const isMe = item.isMe;
                 html += `
-                    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:${isMe ? '#f0f7ff' : 'white'};border-radius:10px;margin-bottom:8px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:${isMe ? '#f0f7ff' : 'white'};border-radius:10px;margin-bottom:8px;box-shadow:0 2px 4px rgba(0,0,0,0.05);${isMe ? 'border:2px solid #667eea;' : ''}">
                         <div style="font-size:20px;width:30px;text-align:center;">${rankIcon}</div>
                         <div style="flex:1;">
                             <div style="font-weight:500;font-size:14px;">${item.username} ${isMe ? '(我)' : ''}</div>
@@ -1313,7 +1325,21 @@
                 allData.push({
                     username: user.username,
                     score: type === 'total' ? currentData.total : type === 'streak' ? currentData.streak : currentData.today,
-                    level: getLevelName(user.level)
+                    level: getLevelName(user.level),
+                    isMe: true
+                });
+            }
+            
+            // 从本地存储加载历史用户数据
+            const savedUsers = JSON.parse(localStorage.getItem('wordAI_rankUsers') || 'null');
+            if (savedUsers) {
+                savedUsers.forEach(u => {
+                    allData.push({
+                        username: u.username,
+                        score: type === 'total' ? u.total : type === 'streak' ? u.streak : u.today,
+                        level: u.level,
+                        isMe: false
+                    });
                 });
             }
             
@@ -1324,19 +1350,48 @@
                 { username: 'Charlie', total: 689, streak: 15, today: 28, level: '中级' },
                 { username: 'David', total: 521, streak: 12, today: 20, level: '初级' },
                 { username: 'Eve', total: 398, streak: 8, today: 15, level: '初级' },
+                { username: 'Frank', total: 312, streak: 6, today: 12, level: '初级' },
+                { username: 'Grace', total: 267, streak: 5, today: 10, level: '初级' },
             ];
             
             mockUsers.forEach(u => {
                 allData.push({
                     username: u.username,
                     score: type === 'total' ? u.total : type === 'streak' ? u.streak : u.today,
-                    level: u.level
+                    level: u.level,
+                    isMe: false
                 });
             });
             
             // 排序
             allData.sort((a, b) => b.score - a.score);
             return allData.slice(0, 10);
+        }
+        
+        // 保存当前用户到排行榜
+        function saveUserToRank() {
+            if (!user) return;
+            const currentData = loadStats();
+            const userRank = {
+                username: user.username,
+                total: currentData.total,
+                streak: currentData.streak,
+                today: currentData.today,
+                level: getLevelName(user.level),
+                lastUpdate: new Date().toISOString()
+            };
+            
+            let savedUsers = JSON.parse(localStorage.getItem('wordAI_rankUsers') || '[]');
+            // 更新或添加当前用户
+            const existingIndex = savedUsers.findIndex(u => u.username === user.username);
+            if (existingIndex >= 0) {
+                savedUsers[existingIndex] = userRank;
+            } else {
+                savedUsers.push(userRank);
+            }
+            // 保持最多20个用户
+            savedUsers = savedUsers.slice(0, 20);
+            localStorage.setItem('wordAI_rankUsers', JSON.stringify(savedUsers));
         }
 
         function loadStats() {
@@ -1425,6 +1480,7 @@
             updateStats();
             saveHistory();
             saveData();
+            saveUserToRank();
         }
 
         function updateStats() {
@@ -1465,6 +1521,50 @@
                 saveChallenge();
                 loadChallenge();
                 alert('每日目标已设置为 ' + goal + ' 个单词！');
+            }
+        }
+        
+        // ====== 分享打卡 ======
+        function shareDailyChallenge() {
+            const progress = challengeData.wordsLearned || 0;
+            const goal = challengeData.dailyGoal || 10;
+            const streak = challengeData.streakDays || 0;
+            const badges = challengeData.badges ? challengeData.badges.length : 0;
+            
+            let statusText = '';
+            if (challengeData.completed) {
+                statusText = '✅ 今日挑战已完成！';
+            } else if (progress >= goal) {
+                statusText = '🎯 今日目标达成！';
+            } else {
+                statusText = `🔥 学习中 (${progress}/${goal})`;
+            }
+            
+            const text = `🎯 AI 背单词 - 每日打卡
+
+📅 ${new Date().toLocaleDateString('zh-CN')}
+${statusText}
+
+📊 今日数据：
+• 单词学习: ${progress} / ${goal}
+• 连续打卡: ${streak} 天
+• 获得徽章: ${badges} 个
+
+🤖 我正在用AI背单词小程序学习英语，一起吧！
+
+#AI背单词 #英语学习 #每日打卡`;
+
+            if (navigator.share) {
+                navigator.share({ 
+                    title: 'AI背单词 - 每日打卡', 
+                    text: text 
+                });
+            } else {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('打卡文案已复制到剪贴板！');
+                }).catch(() => {
+                    prompt('复制以下内容分享到朋友圈：', text);
+                });
             }
         }
         
