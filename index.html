@@ -397,11 +397,27 @@
 
         <!-- 背单词 -->
         <div class="tab-content active" id="tab-learn">
+            <div id="welcomeBanner" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:12px 15px;text-align:center;font-size:13px;display:none;">
+                <span id="welcomeText">👋 欢迎回来！</span>
+            </div>
+            <div id="learnProgress" style="padding:10px 15px;background:#f5f5f5;display:none;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:#666;margin-bottom:5px;">
+                    <span>📊 今日进度</span>
+                    <span id="todayProgressText">0/10</span>
+                </div>
+                <div style="height:6px;background:#ddd;border-radius:3px;overflow:hidden;">
+                    <div id="todayProgressBar" style="height:100%;background:linear-gradient(90deg,#667eea,#764ba2);width:0%;transition:width 0.3s;"></div>
+                </div>
+            </div>
             <div class="card" id="card"><div class="loading">加载中...</div></div>
             <div class="btn-group">
                 <button class="btn btn-danger" onclick="showAgain()">不认识</button>
                 <button class="btn btn-warning" onclick="showHard()">困难</button>
                 <button class="btn btn-success" onclick="showKnown()">认识</button>
+            </div>
+            <div style="padding:10px 15px;background:#f9f9f9;border-top:1px solid #eee;">
+                <div style="font-size:12px;color:#666;margin-bottom:8px;">💡 今日学习建议</div>
+                <div id="dailyTip" style="font-size:12px;color:#999;">每天学习5个新单词，坚持21天形成习惯！</div>
             </div>
         </div>
 
@@ -1258,6 +1274,50 @@
         function updateUserInfo() {
             document.getElementById('userInfo').textContent = user.username;
             document.getElementById('headerSubtitle').textContent = `Lv.${getLevelName(user.level)}`;
+            
+            // 显示欢迎横幅
+            const banner = document.getElementById('welcomeBanner');
+            const welcomeText = document.getElementById('welcomeText');
+            if (banner && user) {
+                banner.style.display = 'block';
+                const hour = new Date().getHours();
+                let greeting = '👋 欢迎回来';
+                if (hour < 6) greeting = '🌙 夜深了';
+                else if (hour < 12) greeting = '☀️ 早上好';
+                else if (hour < 14) greeting = '🌤️ 中午好';
+                else if (hour < 18) greeting = '🌇 下午好';
+                else if (hour < 22) greeting = '🌙 晚上好';
+                welcomeText.textContent = `${greeting}，${user.username}！今日目标：${challengeData.dailyGoal || 10}个单词`;
+            }
+            
+            // 显示每日学习建议
+            showDailyTip();
+        }
+
+        function showDailyTip() {
+            const tips = [
+                '每天学习5个新单词，坚持21天形成习惯！',
+                '复习比学习新单词更重要，记得定期回顾！',
+                '发音练习可以提高听力理解能力哦～',
+                '场景化学习能帮助记忆更深刻！',
+                '使用艾宾浩斯遗忘曲线，科学复习更高效！',
+                '坚持每天学习，保持连续打卡记录！',
+                '和AI对话练习口语，提升表达能力！',
+                '把生词收藏起来，定期复习巩固！'
+            ];
+            const data = JSON.parse(localStorage.getItem('wordAI_stats') || '{"total":0}');
+            let tip = tips[Math.floor(Math.random() * tips.length)];
+            
+            // 根据学习进度给出个性化建议
+            if (data.total === 0) {
+                tip = '开始你的第一次学习之旅吧！';
+            } else if (data.streak >= 7) {
+                tip = '太棒了！你已经连续学习' + data.streak + '天了！';
+            } else if (data.today >= (challengeData.dailyGoal || 10)) {
+                tip = '🎉 今日目标已达成！继续加油～';
+            }
+            
+            document.getElementById('dailyTip').textContent = tip;
         }
 
         function getLevelName(level) {
@@ -1813,6 +1873,9 @@ ${statusText}
             data.lastDate = today;
             localStorage.setItem('wordAI_stats', JSON.stringify(data));
             
+            // 更新首页进度条
+            updateLearnProgress();
+            
             // 自动添加当前单词到复习计划
             if (words[currentIndex]) {
                 addToReview(words[currentIndex]);
@@ -1825,6 +1888,26 @@ ${statusText}
             saveChallenge();
             updateChallengeUI();
             checkBadges();
+        }
+
+        function updateLearnProgress() {
+            const data = JSON.parse(localStorage.getItem('wordAI_stats') || '{"today":0}');
+            const goal = challengeData.dailyGoal || 10;
+            const progress = document.getElementById('learnProgress');
+            const progressText = document.getElementById('todayProgressText');
+            const progressBar = document.getElementById('todayProgressBar');
+            
+            if (progress && progressText && progressBar) {
+                progress.style.display = 'block';
+                const percent = Math.min(100, (data.today / goal) * 100);
+                progressText.textContent = `${data.today}/${goal}`;
+                progressBar.style.width = percent + '%';
+                
+                // 完成后改变颜色
+                if (data.today >= goal) {
+                    progressBar.style.background = 'linear-gradient(90deg,#52C41A,#73D13D)';
+                }
+            }
         }
 
         function addToReview(word) {
