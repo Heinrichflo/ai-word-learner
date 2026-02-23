@@ -1159,10 +1159,25 @@
             }
         }
         
+        // ====== 复习到期提醒 ======
+        function checkDueReview() {
+            const now = new Date();
+            const dueWords = words.filter(w => w.nextReview && new Date(w.nextReview) <= now);
+            if (dueWords.length > 0 && Notification.permission === 'granted') {
+                new Notification('📝 复习提醒', {
+                    body: `您有 ${dueWords.length} 个单词需要复习！`,
+                    icon: '🔔'
+                });
+            }
+        }
+        
+        // 每天检查复习到期
+        setInterval(checkDueReview, 3600000); // 每小时检查一次
+        
         // ====== 数据导出导入 ======
         function exportAllData() {
             const data = {
-                version: 'v1.0',
+                version: 'v1.1',
                 exportTime: new Date().toISOString(),
                 words: words,
                 favorites: favorites,
@@ -1434,11 +1449,23 @@
             `;
         }
 
-        function playTTS(word, event) {
+        function playTTS(word, event, lang = 'en') {
             if (event) event.stopPropagation();
             const utterance = new SpeechSynthesisUtterance(word);
-            utterance.lang = 'en-US';
+            // 多语言支持
+            const langMap = { en: 'en-US', ja: 'ja-JP', ko: 'ko-KR', fr: 'fr-FR' };
+            utterance.lang = langMap[lang] || 'en-US';
             utterance.rate = 0.8;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            speechSynthesis.speak(utterance);
+        }
+        
+        function playWordSound(word, phonetic) {
+            // 点击音标播放发音
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.7; // 慢速
             speechSynthesis.speak(utterance);
         }
 
@@ -1870,12 +1897,25 @@ ${statusText}
         
         // ====== 统计功能 ======
         function renderStats() {
-            // 更新统计数据
+            // 基本统计
             document.getElementById('statsTotal').textContent = total;
             document.getElementById('statsCorrect').textContent = correct;
             document.getElementById('statsStreak').textContent = streak;
             const acc = total > 0 ? Math.round((correct / total) * 100) : 0;
             document.getElementById('statsAccuracy').textContent = acc + '%';
+            
+            // 增强统计
+            const mastered = words.filter(w => w.status === 'mastered').length;
+            const learning = words.filter(w => w.status === 'learning').length;
+            const newCount = words.filter(w => w.status === 'new').length;
+            const newWords = newWords ? newWords.length : 0;
+            const wrongCount = wrongWords ? wrongWords.length : 0;
+            
+            // 更新个人中心统计
+            document.getElementById('profileTotal').textContent = total;
+            document.getElementById('profileStreak').textContent = streak;
+            const badges = challengeData.badges ? challengeData.badges.length : 0;
+            document.getElementById('profileBadges').textContent = badges;
             
             // 渲染记忆曲线
             renderMemoryChart();
@@ -1885,6 +1925,8 @@ ${statusText}
             
             // 渲染成就
             renderAchievements();
+            
+            console.log('统计更新: 总学习=' + total + ', 已掌握=' + mastered + ', 学习中=' + learning + ', 新词=' + newCount);
         }
         
         // ====== 学习日历 ======
