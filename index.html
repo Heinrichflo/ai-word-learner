@@ -209,6 +209,25 @@
         body.dark-theme .header { background: linear-gradient(135deg, #1f2937, #374151); }
         .theme-toggle { position: absolute; top: 15px; left: 15px; cursor: pointer; font-size: 18px; }
         
+        /* 个人中心 */
+        .profile-header { text-align: center; padding: 30px 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: white; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 36px; }
+        .profile-name { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+        .profile-level { font-size: 12px; opacity: 0.8; }
+        .profile-stats { display: flex; justify-content: space-around; padding: 20px; background: white; }
+        .profile-stat { text-align: center; }
+        .profile-stat-value { font-size: 20px; font-weight: bold; color: #667eea; }
+        .profile-stat-label { font-size: 11px; color: #999; }
+        
+        /* 学习报告 */
+        .report-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .report-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+        
+        /* 分享 */
+        .share-buttons { display: flex; gap: 12px; justify-content: center; padding: 20px; }
+        .share-btn { padding: 12px 20px; border: none; border-radius: 20px; font-size: 14px; cursor: pointer; }
+        .share-wechat { background: #07C160; color: white; }
+        
         /* 统计图表增强 */
         .chart-wrapper { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
         .chart-bar { display: flex; align-items: flex-end; height: 100px; gap: 4px; }
@@ -340,6 +359,7 @@
         
         <div class="tabs">
             <div class="tab active" data-tab="learn">背单词</div>
+            <div class="tab" data-tab="profile">我的</div>
             <div class="tab" data-tab="quiz">AI出题</div>
             <div class="tab" data-tab="challenge">挑战</div>
             <div class="tab" data-tab="scenes">场景</div>
@@ -360,6 +380,42 @@
                 <button class="btn btn-danger" onclick="showAgain()">不认识</button>
                 <button class="btn btn-warning" onclick="showHard()">困难</button>
                 <button class="btn btn-success" onclick="showKnown()">认识</button>
+            </div>
+        </div>
+
+        <!-- 个人中心 -->
+        <div class="tab-content" id="tab-profile">
+            <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatar">😀</div>
+                <div class="profile-name" id="profileName">学习者</div>
+                <div class="profile-level" id="profileLevel">初学者</div>
+            </div>
+            <div class="profile-stats">
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileTotal">0</div>
+                    <div class="profile-stat-label">总学习</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileStreak">0</div>
+                    <div class="profile-stat-label">连续天数</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileBadges">0</div>
+                    <div class="profile-stat-label">徽章</div>
+                </div>
+            </div>
+            <div style="padding:16px;">
+                <button class="btn btn-primary" style="width:100%;" onclick="showReport()">📊 学习报告</button>
+                <button class="btn" style="width:100%;margin-top:12px;background:#07C160;color:white;" onclick="shareAchievement()">🏆 分享成就</button>
+            </div>
+        </div>
+
+        <!-- 学习报告弹窗 -->
+        <div class="modal" id="reportModal">
+            <div class="modal-content" style="max-width:360px;">
+                <div class="modal-title">📊 学习报告</div>
+                <div id="reportContent"></div>
+                <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="document.getElementById('reportModal').classList.remove('active')">关闭</button>
             </div>
         </div>
 
@@ -637,6 +693,67 @@
             { id: 'month', name: '月度挑战', icon: '🏆', condition: 'streak >= 30' }
         ];
 
+        // ====== 个人中心 ======
+        function updateProfile() {
+            const name = user ? user.username : '学习者';
+            const level = user ? (user.level === 'beginner' ? '初学者' : user.level === 'intermediate' ? '中级' : '高级') : '初学者';
+            document.getElementById('profileName').textContent = name;
+            document.getElementById('profileLevel').textContent = level;
+            document.getElementById('profileTotal').textContent = total;
+            document.getElementById('profileStreak').textContent = streak;
+            document.getElementById('profileBadges').textContent = challengeData.badges ? challengeData.badges.length : 0;
+        }
+        
+        // ====== 学习报告 ======
+        function showReport() {
+            const report = document.getElementById('reportContent');
+            const weekTotal = history.slice(-7).reduce((s, h) => s + (h.total || 0), 0);
+            const weekCorrect = history.slice(-7).reduce((s, h) => s + (h.correct || 0), 0);
+            const monthTotal = history.slice(-30).reduce((s, h) => s + (h.total || 0), 0);
+            const monthCorrect = history.slice(-30).reduce((s, h) => s + (h.correct || 0), 0);
+            const mastered = words.filter(w => w.status === 'mastered').length;
+            
+            report.innerHTML = `
+                <div class="report-card">
+                    <div class="report-title">📅 本周数据</div>
+                    <div class="report-summary">
+                        <div class="report-item"><div class="report-value">${weekTotal}</div><div class="report-label">学习词数</div></div>
+                        <div class="report-item"><div class="report-value">${weekTotal > 0 ? Math.round((weekCorrect/weekTotal)*100) : 0}%</div><div class="report-label">正确率</div></div>
+                    </div>
+                </div>
+                <div class="report-card">
+                    <div class="report-title">📆 本月数据</div>
+                    <div class="report-summary">
+                        <div class="report-item"><div class="report-value">${monthTotal}</div><div class="report-label">学习词数</div></div>
+                        <div class="report-item"><div class="report-value">${monthTotal > 0 ? Math.round((monthCorrect/monthTotal)*100) : 0}%</div><div class="report-label">正确率</div></div>
+                    </div>
+                </div>
+                <div class="report-card">
+                    <div class="report-title">🎯 累计成就</div>
+                    <div class="report-summary">
+                        <div class="report-item"><div class="report-value">${total}</div><div class="report-label">总学习</div></div>
+                        <div class="report-item"><div class="report-value">${mastered}</div><div class="report-label">已掌握</div></div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('reportModal').classList.add('active');
+        }
+        
+        // ====== 分享功能 ======
+        function shareAchievement() {
+            const mastered = words.filter(w => w.status === 'mastered').length;
+            const text = `🎉 我正在使用 AI 背单词小程序学习！\n\n📊 当前进度：\n- 已学习 ${total} 个单词\n- 连续打卡 ${streak} 天\n- 掌握 ${mastered} 个单词\n\n🤖 一起用 AI 学习英语吧！`;
+            
+            if (navigator.share) {
+                navigator.share({ title: 'AI背单词', text: text });
+            } else {
+                // 复制到剪贴板
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('成就已复制到剪贴板！');
+                });
+            }
+        }
+
         // ====== 用户系统 ======
         function init() {
             loadUser();
@@ -654,6 +771,7 @@
             showCard();
             updateStats();
             renderHistory();
+            updateProfile();
         }
         
         // ====== 主题切换 ======
@@ -1570,6 +1688,7 @@
                 if (this.dataset.tab === 'dialogue') { currentDialogueTopic = dialogueTopics[Math.floor(Math.random() * dialogueTopics.length)]; }
                 if (this.dataset.tab === 'favorites') { renderFavorites(); }
                 if (this.dataset.tab === 'wrongbook') { renderWrongWords(); }
+                if (this.dataset.tab === 'profile') { updateProfile(); }
             });
         });
 
