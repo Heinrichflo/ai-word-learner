@@ -626,6 +626,18 @@
                 </div>
                 
                 <div class="stats-card">
+                    <div class="stats-title">📈 词汇量评估</div>
+                    <div class="vocab-estimate" id="vocabEstimate">
+                        <div class="vocab-level" id="vocabLevel">Lv.1</div>
+                        <div class="vocab-desc">初学者</div>
+                        <div class="vocab-bar" style="height:8px;background:#eee;border-radius:4px;margin:10px 0;">
+                            <div id="vocabBar" style="height:100%;background:linear-gradient(90deg,#667eea,#764ba2);width:5%;border-radius:4px;transition:width 0.3s;"></div>
+                        </div>
+                        <div class="vocab-next" style="font-size:11px;color:#999;">距离下一级还需学习 <span id="vocabNeed">95</span> 词</div>
+                    </div>
+                </div>
+                
+                <div class="stats-card">
                     <div class="stats-title">🧠 记忆曲线（7天）</div>
                     <div class="memory-chart" id="memoryChart"></div>
                 </div>
@@ -2078,6 +2090,9 @@ ${statusText}
             const acc = total > 0 ? Math.round((correct / total) * 100) : 0;
             document.getElementById('statsAccuracy').textContent = acc + '%';
             
+            // 词汇量评估
+            renderVocabEstimate();
+            
             // 增强统计
             const mastered = words.filter(w => w.status === 'mastered').length;
             const learning = words.filter(w => w.status === 'learning').length;
@@ -2165,6 +2180,47 @@ ${statusText}
             </div>`;
             
             calendar.innerHTML = html;
+        }
+        
+        // ====== 词汇量评估 ======
+        function renderVocabEstimate() {
+            const vocabLevels = [
+                { level: 1, name: '初学者', threshold: 0 },
+                { level: 2, name: '入门', threshold: 50 },
+                { level: 3, name: '进阶', threshold: 150 },
+                { level: 4, name: '熟练', threshold: 300 },
+                { level: 5, name: '精通', threshold: 500 },
+                { level: 6, name: '专家', threshold: 800 },
+                { level: 7, name: '大师', threshold: 1200 },
+                { level: 8, name: '王者', threshold: 1800 },
+                { level: 9, name: '传奇', threshold: 2500 },
+                { level: 10, name: '神话', threshold: 3500 }
+            ];
+            
+            // 计算当前级别和进度
+            let currentLevel = 1;
+            let nextThreshold = 50;
+            let progress = 0;
+            
+            for (let i = 0; i < vocabLevels.length; i++) {
+                if (total >= vocabLevels[i].threshold) {
+                    currentLevel = vocabLevels[i].level;
+                    if (i < vocabLevels.length - 1) {
+                        nextThreshold = vocabLevels[i + 1].threshold;
+                        progress = ((total - vocabLevels[i].threshold) / (nextThreshold - vocabLevels[i].threshold)) * 100;
+                    } else {
+                        progress = 100;
+                    }
+                }
+            }
+            
+            const currentLevelData = vocabLevels[currentLevel - 1];
+            const needCount = nextThreshold - total;
+            
+            document.getElementById('vocabLevel').textContent = 'Lv.' + currentLevel;
+            document.getElementById('vocabLevel').parentElement.querySelector('.vocab-desc').textContent = currentLevelData.name;
+            document.getElementById('vocabBar').style.width = Math.min(progress, 100) + '%';
+            document.getElementById('vocabNeed').textContent = Math.max(needCount, 0);
         }
         
         function renderMemoryChart() {
