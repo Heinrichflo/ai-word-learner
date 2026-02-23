@@ -418,9 +418,12 @@
             </div>
             <div class="card" id="card"><div class="loading">加载中...</div></div>
             <div class="btn-group">
-                <button class="btn btn-danger" onclick="showAgain()">不认识</button>
-                <button class="btn btn-warning" onclick="showHard()">困难</button>
-                <button class="btn btn-success" onclick="showKnown()">认识</button>
+                <button class="btn btn-danger" onclick="showAgain()">不认识 <span style="font-size:10px;opacity:0.7;">[1]</span></button>
+                <button class="btn btn-warning" onclick="showHard()">困难 <span style="font-size:10px;opacity:0.7;">[2]</span></button>
+                <button class="btn btn-success" onclick="showKnown()">认识 <span style="font-size:10px;opacity:0.7;">[3]</span></button>
+            </div>
+            <div style="padding:8px 15px;background:#f0f0f0;text-align:center;font-size:11px;color:#888;">
+                ⌨️ 快捷键: 1不认识 2困难 3认识 空格发音 T换肤 N下一个 P收藏
             </div>
             <div style="padding:10px 15px;background:#f9f9f9;border-top:1px solid #eee;">
                 <div style="font-size:12px;color:#666;margin-bottom:8px;">💡 今日学习建议</div>
@@ -738,6 +741,15 @@
                 <h3 style="margin-top:24px;">🏆 排行榜</h3>
                 <button class="btn btn-primary" onclick="showRankings()" style="width:100%;margin-bottom:12px;">📊 查看排行榜</button>
                 
+                <h3 style="margin-top:24px;">➕ 添加自定义单词</h3>
+                <div style="margin-top:12px;">
+                    <input type="text" id="customWord" placeholder="单词" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;margin-bottom:8px;">
+                    <input type="text" id="customPhonetic" placeholder="音标 如: /test/" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;margin-bottom:8px;">
+                    <input type="text" id="customMeaning" placeholder="含义" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;margin-bottom:8px;">
+                    <button class="btn btn-primary" onclick="addCustomWord()" style="width:100%;">添加单词</button>
+                    <p id="customWordStatus" style="font-size:12px;margin-top:8px;color:#10b981;"></p>
+                </div>
+                
                 <h3 style="margin-top:24px;">📦 数据管理</h3>
                 <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
                     <button class="btn btn-primary" onclick="exportAllData()">📤 导出全部数据</button>
@@ -998,6 +1010,44 @@
             updateStats();
             renderHistory();
             updateProfile();
+            
+            // 初始化键盘快捷键
+            initKeyboardShortcuts();
+        }
+        
+        // ====== 键盘快捷键 ======
+        function initKeyboardShortcuts() {
+            document.addEventListener('keydown', function(e) {
+                // 快捷键只在非输入框时生效
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                
+                // 1/2/3 快捷认识/困难/不认识
+                if (e.key === '1') showAgain();
+                if (e.key === '2') showHard();
+                if (e.key === '3') showKnown();
+                
+                // 空格键播放发音
+                if (e.key === ' ' && words[currentIndex]) {
+                    e.preventDefault();
+                    playTTS(words[currentIndex].word);
+                }
+                
+                // T 切换主题
+                if (e.key === 't' || e.key === 'T') toggleTheme();
+                
+                // N 下一个
+                if (e.key === 'n' || e.key === 'N') showNextWord();
+                
+                // P 收藏当前单词
+                if (e.key === 'p' || e.key === 'P') {
+                    if (words[currentIndex]) addToFavorites(words[currentIndex].word);
+                }
+            });
+        }
+        
+        function showNextWord() {
+            currentIndex = (currentIndex + 1) % words.length;
+            showCard();
         }
         
         // ====== 主题切换 ======
@@ -1246,6 +1296,40 @@
             }
         }
         
+        // ====== 自定义单词 ======
+        function addCustomWord() {
+            const word = document.getElementById('customWord').value.trim();
+            const phonetic = document.getElementById('customPhonetic').value.trim();
+            const meaning = document.getElementById('customMeaning').value.trim();
+            
+            if (!word || !meaning) {
+                document.getElementById('customWordStatus').textContent = '⚠️ 请输入单词和含义';
+                return;
+            }
+            
+            // 添加到单词库
+            words.push({
+                word: word,
+                phonetic: phonetic || '/'+word+'/',
+                meaning: meaning,
+                level: 'beginner',
+                status: 'new',
+                addedAt: Date.now()
+            });
+            
+            // 保存到localStorage
+            localStorage.setItem('wordAI_customWords', JSON.stringify(words));
+            
+            document.getElementById('customWord').value = '';
+            document.getElementById('customPhonetic').value = '';
+            document.getElementById('customMeaning').value = '';
+            document.getElementById('customWordStatus').textContent = '✅ ' + word + ' 添加成功！';
+            
+            // 刷新显示
+            currentIndex = 0;
+            showCard();
+        }
+
         // 每天检查复习到期
         setInterval(checkDueReview, 3600000); // 每小时检查一次
         
