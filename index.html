@@ -197,6 +197,23 @@
         .task-status { font-size: 12px; color: #999; }
         .task-item.completed .task-status { color: #52C41A; font-weight: 500; }
         
+        /* 主题切换 */
+        :root { --bg: #F5F7FA; --card-bg: #FFFFFF; --text: #333; --text-secondary: #666; --border: #eee; }
+        body.dark-theme { background: #1a1a2e; }
+        body.dark-theme .container { background: #16213e; }
+        body.dark-theme :root { --bg: #1a1a2e; --card-bg: #16213e; --text: #eee; --text-secondary: #aaa; --border: #333; }
+        body.dark-theme .card, body.dark-theme .stats-card, body.dark-theme .scene-card { background: #1f2937; }
+        body.dark-theme .word, body.dark-theme .meaning { color: #eee; }
+        body.dark-theme .tab, body.dark-theme .collection-tabs { background: #1f2937; border-color: #333; }
+        body.dark-theme .tab-item { color: #aaa; }
+        body.dark-theme .header { background: linear-gradient(135deg, #1f2937, #374151); }
+        .theme-toggle { position: absolute; top: 15px; left: 15px; cursor: pointer; font-size: 18px; }
+        
+        /* 统计图表增强 */
+        .chart-wrapper { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .chart-bar { display: flex; align-items: flex-end; height: 100px; gap: 4px; }
+        .chart-bar-item { flex: 1; background: linear-gradient(180deg, #667eea, #764ba2); border-radius: 4px 4px 0 0; min-height: 4px; }
+        
         /* 收藏和错题本 */
         .collection-header { display: flex; justify-content: space-between; padding: 12px 16px; background: white; border-bottom: 1px solid #eee; }
         .collection-tabs { display: flex; gap: 8px; padding: 12px; background: white; }
@@ -315,6 +332,7 @@
 
     <div class="container">
         <div class="header">
+            <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
             <h1>🤖 AI 背单词</h1>
             <p id="headerSubtitle">智能学习助手</p>
             <div class="user-info" id="userInfo" onclick="showSettings()">未登录</div>
@@ -498,6 +516,14 @@
                 <input type="text" id="apiKey" placeholder="sk-xxx" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;margin-bottom:10px;">
                 <button class="btn btn-primary" onclick="saveApiKey()" style="width:100%;">保存 API Key</button>
                 <p id="apiKeyStatus" style="font-size:12px;margin-top:10px;color:#10b981;"></p>
+                
+                <h3 style="margin-top:24px;">📦 数据管理</h3>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
+                    <button class="btn btn-primary" onclick="exportAllData()">📤 导出全部数据</button>
+                    <button class="btn" style="background:#f5f5f5;" onclick="document.getElementById('importFile').click()">📥 导入数据</button>
+                    <input type="file" id="importFile" style="display:none;" accept=".json" onchange="importAllData(this)">
+                    <button class="btn" style="background:#fff1f0;color:#ff4d4f;" onclick="clearAllData()">🗑️ 清空所有数据</button>
+                </div>
             </div>
         </div>
 
@@ -619,6 +645,7 @@
             loadFavorites();
             loadWrongWords();
             loadReminder();
+            loadTheme();
             if (!user) {
                 document.getElementById('loginModal').classList.add('active');
             } else {
@@ -627,6 +654,29 @@
             showCard();
             updateStats();
             renderHistory();
+        }
+        
+        // ====== 主题切换 ======
+        function loadTheme() {
+            const saved = localStorage.getItem('wordAI_theme');
+            if (saved === 'dark') {
+                document.body.classList.add('dark-theme');
+                document.querySelector('.theme-toggle').textContent = '☀️';
+            }
+        }
+        
+        function toggleTheme() {
+            const body = document.body;
+            const toggle = document.querySelector('.theme-toggle');
+            if (body.classList.contains('dark-theme')) {
+                body.classList.remove('dark-theme');
+                toggle.textContent = '🌙';
+                localStorage.setItem('wordAI_theme', 'light');
+            } else {
+                body.classList.add('dark-theme');
+                toggle.textContent = '☀️';
+                localStorage.setItem('wordAI_theme', 'dark');
+            }
         }
         
         // ====== 收藏功能 ======
@@ -757,6 +807,62 @@
                 Notification.requestPermission();
             }
             alert('提醒设置已保存！');
+        }
+        
+        // ====== 数据导出导入 ======
+        function exportAllData() {
+            const data = {
+                version: 'v0.7',
+                exportTime: new Date().toISOString(),
+                words: words,
+                favorites: favorites,
+                wrongWords: wrongWords,
+                history: history,
+                challenge: challengeData,
+                total, correct, streak,
+                settings: {
+                    apiKey: localStorage.getItem('wordAI_apiKey'),
+                    theme: localStorage.getItem('wordAI_theme'),
+                    reminder: localStorage.getItem('wordAI_reminder')
+                }
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'word-ai-backup-' + new Date().toISOString().split('T')[0] + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('数据导出成功！');
+        }
+        
+        function importAllData(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.words) { words = data.words; localStorage.setItem('wordAI_words', JSON.stringify(words)); }
+                    if (data.favorites) { favorites = data.favorites; saveFavorites(); }
+                    if (data.wrongWords) { wrongWords = data.wrongWords; saveWrongWords(); }
+                    if (data.history) { history = data.history; localStorage.setItem('wordAI_history', JSON.stringify(history)); }
+                    if (data.total !== undefined) { total = data.total; correct = data.correct; streak = data.streak; }
+                    alert('数据导入成功！');
+                    location.reload();
+                } catch(err) { alert('导入失败，文件格式错误'); }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        }
+        
+        function clearAllData() {
+            if (confirm('确定清空所有数据吗？此操作不可恢复！')) {
+                if (confirm('再次确认：所有学习记录将被删除！')) {
+                    localStorage.clear();
+                    location.reload();
+                }
+            }
         }
 
         function loadUser() {
