@@ -279,6 +279,15 @@
         
         /* 记忆曲线图表 */
         .memory-chart { height: 150px; display: flex; align-items: flex-end; justify-content: space-between; padding: 10px; gap: 4px; }
+        .learning-calendar { padding: 10px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
+        .calendar-day { aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999; }
+        .calendar-day.learned { background: #667eea; color: white; }
+        .calendar-day.today { border: 2px solid #667eea; }
+        .calendar-header { display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 5px; }
+        .calendar-legend { display: flex; gap: 10px; font-size: 10px; margin-top: 8px; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
         .memory-bar { flex: 1; background: linear-gradient(180deg, #667eea, #764ba2); border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.3s; position: relative; }
         .memory-bar::after { content: attr(data-day); position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #999; }
         .memory-bar:hover { opacity: 0.8; }
@@ -597,6 +606,11 @@
                 <div class="stats-card">
                     <div class="stats-title">🧠 记忆曲线（7天）</div>
                     <div class="memory-chart" id="memoryChart"></div>
+                </div>
+                
+                <div class="stats-card">
+                    <div class="stats-title">📅 学习日历</div>
+                    <div class="learning-calendar" id="learningCalendar"></div>
                 </div>
                 
                 <div class="stats-card">
@@ -1866,8 +1880,75 @@ ${statusText}
             // 渲染记忆曲线
             renderMemoryChart();
             
+            // 渲染学习日历
+            renderLearningCalendar();
+            
             // 渲染成就
             renderAchievements();
+        }
+        
+        // ====== 学习日历 ======
+        function renderLearningCalendar() {
+            const calendar = document.getElementById('learningCalendar');
+            if (!calendar) return;
+            
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startWeekDay = firstDay.getDay();
+            
+            // 构建学习数据映射
+            const learnData = {};
+            history.forEach(h => {
+                learnData[h.date] = h.total || 0;
+            });
+            
+            // 获取当月数据
+            let monthTotal = 0;
+            for (let d = 1; d <= daysInMonth; d++) {
+                const date = new Date(year, month, d);
+                const dateStr = date.toISOString().split('T')[0];
+                if (learnData[dateStr]) monthTotal += learnData[dateStr];
+            }
+            
+            // 生成日历HTML
+            const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+            let html = `<div class="calendar-header">
+                <span>${year}年${month + 1}月</span>
+                <span>本月学习: ${monthTotal} 词</span>
+            </div>`;
+            
+            html += '<div class="calendar-grid">';
+            // 星期标题
+            weekDays.forEach(w => html += `<div style="text-align:center;font-size:10px;color:#999;">${w}</div>`);
+            
+            // 填充空白
+            for (let i = 0; i < startWeekDay; i++) {
+                html += '<div class="calendar-day"></div>';
+            }
+            
+            // 日期
+            const todayStr = today.toISOString().split('T')[0];
+            for (let d = 1; d <= daysInMonth; d++) {
+                const date = new Date(year, month, d);
+                const dateStr = date.toISOString().split('T')[0];
+                const learned = learnData[dateStr] || 0;
+                const isToday = dateStr === todayStr;
+                const isLearned = learned > 0;
+                
+                html += `<div class="calendar-day ${isLearned ? 'learned' : ''} ${isToday ? 'today' : ''}">${d}</div>`;
+            }
+            html += '</div>';
+            
+            html += `<div class="calendar-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#ddd"></div>未学习</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#667eea"></div>已学习</div>
+            </div>`;
+            
+            calendar.innerHTML = html;
         }
         
         function renderMemoryChart() {
