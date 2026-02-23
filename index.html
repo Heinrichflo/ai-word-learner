@@ -357,6 +357,10 @@
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <div class="modal-title" id="modalTitle">登录 / 注册</div>
+            <div style="text-align:center;margin-bottom:15px;">
+                <div id="avatarPreview" style="font-size:48px;cursor:pointer;display:inline-block;" onclick="changeAvatar()">😀</div>
+                <div style="font-size:11px;color:#999;margin-top:5px;">点击更换头像</div>
+            </div>
             <div class="input-group">
                 <input type="text" id="username" placeholder="用户名">
             </div>
@@ -434,7 +438,7 @@
         <!-- 个人中心 -->
         <div class="tab-content" id="tab-profile">
             <div class="profile-header">
-                <div class="profile-avatar" id="profileAvatar">😀</div>
+                <div class="profile-avatar" id="profileAvatar" onclick="openAvatarSelector()" style="cursor:pointer;">😀</div>
                 <div class="profile-name" id="profileName">学习者</div>
                 <div class="profile-level" id="profileLevel">初学者 Lv.1</div>
                 <div style="margin-top:8px;">
@@ -990,6 +994,32 @@
             }
         }
 
+        // ====== 头像系统 ======
+        const avatars = ['😀', '😎', '🤓', '🧑‍💻', '👨‍🎓', '👩‍🎓', '🦊', '🐼', '🐨', '🦁', '🐯', '🐱', '🐶', '🐵', '🐸', '🐙', '🦄', '🐲', '🌟', '💎', '🎯', '🏆', '🎖️', '🌈', '☀️', '🌙', '⚡', '🔥', '💪', '🎉'];
+        let selectedAvatar = '😀';
+        
+        function changeAvatar() {
+            const avatarHtml = avatars.map(a => 
+                `<span style="font-size:28px;cursor:pointer;margin:5px;display:inline-block;" onclick="selectAvatar('${a}')">${a}</span>`
+            ).join('');
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width:300px;">
+                    <div class="modal-title">选择头像</div>
+                    <div style="text-align:center;padding:10px;">${avatarHtml}</div>
+                    <button class="btn btn-primary" style="width:100%;" onclick="document.querySelectorAll('.modal')[document.querySelectorAll('.modal').length-1].remove()">确定</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function selectAvatar(avatar) {
+            selectedAvatar = avatar;
+            document.getElementById('avatarPreview').textContent = avatar;
+        }
+
         // ====== 用户系统 ======
         function init() {
             loadUser();
@@ -1465,12 +1495,38 @@
             const username = document.getElementById('username').value.trim();
             const level = document.getElementById('level').value;
             if (!username) { alert('请输入用户名'); return; }
-            user = { username, level, created: new Date().toISOString() };
+            user = { username, level, avatar: selectedAvatar, created: new Date().toISOString() };
             saveUser();
             updateUserInfo();
             closeModal();
             // 根据用户级别筛选单词
             filterWordsByLevel();
+            // 更新头像显示
+            updateAvatarDisplay();
+        }
+        
+        function updateAvatarDisplay() {
+            const avatar = user?.avatar || '😀';
+            document.getElementById('profileAvatar').textContent = avatar;
+        }
+        
+        function openAvatarSelector() {
+            if (!user) {
+                document.getElementById('loginModal').classList.add('active');
+                return;
+            }
+            changeAvatar();
+        }
+        
+        function selectAvatar(avatar) {
+            selectedAvatar = avatar;
+            document.getElementById('avatarPreview').textContent = avatar;
+            // 保存用户头像
+            if (user) {
+                user.avatar = avatar;
+                saveUser();
+                updateAvatarDisplay();
+            }
         }
 
         function closeModal() {
