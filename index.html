@@ -235,6 +235,38 @@
         .progress-ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
         .progress-ring-value { font-size: 24px; font-weight: bold; }
         .progress-ring-label { font-size: 10px; color: #999; }
+        
+        /* 场景学习 */
+        .scene-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 16px; }
+        .scene-card { background: white; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s; }
+        .scene-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .scene-card.active { border: 2px solid #667eea; }
+        .scene-icon { font-size: 32px; margin-bottom: 8px; }
+        .scene-name { font-size: 14px; font-weight: 500; }
+        .scene-count { font-size: 11px; color: #999; margin-top: 4px; }
+        
+        /* AI口语陪练 */
+        .dialogue-container { display: flex; flex-direction: column; height: 350px; }
+        .dialogue-messages { flex: 1; overflow-y: auto; padding: 16px; }
+        .dialogue-msg { margin-bottom: 12px; max-width: 80%; }
+        .dialogue-msg.ai { align-self: flex-start; }
+        .dialogue-msg.user { align-self: flex-end; text-align: right; }
+        .dialogue-bubble { padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.5; }
+        .dialogue-msg.ai .dialogue-bubble { background: #f0f0ff; border-bottom-left-radius: 4px; }
+        .dialogue-msg.user .dialogue-bubble { background: #667eea; color: white; border-bottom-right-radius: 4px; }
+        .dialogue-input { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #eee; }
+        .dialogue-input input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+        .dialogue-input input:focus { border-color: #667eea; }
+        .dialogue-input button { padding: 10px 16px; background: #667eea; color: white; border: none; border-radius: 20px; cursor: pointer; }
+        
+        /* 发音评分 */
+        .pronunciation-score-display { text-align: center; padding: 20px; }
+        .score-circle { width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold; }
+        .score-high { background: linear-gradient(135deg, #52C41A, #73D13D); color: white; }
+        .score-mid { background: linear-gradient(135deg, #FAAD14, #FFC53D); color: white; }
+        .score-low { background: linear-gradient(135deg, #FF4D4F, #FF7875); color: white; }
+        .score-label { font-size: 14px; color: #666; }
+        .score-details { margin-top: 16px; font-size: 12px; color: #999; }
     </style>
 </head>
 <body>
@@ -270,6 +302,8 @@
             <div class="tab active" data-tab="learn">背单词</div>
             <div class="tab" data-tab="quiz">AI出题</div>
             <div class="tab" data-tab="challenge">挑战</div>
+            <div class="tab" data-tab="scenes">场景</div>
+            <div class="tab" data-tab="dialogue">口语</div>
             <div class="tab" data-tab="stats">统计</div>
             <div class="tab" data-tab="speak">发音</div>
             <div class="tab" data-tab="history">记录</div>
@@ -330,6 +364,53 @@
                     <span class="task-icon">🎯</span>
                     <span class="task-name">正确率达到80%</span>
                     <span class="task-status" id="task3Status">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 场景学习 -->
+        <div class="tab-content" id="tab-scenes">
+            <div class="scene-grid">
+                <div class="scene-card active" onclick="selectScene('travel')">
+                    <div class="scene-icon">✈️</div>
+                    <div class="scene-name">旅行</div>
+                    <div class="scene-count">120 单词</div>
+                </div>
+                <div class="scene-card" onclick="selectScene('business')">
+                    <div class="scene-icon">💼</div>
+                    <div class="scene-name">职场</div>
+                    <div class="scene-count">200 单词</div>
+                </div>
+                <div class="scene-card" onclick="selectScene('daily')">
+                    <div class="scene-icon">🏠</div>
+                    <div class="scene-name">日常</div>
+                    <div class="scene-count">150 单词</div>
+                </div>
+                <div class="scene-card" onclick="selectScene('tech')">
+                    <div class="scene-icon">💻</div>
+                    <div class="scene-name">科技</div>
+                    <div class="scene-count">180 单词</div>
+                </div>
+            </div>
+            <div class="card" id="scene-card">
+                <div class="word" id="scene-word">travel</div>
+                <div class="phonetic" id="scene-phonetic">/ˈtrævəl/</div>
+                <div class="meaning" id="scene-meaning">v. 旅行</div>
+                <button class="btn btn-primary" style="margin-top:16px;" onclick="nextSceneWord()">下一个</button>
+            </div>
+        </div>
+
+        <!-- AI口语陪练 -->
+        <div class="tab-content" id="tab-dialogue">
+            <div class="dialogue-container">
+                <div class="dialogue-messages" id="dialogueMessages">
+                    <div class="dialogue-msg ai">
+                        <div class="dialogue-bubble">你好！我是你的AI口语陪练。让我用英语和你对话吧！Try to respond in English. 🌟</div>
+                    </div>
+                </div>
+                <div class="dialogue-input">
+                    <input type="text" id="dialogueInput" placeholder="用英语回复..." onkeypress="if(event.key==='Enter')sendDialogue()">
+                    <button onclick="sendDialogue()">发送</button>
                 </div>
             </div>
         </div>
@@ -874,6 +955,127 @@
                 </div>`;
             }).join('');
         }
+        
+        // ====== 场景化学习 ======
+        const sceneWords = {
+            travel: [
+                { word: 'flight', phonetic: '/flaɪt/', meaning: '航班' },
+                { word: 'hotel', phonetic: '/hoʊˈtel/', meaning: '酒店' },
+                { word: 'passport', phonetic: '/ˈpæspɔːrt/', meaning: '护照' },
+                { word: 'ticket', phonetic: '/ˈtɪkɪt/', meaning: '票' },
+                { word: 'destination', phonetic: '/ˌdestɪˈneɪʃən/', meaning: '目的地' },
+                { word: 'luggage', phonetic: '/ˈlʌɡɪdʒ/', meaning: '行李' },
+                { word: 'boarding', phonetic: '/ˈbɔːrdɪŋ/', meaning: '登机' },
+                { word: 'reservation', phonetic: '/ˌrezərˈveɪʃən/', meaning: '预订' }
+            ],
+            business: [
+                { word: 'meeting', phonetic: '/ˈmiːtɪŋ/', meaning: '会议' },
+                { word: 'project', phonetic: '/ˈprɑːdʒekt/', meaning: '项目' },
+                { word: 'deadline', phonetic: '/ˈdedlaɪn/', meaning: '截止日期' },
+                { word: 'presentation', phonetic: '/ˌprezənˈteɪʃən/', meaning: '演示' },
+                { word: 'colleague', phonetic: '/ˈkɑːliːɡ/', meaning: '同事' },
+                { word: 'schedule', phonetic: '/ˈskedʒuːl/', meaning: '日程' },
+                { word: 'email', phonetic: '/ˈiːmeɪl/', meaning: '邮件' },
+                { word: 'report', phonetic: '/rɪˈpɔːrt/', meaning: '报告' }
+            ],
+            daily: [
+                { word: 'breakfast', phonetic: '/ˈbrekfəst/', meaning: '早餐' },
+                { word: 'grocery', phonetic: '/ˈɡroʊsəri/', meaning: '杂货' },
+                { word: 'neighborhood', phonetic: '/ˈneɪbərhʊd/', meaning: '社区' },
+                { word: 'apartment', phonetic: '/əˈpɑːrtmənt/', meaning: '公寓' },
+                { word: 'laundry', phonetic: '/ˈlɔːndri/', meaning: '洗衣' },
+                { word: 'supermarket', phonetic: '/ˈsuːpərmɑːrkɪt/', meaning: '超市' },
+                { word: 'pharmacy', phonetic: '/ˈfɑːrməsi/', meaning: '药店' },
+                { word: 'restaurant', phonetic: '/ˈrestərɑːnt/', meaning: '餐厅' }
+            ],
+            tech: [
+                { word: 'software', phonetic: '/ˈsɔːftwer/', meaning: '软件' },
+                { word: 'algorithm', phonetic: '/ˈælɡərɪðəm/', meaning: '算法' },
+                { word: 'database', phonetic: '/ˈdeɪtəbeɪs/', meaning: '数据库' },
+                { word: 'network', phonetic: '/ˈnetwɜːrk/', meaning: '网络' },
+                { word: 'security', phonetic: '/sɪˈkjʊrəti/', meaning: '安全' },
+                { word: 'platform', phonetic: '/ˈplætfɔːrm/', meaning: '平台' },
+                { word: 'interface', phonetic: '/ˈɪntərfeɪs/', meaning: '界面' },
+                { word: 'function', phonetic: '/ˈfʌŋkʃən/', meaning: '功能' }
+            ]
+        };
+        
+        let currentScene = 'travel';
+        
+        function selectScene(scene) {
+            currentScene = scene;
+            document.querySelectorAll('.scene-card').forEach(c => c.classList.remove('active'));
+            event.target.closest('.scene-card').classList.add('active');
+            nextSceneWord();
+        }
+        
+        function nextSceneWord() {
+            const words = sceneWords[currentScene];
+            const w = words[Math.floor(Math.random() * words.length)];
+            document.getElementById('scene-word').textContent = w.word;
+            document.getElementById('scene-phonetic').textContent = w.phonetic;
+            document.getElementById('scene-meaning').textContent = w.meaning;
+        }
+        
+        // ====== AI口语陪练 ======
+        const dialogueTopics = [
+            "What's your name?",
+            "Where are you from?",
+            "What do you do for fun?",
+            "Tell me about your day.",
+            "What's your favorite food?",
+            "Do you like traveling?",
+            "What did you do today?",
+            "What's your hobby?"
+        ];
+        
+        let currentDialogueTopic = '';
+        
+        function sendDialogue() {
+            const input = document.getElementById('dialogueInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            // 显示用户消息
+            const messages = document.getElementById('dialogueMessages');
+            messages.innerHTML += `<div class="dialogue-msg user"><div class="dialogue-bubble">${message}</div></div>`;
+            messages.scrollTop = messages.scrollHeight;
+            input.value = '';
+            
+            // 模拟AI回复
+            setTimeout(() => {
+                const replies = [
+                    `Good! Try saying: "${currentDialogueTopic || dialogueTopics[Math.floor(Math.random() * dialogueTopics.length)]}"`,
+                    "Great! Keep practicing! Would you like to try another topic?",
+                    "Nice response! Let's practice more. What did you eat for breakfast today?",
+                    "Excellent! You're making progress! Tell me about your family."
+                ];
+                const reply = replies[Math.floor(Math.random() * replies.length)];
+                messages.innerHTML += `<div class="dialogue-msg ai"><div class="dialogue-bubble">${reply}</div></div>`;
+                messages.scrollTop = messages.scrollHeight;
+            }, 500);
+        }
+        
+        // ====== 发音评分 ======
+        let pronunciationScore = 0;
+        
+        function evaluatePronunciation(audioBlob, targetWord) {
+            // 模拟评分（实际需要语音识别API）
+            pronunciationScore = Math.floor(Math.random() * 30) + 70; // 70-100分
+            
+            let scoreClass = 'score-low';
+            let label = '需要练习';
+            if (pronunciationScore >= 90) { scoreClass = 'score-high'; label = '完美！'; }
+            else if (pronunciationScore >= 80) { scoreClass = 'score-mid'; label = '不错！'; }
+            
+            document.getElementById('pronunciation-result').innerHTML = `
+                <div class="pronunciation-score-display">
+                    <div class="score-circle ${scoreClass}">${pronunciationScore}</div>
+                    <div class="score-label">${label}</div>
+                    <div class="score-details">标准发音: ${targetWord}</div>
+                </div>
+            `;
+        }
 
         function renderHistory() {
             const list = document.getElementById('historyList');
@@ -1058,6 +1260,8 @@
                 if (this.dataset.tab === 'speak') nextSpeak();
                 if (this.dataset.tab === 'challenge') { loadChallenge(); }
                 if (this.dataset.tab === 'stats') { renderStats(); }
+                if (this.dataset.tab === 'scenes') { nextSceneWord(); }
+                if (this.dataset.tab === 'dialogue') { currentDialogueTopic = dialogueTopics[Math.floor(Math.random() * dialogueTopics.length)]; }
             });
         });
 
