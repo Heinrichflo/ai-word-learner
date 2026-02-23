@@ -198,6 +198,7 @@
             <div class="tab" data-tab="quiz">AI出题</div>
             <div class="tab" data-tab="speak">发音</div>
             <div class="tab" data-tab="history">记录</div>
+            <div class="tab" data-tab="settings">设置</div>
         </div>
 
         <!-- 背单词 -->
@@ -230,6 +231,16 @@
         </div>
 
         <!-- 学习记录 -->
+        <div class="tab-content" id="tab-settings">
+            <div class="settings">
+                <h3>API 设置</h3>
+                <p style="font-size:12px;color:#666;margin:10px 0;">输入 MiniMax API Key 以启用 AI 出题功能</p>
+                <input type="text" id="apiKey" placeholder="sk-xxx" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;margin-bottom:10px;">
+                <button class="btn btn-primary" onclick="saveApiKey()" style="width:100%;">保存 API Key</button>
+                <p id="apiKeyStatus" style="font-size:12px;margin-top:10px;color:#10b981;"></p>
+            </div>
+        </div>
+
         <div class="tab-content" id="tab-history">
             <div class="history-list" id="historyList">
                 <div class="empty-state">暂无学习记录</div>
@@ -246,7 +257,7 @@
 
     <script>
         // ====== 配置 ======
-        const MINIMAX_API_KEY = ''; // 填入你的 MiniMax API Key
+        const MINIMAX_API_KEY = localStorage.getItem('wordAI_apiKey') || ''; // 填入你的 MiniMax API Key
         const MINIMAX_BASE_URL = 'https://api.minimax.chat/v1';
         
         // ====== 单词库 ======
@@ -617,6 +628,27 @@
                 if (this.dataset.tab === 'speak') nextSpeak();
             });
         });
+
+        function saveApiKey() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            if (!apiKey) {
+                document.getElementById('apiKeyStatus').textContent = '请输入 API Key';
+                document.getElementById('apiKeyStatus').style.color = '#ef4444';
+                return;
+            }
+            localStorage.setItem('wordAI_apiKey', apiKey);
+            document.getElementById('apiKeyStatus').textContent = '保存成功！';
+            document.getElementById('apiKeyStatus').style.color = '#10b981';
+            alert('API Key 已保存，刷新页面后 AI 出题功能即可使用');
+        }
+
+        function loadApiKey() {
+            const saved = localStorage.getItem('wordAI_apiKey');
+            if (saved) {
+                document.getElementById('apiKey').value = saved;
+                document.getElementById('apiKeyStatus').textContent = '已配置 API Key';
+            }
+        }
 
         // 启动
         init();
