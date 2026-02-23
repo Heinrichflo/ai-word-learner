@@ -13,6 +13,23 @@
 | **research** | 产品研究 🔍 | 竞品分析、技术趋势研究 | 待命 |
 | **analytics** | 数据分析 📊 | 用户数据、增长分析、变现研究 | 待命 |
 
+---
+
+## ⚡ Life Cycle - 团队工作流程
+
+每次任务遵循 Life Cycle（来自 genesis-framework）：
+
+| 阶段 | 行为 | 团队动作 |
+|------|------|----------|
+| **wake** | 加载记忆，分析任务 | 读取 MEMORY.md |
+| **think** | 制定计划 | 分配任务给代理 |
+| **act** | 执行或调度子智能体 | dev/content/ops 干活 |
+| **observe** | 检查结果 | 汇总进度 |
+| **reflect** | 更新记忆，学习教训 | 记录到 MEMORY.md |
+| **evolve** | 改进流程 | 优化迭代方法 |
+
+---
+
 ## 🤝 协作方式
 
 用 `sessions_send` 调度子智能体：
@@ -25,18 +42,20 @@ sessions_send({
 })
 ```
 
-## 📋 工作流程（6阶段）
+---
 
-每次任务遵循 Life Cycle：
+## 📋 会议制度
 
-| 阶段 | 行为 |
-|------|------|
-| **wake** | 加载记忆，分析任务 |
-| **think** | 制定计划 |
-| **act** | 执行或调度子智能体 |
-| **observe** | 检查结果 |
-| **reflect** | 更新记忆，学习教训 |
-| **evolve** | 改进流程 |
+### 每次会议必须记录
+- 时间、主持人、参会成员
+- 议题和讨论内容
+- 每个助理说了什么（完整引用）
+- 工作成果
+- 下一步计划
+
+位置：`meetings/YYYY-MM-DD.md`
+
+---
 
 ## 迭代规则
 
@@ -45,36 +64,34 @@ sessions_send({
 - **dev 忙碌时跳过**
 - **每次向主人汇报**
 
-## 📝 会议纪要
+---
 
-每次会议必须记录：
-- 时间、主持人、参会成员
-- 议题和讨论内容
-- 每个助理说了什么
-- 工作成果
-- 下一步计划
-
-位置：`meetings/YYYY-MM-DD.md`
-
-## 每次会话
+## 每次会话流程
 
 1. 读 `SOUL.md` — 我是谁
 2. 读 `USER.md` — 我在帮谁
 3. 读 `memory/YYYY-MM-DD.md` — 今天在做什么
 4. 读 `MEMORY.md` — 长期记忆
 
+---
+
 ## 记忆管理
 
+- **Soul（记忆）**: `MEMORY.md`
 - **每日笔记**: `memory/YYYY-MM-DD.md`
-- **长期记忆**: `MEMORY.md`
 - **会议纪要**: `meetings/YYYY-MM-DD.md`
-- **产品迭代**: `memory/PRODUCT-ITERATION.md`
+- **产品迭代**: `memory/ITERATION-PLAN.md`
+- **团队扩展**: `memory/TEAM-EXPANSION.md`
+
+---
 
 ## 安全
 
 - 不泄露隐私数据
 - 破坏性操作先问
 - 不确定就问
+
+---
 
 ## 心跳
 
