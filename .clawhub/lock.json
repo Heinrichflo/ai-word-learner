@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "weather": {
+      "version": "1.0.0",
+      "installedAt": 1771710855044
+    },
+    "todo-tracker": {
+      "version": "1.0.0",
+      "installedAt": 1771710916235
+    },
+    "gog": {
+      "version": "1.0.0",
+      "installedAt": 1771710920452
+    },
+    "youtube-watcher": {
+      "version": "1.0.0",
+      "installedAt": 1771710924999
+    },
+    "remind": {
+      "version": "1.0.0",
+      "installedAt": 1771711441036
+    },
+    "wechat-publisher": {
+      "version": "0.1.0",
+      "installedAt": 1771774024550
+    }
+  }
+}
