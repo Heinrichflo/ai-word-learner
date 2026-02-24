@@ -804,6 +804,16 @@
                     <input type="file" id="importFile" style="display:none;" accept=".json" onchange="importAllData(this)">
                     <button class="btn" style="background:#fff1f0;color:#ff4d4f;" onclick="clearAllData()">🗑️ 清空所有数据</button>
                 </div>
+                
+                <h3 style="margin-top:24px;">📈 学习统计</h3>
+                <div style="margin-top:12px;padding:15px;background:#f9f9f9;border-radius:12px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;">
+                        <div style="text-align:center;"><div style="font-weight:bold;font-size:16px;color:#667eea;" id="statTotalWords">${words.length}</div><div style="color:#999;">单词总数</div></div>
+                        <div style="text-align:center;"><div style="font-weight:bold;font-size:16px;color:#10b981;" id="statFavorites">${favorites.length}</div><div style="color:#999;">收藏数</div></div>
+                        <div style="text-align:center;"><div style="font-weight:bold;font-size:16px;color:#f59e0b;" id="statWrong">${wrongWords.length}</div><div style="color:#999;">错题数</div></div>
+                        <div style="text-align:center;"><div style="font-weight:bold;font-size:16px;color:#667eea;" id="statStreak">${streak}</div><div style="color:#999;">连续天数</div></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -812,6 +822,9 @@
             <div class="collection-tabs">
                 <div class="collection-tab active" onclick="switchCollectionTab('favorites')">❤️ 收藏本</div>
                 <div class="collection-tab" onclick="switchCollectionTab('wrong')">❌ 错题本</div>
+            </div>
+            <div style="padding:10px;">
+                <input type="text" id="wordSearchInput" placeholder="🔍 搜索单词..." onkeyup="quickSearch(this.value)" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
             </div>
             <div id="collectionList"></div>
         </div>
@@ -1457,6 +1470,58 @@
             // 刷新显示
             currentIndex = 0;
             showCard();
+        }
+
+        // ====== 单词搜索功能 ======
+        function searchWords(query) {
+            if (!query || query.length < 1) return [];
+            query = query.toLowerCase();
+            return words.filter(w => 
+                w.word.toLowerCase().includes(query) || 
+                w.meaning.toLowerCase().includes(query)
+            );
+        }
+
+        function showSearchResults(results, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container || results.length === 0) {
+                if (container) container.innerHTML = '<div class="empty-state">未找到相关单词</div>';
+                return;
+            }
+            
+            let html = '';
+            results.slice(0, 20).forEach(w => {
+                html += `
+                    <div class="word-card">
+                        <div>
+                            <div class="word-card-word">${w.word}</div>
+                            <div class="word-card-meaning">${w.phonetic} ${w.meaning}</div>
+                        </div>
+                        <div class="word-card-actions">
+                            <button class="word-card-btn btn-review" onclick="playTTS('${w.word}')">🔊</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function quickSearch(query) {
+            if (!query || query.length < 1) {
+                // 如果搜索框为空，重新渲染收藏列表
+                renderFavorites();
+                return;
+            }
+            // 搜索当前tab的内容
+            const currentTab = document.querySelector('.collection-tab.active').textContent;
+            let searchList = currentTab.includes('收藏') ? favorites : wrongWords;
+            
+            // 同时搜索所有单词
+            const wordResults = searchWords(query);
+            
+            if (wordResults.length > 0) {
+                showSearchResults(wordResults, 'collectionList');
+            }
         }
 
         // 每天检查复习到期
