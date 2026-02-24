@@ -267,6 +267,23 @@
         .quote-card { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 30px; border-radius: 16px; margin: 16px; text-align: center; }
         .quote-text { font-size: 18px; line-height: 1.8; margin-bottom: 16px; font-style: italic; }
         .quote-author { font-size: 14px; opacity: 0.8; }
+
+        /* 测验模式 */
+        .quiz-mode-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 16px; }
+        .quiz-mode-card { background: white; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; border: 2px solid transparent; }
+        .quiz-mode-card:hover { border-color: #667eea; }
+        .quiz-mode-icon { font-size: 32px; margin-bottom: 8px; }
+        .quiz-mode-name { font-size: 14px; font-weight: 500; }
+        .quiz-mode-desc { font-size: 11px; color: #999; margin-top: 4px; }
+        
+        /* 徽章收集册 */
+        .badge-gallery { padding: 16px; }
+        .badge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .badge-item-large { text-align: center; padding: 12px; }
+        .badge-icon-large { width: 50px; height: 50px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 8px; }
+        .badge-item-large.unlocked .badge-icon-large { background: linear-gradient(135deg, #FFD700, #FFA500); }
+        .badge-name-small { font-size: 10px; color: #999; }
+
         
         /* 统计图表增强 */
         .chart-wrapper { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
@@ -417,7 +434,7 @@
             <div class="tab" data-tab="profile">我的</div>
             <div class="tab" data-tab="map">地图</div>
             <div class="tab" data-tab="pk">PK</div>
-            <div class="tab" data-tab="quiz">AI出题</div>
+            <div class="tab" data-tab="quizmode">测验</div>
             <div class="tab" data-tab="newwords">生词</div>
             <div class="tab" data-tab="challenge">挑战</div>
             <div class="tab" data-tab="scenes">场景</div>
@@ -1647,7 +1664,7 @@
         // ====== 数据导出导入 ======
         function exportAllData() {
             const data = {
-                version: 'v1.4',
+                version: 'v1.5',
                 exportTime: new Date().toISOString(),
                 words: words,
                 favorites: favorites,
@@ -3052,6 +3069,11 @@ ${statusText}
                     <div class="quote-author">— ${q.author}</div>
                 </div>
             `;
+        }
+
+        // ====== 测验模式 ======
+        function startQuizMode(mode) {
+            alert("测验模式: " + mode + " - 功能开发中，敬请期待！");
         }
 
         // ====== PK对战 ======
