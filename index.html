@@ -533,6 +533,48 @@
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
+        
+        /* 单词挑战赛 */
+        .challenge-arena { padding: 16px; }
+        .arena-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .arena-timer { font-size: 32px; font-weight: bold; color: #667eea; text-align: center; margin: 20px 0; font-variant-numeric: tabular-nums; }
+        .arena-timer.warning { color: #f59e0b; }
+        .arena-timer.danger { color: #ef4444; animation: pulse 0.5s infinite; }
+        .arena-question { background: white; border-radius: 16px; padding: 30px; text-align: center; margin: 20px 0; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .arena-word { font-size: 36px; font-weight: bold; margin-bottom: 10px; }
+        .arena-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+        .arena-option { padding: 16px; border: 2px solid #eee; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; font-size: 14px; }
+        .arena-option:hover { border-color: #667eea; background: #f0f7ff; }
+        .arena-option.correct { background: #f6ffed; border-color: #52C41A; }
+        .arena-option.wrong { background: #fff1f0; border-color: #ff4d4f; }
+        .arena-score { display: flex; justify-content: space-around; margin: 20px 0; }
+        .arena-score-item { text-align: center; }
+        .arena-score-value { font-size: 28px; font-weight: bold; }
+        .arena-score-label { font-size: 12px; color: #999; }
+        
+        /* 错题解析 */
+        .error-detail { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .error-word { font-size: 20px; font-weight: bold; color: #333; margin-bottom: 8px; }
+        .error-meaning { font-size: 14px; color: #666; margin-bottom: 12px; }
+        .error-tip { background: #fff7e6; border-left: 3px solid #fa8c16; padding: 12px; border-radius: 4px; font-size: 13px; color: #666; }
+        .error-example { background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 13px; }
+        
+        /* 学习小组动态 */
+        .group-feed { padding: 16px; }
+        .feed-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .feed-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+        .feed-content { flex: 1; }
+        .feed-name { font-size: 14px; font-weight: 500; }
+        .feed-action { font-size: 13px; color: #666; }
+        .feed-time { font-size: 11px; color: #999; margin-top: 4px; }
+        
+        /* 单词本预览 */
+        .word-preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; }
+        .preview-word { background: white; border-radius: 8px; padding: 10px; text-align: center; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .preview-word:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .preview-word.mastered { background: #f6ffed; border: 1px solid #52C41A; }
+        .preview-word.learning { background: #f0f7ff; border: 1px solid #667eea; }
+        .preview-word.new { background: #fff7e6; border: 1px solid #fa8c16; }
         .learning-calendar { padding: 10px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .calendar-day { aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999; }
@@ -683,6 +725,7 @@
             <div class="tab" data-tab="history">记录</div>
             <div class="tab" data-tab="plan">计划</div>
             <div class="tab" data-tab="books">词书</div>
+            <div class="tab" data-tab="arena">挑战</div>
             <div class="tab" data-tab="analysis">分析</div>
             <div class="tab" data-tab="settings">设置</div>
         </div>
@@ -1058,6 +1101,119 @@
                     }
                 }
             }
+        }
+        
+        // ====== 单词挑战赛 ======
+        let arenaTimer = null;
+        let arenaTimeLeft = 60;
+        let arenaCorrectCount = 0;
+        let arenaWrongCount = 0;
+        let arenaTotalScore = 0;
+        let arenaCurrentWord = null;
+        
+        function showArenaRules() {
+            alert('⚔️ 单词挑战赛规则\n\n• 60秒时间限制\n• 答对+10分，答错-5分\n• 连续答对获得额外加分\n• 挑战你的单词极限！');
+        }
+        
+        function startArena() {
+            arenaTimeLeft = 60;
+            arenaCorrectCount = 0;
+            arenaWrongCount = 0;
+            arenaTotalScore = 0;
+            
+            document.getElementById('arenaStartScreen').style.display = 'none';
+            document.getElementById('arenaGame').style.display = 'block';
+            document.getElementById('arenaResult').style.display = 'none';
+            
+            document.getElementById('arenaTimer').textContent = arenaTimeLeft;
+            document.getElementById('arenaCorrect').textContent = '0';
+            document.getElementById('arenaWrong').textContent = '0';
+            document.getElementById('arenaTotal').textContent = '0';
+            
+            nextArenaWord();
+            
+            arenaTimer = setInterval(() => {
+                arenaTimeLeft--;
+                const timerEl = document.getElementById('arenaTimer');
+                timerEl.textContent = arenaTimeLeft;
+                
+                if (arenaTimeLeft <= 10) {
+                    timerEl.classList.add('danger');
+                } else if (arenaTimeLeft <= 20) {
+                    timerEl.classList.add('warning');
+                }
+                
+                if (arenaTimeLeft <= 0) {
+                    endArena();
+                }
+            }, 1000);
+        }
+        
+        function nextArenaWord() {
+            arenaCurrentWord = words[Math.floor(Math.random() * words.length)];
+            const meanings = words.map(w => w.meaning);
+            const correctMeaning = arenaCurrentWord.meaning;
+            const options = [correctMeaning];
+            
+            while (options.length < 4) {
+                const random = meanings[Math.floor(Math.random() * meanings.length)];
+                if (!options.includes(random)) options.push(random);
+            }
+            options.sort(() => Math.random() - 0.5);
+            
+            document.getElementById('arenaWord').textContent = arenaCurrentWord.word;
+            document.getElementById('arenaOptions').innerHTML = options.map(opt => `
+                <div class="arena-option" onclick="checkArenaAnswer('${opt}', '${correctMeaning}', this)">${opt}</div>
+            `).join('');
+        }
+        
+        function checkArenaAnswer(selected, correct, btn) {
+            const options = document.querySelectorAll('.arena-option');
+            options.forEach(o => o.style.pointerEvents = 'none');
+            
+            if (selected === correct) {
+                btn.classList.add('correct');
+                arenaCorrectCount++;
+                arenaTotalScore += 10;
+                playSound('correct');
+            } else {
+                btn.classList.add('wrong');
+                arenaWrongCount++;
+                arenaTotalScore = Math.max(0, arenaTotalScore - 5);
+                options.forEach(o => {
+                    if (o.textContent === correct) o.classList.add('correct');
+                });
+                playSound('wrong');
+            }
+            
+            document.getElementById('arenaCorrect').textContent = arenaCorrectCount;
+            document.getElementById('arenaWrong').textContent = arenaWrongCount;
+            document.getElementById('arenaTotal').textContent = arenaTotalScore;
+            
+            setTimeout(() => {
+                nextArenaWord();
+            }, 300);
+        }
+        
+        function endArena() {
+            clearInterval(arenaTimer);
+            document.getElementById('arenaGame').style.display = 'none';
+            document.getElementById('arenaResult').style.display = 'block';
+            
+            const total = arenaCorrectCount + arenaWrongCount;
+            const accuracy = total > 0 ? Math.round((arenaCorrectCount / total) * 100) : 0;
+            
+            document.getElementById('resultCorrect').textContent = arenaCorrectCount;
+            document.getElementById('resultAccuracy').textContent = accuracy + '%';
+            document.getElementById('resultScore').textContent = arenaTotalScore;
+            
+            // 保存最高分
+            const highScore = parseInt(localStorage.getItem('wordAI_arenaHighScore') || '0');
+            if (arenaTotalScore > highScore) {
+                localStorage.setItem('wordAI_arenaHighScore', arenaTotalScore.toString());
+            }
+            
+            playSound('complete');
         }
         
         // ====== 词书分类系统 ======
@@ -2000,6 +2156,56 @@
             </div>
         </div>
 
+        <!-- 单词挑战赛 -->
+        <div class="tab-content" id="tab-arena">
+            <div class="challenge-arena">
+                <div class="arena-header">
+                    <div style="font-size:16px;font-weight:600;">⚔️ 单词挑战赛</div>
+                    <button class="btn" style="font-size:12px;padding:6px 12px;" onclick="showArenaRules()">规则</button>
+                </div>
+                <div id="arenaStartScreen">
+                    <div style="text-align:center;padding:40px 20px;">
+                        <div style="font-size:64px;margin-bottom:20px;">🏆</div>
+                        <div style="font-size:18px;font-weight:600;margin-bottom:10px;">挑战你的极限</div>
+                        <div style="font-size:14px;color:#666;margin-bottom:30px;">60秒内回答尽可能多的单词</div>
+                        <button class="btn btn-primary" style="width:200px;font-size:16px;" onclick="startArena()">开始挑战</button>
+                    </div>
+                </div>
+                <div id="arenaGame" style="display:none;">
+                    <div class="arena-timer" id="arenaTimer">60</div>
+                    <div class="arena-score">
+                        <div class="arena-score-item">
+                            <div class="arena-score-value" id="arenaCorrect" style="color:#52C41A;">0</div>
+                            <div class="arena-score-label">正确</div>
+                        </div>
+                        <div class="arena-score-item">
+                            <div class="arena-score-value" id="arenaWrong" style="color:#ef4444;">0</div>
+                            <div class="arena-score-label">错误</div>
+                        </div>
+                        <div class="arena-score-item">
+                            <div class="arena-score-value" id="arenaTotal">0</div>
+                            <div class="arena-score-label">总分</div>
+                        </div>
+                    </div>
+                    <div class="arena-question">
+                        <div class="arena-word" id="arenaWord">-</div>
+                        <div style="font-size:14px;color:#666;margin-bottom:15px;">选择正确的中文释义</div>
+                        <div class="arena-options" id="arenaOptions"></div>
+                    </div>
+                </div>
+                <div id="arenaResult" style="display:none;text-align:center;padding:30px;">
+                    <div style="font-size:48px;margin-bottom:20px;">🎉</div>
+                    <div style="font-size:24px;font-weight:bold;margin-bottom:20px;">挑战结束！</div>
+                    <div style="display:flex;justify-content:space-around;margin:30px 0;">
+                        <div><div style="font-size:32px;font-weight:bold;color:#52C41A;" id="resultCorrect">0</div><div style="font-size:12px;color:#666;">正确</div></div>
+                        <div><div style="font-size:32px;font-weight:bold;color:#667eea;" id="resultAccuracy">0%</div><div style="font-size:12px;color:#666;">正确率</div></div>
+                        <div><div style="font-size:32px;font-weight:bold;color:#f59e0b;" id="resultScore">0</div><div style="font-size:12px;color:#666;">得分</div></div>
+                    </div>
+                    <button class="btn btn-primary" style="width:200px;" onclick="startArena()">再战一次</button>
+                </div>
+            </div>
+        </div>
+
         <!-- 学习分析 -->
         <div class="tab-content" id="tab-analysis">
             <div style="padding:16px;">
@@ -2848,18 +3054,48 @@
                 list.innerHTML = '<div class="empty-state">暂无错题</div>';
                 return;
             }
-            list.innerHTML = wrongWords.map(w => `
-                <div class="word-card">
-                    <div>
-                        <div class="word-card-word">${w.word}</div>
-                        <div class="word-card-meaning">${w.meaning}</div>
+            list.innerHTML = wrongWords.map(w => {
+                // 生成记忆技巧
+                const tip = generateMemoryTip(w.word, w.meaning);
+                return `
+                    <div class="error-detail" onclick="toggleErrorDetail(this)">
+                        <div class="error-word">${w.word}</div>
+                        <div class="error-meaning">${w.phonetic || ''} ${w.meaning}</div>
+                        <div class="error-tip" style="display:none;">💡 ${tip}</div>
                     </div>
-                    <div class="word-card-actions">
-                        <button class="word-card-btn btn-review" onclick="removeWrongWord('${w.word}')">掌握</button>
-                        <button class="word-card-btn btn-remove" onclick="removeWrongWord('${w.word}')">删除</button>
+                    <div class="word-card-actions" style="margin-top:-8px;margin-bottom:12px;">
+                        <button class="btn" style="font-size:12px;padding:6px 12px;background:#f0f7ff;color:#667eea;" onclick="event.stopPropagation();practiceWrongWord('${w.word}')">练习</button>
+                        <button class="btn" style="font-size:12px;padding:6px 12px;background:#f6ffed;color:#52C41A;" onclick="event.stopPropagation();removeWrongWord('${w.word}')">掌握</button>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+        }
+        
+        // 生成记忆技巧
+        function generateMemoryTip(word, meaning) {
+            const tips = [
+                '多读几遍这个单词，记住它的拼写',
+                '尝试用这个单词造一个句子',
+                '联想一下这个单词的形象记忆',
+                '可以把这个单词写在纸上加深印象',
+                '听发音跟读，记住读音'
+            ];
+            return tips[Math.floor(Math.random() * tips.length)] + ' - ' + meaning;
+        }
+        
+        function toggleErrorDetail(el) {
+            const tip = el.querySelector('.error-tip');
+            tip.style.display = tip.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function practiceWrongWord(word) {
+            // 练习错题
+            const w = wrongWords.find(w => w.word === word);
+            if (w) {
+                // 显示测验
+                showTab('tab-quiz');
+                document.querySelector('[data-tab="quiz"]').click();
+            }
         }
         
         // ====== 提醒功能 ======
@@ -3074,7 +3310,7 @@
         // ====== 数据导出导入 ======
         function exportAllData() {
             const data = {
-                version: 'v3.4',
+                version: 'v3.5',
                 exportTime: new Date().toISOString(),
                 words: words,
                 favorites: favorites,
@@ -5350,6 +5586,7 @@ ${statusText}
                 if (this.dataset.tab === 'review') { loadReviewData(); }
                 if (this.dataset.tab === 'plan') { generateSmartSuggestions(); renderReviewTimeline(); updateGoalRing(); }
                 if (this.dataset.tab === 'books') { loadWordBooks(); renderForgettingCurve(); }
+                if (this.dataset.tab === 'arena') { }
                 if (this.dataset.tab === 'analysis') { loadAnalysis(); }
             });
         });
