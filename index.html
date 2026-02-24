@@ -943,6 +943,12 @@
                     <p id="customWordStatus" style="font-size:12px;margin-top:8px;color:#10b981;"></p>
                 </div>
                 
+                <h3 style="margin-top:24px;">📚 批量导入单词</h3>
+                <p style="font-size:11px;color:#666;margin:8px 0;">每行一个单词，格式：单词,音标,含义</p>
+                <textarea id="batchImport" placeholder="apple,/ˈæpəl/,苹果&#10;banana,/bəˈnɑːnə/,香蕉&#10;orange,/ˈɔːrɪndʒ/,橙子" style="width:100%;height:80px;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:12px;margin-bottom:8px;"></textarea>
+                <button class="btn btn-primary" onclick="batchImportWords()" style="width:100%;">批量导入</button>
+                <p id="batchImportStatus" style="font-size:12px;margin-top:8px;color:#10b981;"></p>
+                
                 <h3 style="margin-top:24px;">📦 数据管理</h3>
                 <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
                     <button class="btn btn-primary" onclick="exportAllData()">📤 导出全部数据</button>
@@ -1676,6 +1682,43 @@
             document.getElementById('customPhonetic').value = '';
             document.getElementById('customMeaning').value = '';
             document.getElementById('customWordStatus').textContent = '✅ ' + word + ' 添加成功！';
+            
+            // 刷新显示
+            currentIndex = 0;
+            showCard();
+        }
+
+        // ====== 批量导入单词 ======
+        function batchImportWords() {
+            const text = document.getElementById('batchImport').value.trim();
+            if (!text) {
+                document.getElementById('batchImportStatus').textContent = '⚠️ 请输入要导入的单词';
+                return;
+            }
+            
+            const lines = text.split('\n');
+            let successCount = 0;
+            
+            lines.forEach(line => {
+                const parts = line.split(',').map(p => p.trim());
+                if (parts.length >= 3) {
+                    words.push({
+                        word: parts[0],
+                        phonetic: parts[1] || '/' + parts[0] + '/',
+                        meaning: parts[2],
+                        level: 'beginner',
+                        status: 'new',
+                        addedAt: Date.now()
+                    });
+                    successCount++;
+                }
+            });
+            
+            // 保存到localStorage
+            localStorage.setItem('wordAI_customWords', JSON.stringify(words));
+            
+            document.getElementById('batchImport').value = '';
+            document.getElementById('batchImportStatus').textContent = '✅ 成功导入 ' + successCount + ' 个单词！';
             
             // 刷新显示
             currentIndex = 0;
