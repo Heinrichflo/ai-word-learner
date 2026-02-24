@@ -417,6 +417,7 @@
             <div class="tab" data-tab="dialogue">口语</div>
             <div class="tab" data-tab="stats">统计</div>
             <div class="tab" data-tab="speak">发音</div>
+            <div class="tab" data-tab="flashcard">速记</div>
             <div class="tab" data-tab="review">复习</div>
             <div class="tab" data-tab="favorites">收藏</div>
             <div class="tab" data-tab="wrongbook">错题</div>
@@ -748,6 +749,32 @@
                 <div id="pronunciation-result"></div>
             </div>
             <div class="btn-group"><button class="btn btn-primary" onclick="nextSpeak()">下一个</button></div>
+        </div>
+
+        <!-- 速记模式 -->
+        <div class="tab-content" id="tab-flashcard">
+            <div style="padding:15px;background:#f0f7ff;border-bottom:1px solid #eee;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:13px;color:#666;">⚡ 速记模式</span>
+                    <span id="flashcardCount" style="font-size:12px;color:#667eea;">0/10</span>
+                </div>
+                <div style="height:4px;background:#eee;border-radius:2px;margin-top:8px;">
+                    <div id="flashcardProgress" style="height:100%;background:#667eea;width:0%;border-radius:2px;transition:width 0.3s;"></div>
+                </div>
+            </div>
+            <div class="card" id="flashcardCard" onclick="flipFlashcard()">
+                <div class="word" id="flashcardWord" style="font-size:36px;">-</div>
+                <div class="phonetic" id="flashcardPhonetic" style="font-size:16px;margin:10px 0;">-</div>
+                <div class="meaning" id="flashcardMeaning" style="font-size:14px;display:none;">-</div>
+                <div style="font-size:11px;color:#999;margin-top:15px;">点击卡片显示释义</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-danger" onclick="flashcardKnow(false)">不认识</button>
+                <button class="btn btn-success" onclick="flashcardKnow(true)">认识</button>
+            </div>
+            <div style="padding:15px;text-align:center;">
+                <button class="btn" style="background:#667eea;color:white;" onclick="startFlashcard()">🔄 重新开始</button>
+            </div>
         </div>
 
         <!-- 复习测试 -->
@@ -3116,6 +3143,59 @@ ${statusText}
         }
 
         // ====== 发音测评 ======
+        // ====== 速记模式 ======
+        let flashcardIndex = 0;
+        let flashcardWords = [];
+        let flashcardKnown = 0;
+        let flashcardTotal = 10;
+        
+        function startFlashcard() {
+            // 随机选择10个单词
+            flashcardWords = [...words].sort(() => Math.random() - 0.5).slice(0, Math.min(10, words.length));
+            flashcardIndex = 0;
+            flashcardKnown = 0;
+            flashcardTotal = flashcardWords.length;
+            showFlashcard();
+        }
+        
+        function showFlashcard() {
+            if (flashcardIndex >= flashcardWords.length) {
+                // 完成
+                const accuracy = Math.round((flashcardKnown / flashcardTotal) * 100);
+                document.getElementById('flashcardCard').innerHTML = `
+                    <div style="font-size:48px;">🎉</div>
+                    <div class="word" style="font-size:24px;margin-top:15px;">速记完成！</div>
+                    <div class="meaning" style="margin-top:10px;">正确: ${flashcardKnown}/${flashcardTotal} (${accuracy}%)</div>
+                    <button class="btn btn-primary" style="margin-top:20px;" onclick="startFlashcard()">再学一遍</button>
+                `;
+                document.getElementById('flashcardProgress').style.width = '100%';
+                return;
+            }
+            
+            const w = flashcardWords[flashcardIndex];
+            document.getElementById('flashcardWord').textContent = w.word;
+            document.getElementById('flashcardPhonetic').textContent = w.phonetic;
+            document.getElementById('flashcardMeaning').style.display = 'none';
+            document.getElementById('flashcardCount').textContent = `${flashcardIndex + 1}/${flashcardTotal}`;
+            document.getElementById('flashcardProgress').style.width = `${(flashcardIndex / flashcardTotal) * 100}%`;
+        }
+        
+        function flipFlashcard() {
+            const meaning = document.getElementById('flashcardMeaning');
+            if (meaning.style.display === 'none') {
+                meaning.style.display = 'block';
+                meaning.textContent = flashcardWords[flashcardIndex].meaning;
+            } else {
+                meaning.style.display = 'none';
+            }
+        }
+        
+        function flashcardKnow(known) {
+            if (known) flashcardKnown++;
+            flashcardIndex++;
+            showFlashcard();
+        }
+        
         function nextSpeak() {
             const w = words[Math.floor(Math.random() * words.length)];
             document.getElementById('speak-word').textContent = w.word;
@@ -3287,6 +3367,7 @@ ${statusText}
                     else generateQuiz();
                 }
                 if (this.dataset.tab === 'speak') nextSpeak();
+                if (this.dataset.tab === 'flashcard') startFlashcard();
                 if (this.dataset.tab === 'challenge') { loadChallenge(); }
                 if (this.dataset.tab === 'stats') { renderStats(); }
                 if (this.dataset.tab === 'scenes') { nextSceneWord(); }
