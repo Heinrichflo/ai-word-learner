@@ -605,6 +605,9 @@
                 <button class="btn" style="flex:1;font-size:12px;padding:8px;" onclick="showGoalSetting()">⚙️ 设置目标</button>
                 <button class="btn btn-primary" style="flex:1;font-size:12px;padding:8px;" onclick="shareDailyChallenge()">📤 分享打卡</button>
             </div>
+            <div style="text-align:center;padding:0 20px 10px;">
+                <button class="btn" id="streakShieldBtn" style="font-size:11px;padding:6px 12px;background:#f59e0b;color:white;" onclick="useStreakShield()">🛡️ 打卡保护卡</button>
+            </div>
             <div class="challenge-status" id="challengeStatus">
                 <div class="challenge-status-icon">🔥</div>
                 <div class="challenge-status-text">学习中...</div>
@@ -1102,6 +1105,8 @@
             loadReminder();
             loadTheme();
             loadStudyTime(); // 加载学习时长
+            checkStreakShield(); // 检查打卡保护卡
+            updateStreakShieldUI(); // 更新保护卡UI
             if (!user) {
                 document.getElementById('loginModal').classList.add('active');
             } else {
@@ -2095,6 +2100,60 @@
                 saveChallenge();
                 loadChallenge();
                 alert('每日目标已设置为 ' + goal + ' 个单词！');
+            }
+        }
+        
+        // ====== 连续打卡保护卡 ======
+        let streakShieldAvailable = true;
+        
+        function useStreakShield() {
+            if (!streakShieldAvailable) {
+                alert('本周已使用过保护卡！');
+                return;
+            }
+            
+            if (confirm('使用连续打卡保护卡，今天不学习也不会断开连续打卡，是否使用？')) {
+                streakShieldAvailable = false;
+                localStorage.setItem('wordAI_streakShield', 'false');
+                
+                // 记录今天使用了保护卡
+                challengeData.shieldUsedDate = new Date().toDateString();
+                saveChallenge();
+                
+                alert('✅ 保护卡已使用！明天继续学习吧～');
+            }
+        }
+        
+        function checkStreakShield() {
+            const saved = localStorage.getItem('wordAI_streakShield');
+            if (saved === 'false') {
+                // 每周一重置
+                const today = new Date();
+                const dayOfWeek = today.getDay();
+                const lastReset = localStorage.getItem('wordAI_streakShieldReset');
+                
+                if (dayOfWeek === 1 && lastReset !== today.toDateString()) {
+                    streakShieldAvailable = true;
+                    localStorage.setItem('wordAI_streakShield', 'true');
+                    localStorage.setItem('wordAI_streakShieldReset', today.toDateString());
+                } else {
+                    streakShieldAvailable = false;
+                }
+            }
+        }
+        
+        function updateStreakShieldUI() {
+            const btn = document.getElementById('streakShieldBtn');
+            if (!btn) return;
+            
+            if (streakShieldAvailable) {
+                btn.style.background = '#f59e0b';
+                btn.textContent = '🛡️ 打卡保护卡';
+                btn.disabled = false;
+            } else {
+                btn.style.background = '#ccc';
+                btn.textContent = '⏳ 下周一可用';
+                btn.disabled = true;
             }
         }
         
