@@ -434,7 +434,7 @@
             <div id="learnProgress" style="padding:10px 15px;background:#f5f5f5;display:none;">
                 <div style="display:flex;justify-content:space-between;font-size:11px;color:#666;margin-bottom:5px;">
                     <span>📊 今日进度</span>
-                    <span id="todayProgressText">0/10</span>
+                    <span><span id="todayProgressText">0/10</span> · ⏱️ <span id="studyTimeDisplay">0分钟</span></span>
                 </div>
                 <div style="height:6px;background:#ddd;border-radius:3px;overflow:hidden;">
                     <div id="todayProgressBar" style="height:100%;background:linear-gradient(90deg,#667eea,#764ba2);width:0%;transition:width 0.3s;"></div>
@@ -2125,6 +2125,11 @@
             document.getElementById('streak').textContent = streak;
             const acc = total > 0 ? Math.round((correct / total) * 100) : 0;
             document.getElementById('accuracy').textContent = acc + '%';
+            
+            // 更新学习时长显示
+            if (document.getElementById('studyTimeDisplay')) {
+                document.getElementById('studyTimeDisplay').textContent = getStudyTimeString();
+            }
         }
 
         // ====== 历史记录 ======
