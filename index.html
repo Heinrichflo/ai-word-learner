@@ -628,6 +628,82 @@
         .badge-icon { font-size: 32px; margin-bottom: 8px; }
         .badge-name { font-size: 11px; color: #666; }
         .badge-item.locked .badge-name { color: #999; }
+        
+        /* 分享海报 */
+        .share-poster { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 16px; padding: 30px; color: white; text-align: center; margin: 20px 0; }
+        .poster-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .poster-stats { display: flex; justify-content: space-around; margin: 20px 0; }
+        .poster-stat { text-align: center; }
+        .poster-stat-value { font-size: 28px; font-weight: bold; }
+        .poster-stat-label { font-size: 12px; opacity: 0.8; }
+        .poster-qr { width: 100px; height: 100px; background: white; border-radius: 8px; margin: 20px auto; display: flex; align-items: center; justify-content: center; }
+        
+        /* 成就动画 */
+        .achievement-unlock { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 9999; }
+        .achievement-unlock.active { display: flex; }
+        .achievement-content { text-align: center; color: white; animation: achievementPop 0.5s; }
+        @keyframes achievementPop { 0% { transform: scale(0); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .achievement-icon { font-size: 80px; margin-bottom: 20px; }
+        .achievement-name { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .achievement-desc { font-size: 14px; opacity: 0.8; }
+        
+        /* 签到动画 */
+        .checkin-animation { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 120px; animation: checkinBounce 1s; z-index: 9999; pointer-events: none; }
+        @keyframes checkinBounce { 0% { transform: translate(-50%, -50%) scale(0); } 50% { transform: translate(-50%, -50%) scale(1.2); } 100% { transform: translate(-50%, -50%) scale(1); } }
+        
+        /* 通知权限提示 */
+        .notification-prompt { background: linear-gradient(135deg, #667eea20, #764ba220); border-radius: 12px; padding: 16px; margin: 12px; }
+        .notification-btn { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 14px; cursor: pointer; margin-top: 10px; }
+        
+        /* 单词本管理 */
+        .wordbook-manager { padding: 16px; }
+        .wordbook-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 12px; margin-bottom: 8px; }
+        .wordbook-info { flex: 1; }
+        .wordbook-name { font-size: 14px; font-weight: 500; }
+        .wordbook-count { font-size: 12px; color: #666; }
+        .wordbook-actions { display: flex; gap: 8px; }
+        
+        /* 学习打卡日历 */
+        .checkin-calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 10px; }
+        .checkin-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; border-radius: 4px; background: #f5f5f5; }
+        .checkin-day.checked { background: #52C41A; color: white; }
+        .checkin-day.today { border: 2px solid #667eea; }
+        
+        /* 浮动按钮 */
+        .fab { position: fixed; bottom: 100px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 99; }
+        .fab:hover { transform: scale(1.1); }
+        
+        /* 学习数据导出 */
+        .export-option { display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+        .export-option:hover { background: #f5f5f5; }
+        .export-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        
+        /* 成就徽章详情 */
+        .badge-detail { text-align: center; padding: 20px; }
+        .badge-detail-icon { font-size: 64px; margin-bottom: 15px; }
+        .badge-detail-name { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
+        .badge-detail-desc { font-size: 14px; color: #666; margin-bottom: 15px; }
+        .badge-detail-progress { background: #eee; height: 8px; border-radius: 4px; margin: 15px 0; overflow: hidden; }
+        .badge-detail-progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 4px; }
+        
+        /* 单词配对游戏 */
+        .pair-game { padding: 16px; }
+        .pair-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0; }
+        .pair-card { aspect-ratio: 1; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s; }
+        .pair-card:hover { transform: scale(1.05); }
+        .pair-card.selected { background: #667eea; color: white; }
+        .pair-card.matched { background: #52C41A; color: white; opacity: 0.5; }
+        .pair-card.wrong { background: #ef4444; color: white; animation: shake 0.5s; }
+        
+        /* 学习目标设置 */
+        .goal-setting { padding: 16px; }
+        .goal-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border-radius: 12px; margin-bottom: 10px; }
+        .goal-label { font-size: 14px; }
+        .goal-value { font-size: 24px; font-weight: bold; color: #667eea; }
+        
+        /* 语音指令 */
+        .voice-btn { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; font-size: 24px; cursor: pointer; margin: 20px auto; display: block; }
+        .voice-btn.recording { animation: pulse 1s infinite; background: #ef4444; }
         .learning-calendar { padding: 10px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .calendar-day { aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999; }
@@ -781,6 +857,7 @@
             <div class="tab" data-tab="arena">挑战</div>
             <div class="tab" data-tab="analysis">分析</div>
             <div class="tab" data-tab="ai">AI</div>
+            <div class="tab" data-tab="game">游戏</div>
             <div class="tab" data-tab="settings">设置</div>
         </div>
 
@@ -1458,6 +1535,453 @@
         // 每分钟检查一次
         setInterval(checkReminder, 60000);
         
+        // ====== 通知权限请求 ======
+        function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                alert('您的浏览器不支持通知功能');
+                return;
+            }
+            
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    localStorage.setItem('wordAI_notifications', 'true');
+                    alert('通知权限已开启！');
+                    new Notification('AI背单词', { body: '通知功能已开启，我会及时提醒你学习~' });
+                } else {
+                    alert('需要通知权限才能接收学习提醒');
+                }
+            });
+        }
+        
+        // ====== 发送学习提醒通知 ======
+        function sendStudyNotification(title, body) {
+            if (Notification.permission === 'granted') {
+                new Notification(title, { body, icon: '📚' });
+            }
+        }
+        
+        // ====== 浮动快捷操作 ======
+        function showQuickActions() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width:300px;">
+                    <div class="modal-title">⚡ 快捷操作</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px;">
+                        <button class="btn" style="padding:15px;" onclick="this.closest('.modal').remove();showTab('tab-arena')">⚔️ 挑战</button>
+                        <button class="btn" style="padding:15px;" onclick="this.closest('.modal').remove();showTab('tab-ai')">🤖 AI助手</button>
+                        <button class="btn" style="padding:15px;" onclick="this.closest('.modal').remove();showTab('tab-plan')">⏱️ 专注</button>
+                        <button class="btn" style="padding:15px;" onclick="this.closest('.modal').remove();generateSharePoster()">📤 分享</button>
+                    </div>
+                    <button class="btn" style="width:100%;margin-top:15px;" onclick="this.closest('.modal').remove()">关闭</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // ====== 学习打卡日历 ======
+        function renderCheckinCalendar() {
+            const container = document.getElementById('checkinCalendar');
+            if (!container) return;
+            
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            // 获取本月签到数据
+            const checkinData = JSON.parse(localStorage.getItem('wordAI_checkinHistory') || '{}');
+            const monthKey = `${year}-${month}`;
+            const checkedDays = checkinData[monthKey] || [];
+            
+            const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+            let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px;">`;
+            weekDays.forEach(w => html += `<div style="text-align:center;font-size:10px;color:#999;">${w}</div>`);
+            html += '</div>';
+            
+            html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">';
+            
+            // 填充空白
+            for (let i = 0; i < firstDay.getDay(); i++) {
+                html += '<div></div>';
+            }
+            
+            // 日期
+            for (let d = 1; d <= daysInMonth; d++) {
+                const isChecked = checkedDays.includes(d);
+                const isToday = d === today.getDate();
+                html += `<div class="checkin-day ${isChecked ? 'checked' : ''} ${isToday ? 'today' : ''}">${d}</div>`;
+            }
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+        
+        // ====== 个性化设置 ======
+        function showAdvancedSettings() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width:360px;">
+                    <div class="modal-title">⚙️ 高级设置</div>
+                    
+                    <div style="margin-top:15px;">
+                        <div style="font-size:14px;font-weight:600;margin-bottom:10px;">🔔 通知设置</div>
+                        <div class="export-option" onclick="requestNotificationPermission()">
+                            <div class="export-icon" style="background:#f0f7ff;">🔔</div>
+                            <div style="flex:1;">
+                                <div style="font-size:14px;">开启学习提醒</div>
+                                <div style="font-size:12px;color:#666;">接收每日学习提醒通知</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top:15px;">
+                        <div style="font-size:14px;font-weight:600;margin-bottom:10px;">🎨 主题设置</div>
+                        <div class="export-option" onclick="toggleAutoDarkMode()">
+                            <div class="export-icon" style="background:#fff7e6;">🌙</div>
+                            <div style="flex:1;">
+                                <div style="font-size:14px;">自动夜间模式</div>
+                                <div style="font-size:12px;color:#666;">22:00-06:00自动切换</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top:15px;">
+                        <div style="font-size:14px;font-weight:600;margin-bottom:10px;">📊 数据导出</div>
+                        <div class="export-option" onclick="exportToCSV()">
+                            <div class="export-icon" style="background:#f6ffed;">📊</div>
+                            <div style="flex:1;">
+                                <div style="font-size:14px;">导出CSV</div>
+                                <div style="font-size:12px;color:#666;">Excel可打开</div>
+                            </div>
+                        </div>
+                        <div class="export-option" onclick="exportToTxt()">
+                            <div class="export-icon" style="background:#fff1f0;">📝</div>
+                            <div style="flex:1;">
+                                <div style="font-size:14px;">导出TXT</div>
+                                <div style="font-size:12px;color:#666;">纯文本格式</div>
+                            </div>
+                        </div>
+                        <div class="export-option" onclick="exportToMarkdown()">
+                            <div class="export-icon" style="background:#f0f7ff;">📄</div>
+                            <div style="flex:1;">
+                                <div style="font-size:14px;">导出Markdown</div>
+                                <div style="font-size:12px;color:#666;">优雅的笔记格式</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" style="width:100%;margin-top:20px;" onclick="this.closest('.modal').remove()">完成</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // ====== 单词配对游戏 ======
+        let pairGameActive = false;
+        let pairSelected = [];
+        let pairMatched = 0;
+        let pairLives = 3;
+        let pairStartTime = 0;
+        let pairTimerInterval = null;
+        
+        function startPairGame() {
+            // 选择6对单词
+            const gameWords = [...words].sort(() => Math.random() - 0.5).slice(0, 6);
+            const cards = [];
+            
+            // 创建单词和释义卡片
+            gameWords.forEach(w => {
+                cards.push({ id: w.word, text: w.word, type: 'word' });
+                cards.push({ id: w.word, text: w.meaning, type: 'meaning' });
+            });
+            
+            // 随机打乱
+            cards.sort(() => Math.random() - 0.5);
+            
+            // 显示游戏面板
+            document.getElementById('pairGameStart').style.display = 'none';
+            document.getElementById('pairGameBoard').style.display = 'block';
+            document.getElementById('pairGameResult').style.display = 'none';
+            
+            // 重置游戏状态
+            pairSelected = [];
+            pairMatched = 0;
+            pairLives = 3;
+            pairGameActive = true;
+            
+            document.getElementById('pairLives').textContent = pairLives;
+            document.getElementById('pairTimer').textContent = '0';
+            
+            // 渲染卡片
+            const grid = document.getElementById('pairGrid');
+            grid.innerHTML = cards.map((c, i) => `
+                <div class="pair-card" data-id="${c.id}" data-type="${c.type}" data-index="${i}" onclick="selectPairCard(this)">
+                    ${c.text.length > 8 ? c.text.substring(0, 6) + '...' : c.text}
+                </div>
+            `).join('');
+            
+            // 开始计时
+            pairStartTime = Date.now();
+            pairTimerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - pairStartTime) / 1000);
+                document.getElementById('pairTimer').textContent = elapsed;
+            }, 1000);
+        }
+        
+        function selectPairCard(card) {
+            if (!pairGameActive || card.classList.contains('matched') || card.classList.contains('selected')) return;
+            if (pairSelected.length >= 2) return;
+            
+            card.classList.add('selected');
+            pairSelected.push(card);
+            
+            if (pairSelected.length === 2) {
+                const [c1, c2] = pairSelected;
+                
+                if (c1.dataset.id === c2.dataset.id && c1.dataset.type !== c2.dataset.type) {
+                    // 配对成功
+                    c1.classList.add('matched');
+                    c2.classList.add('matched');
+                    pairMatched++;
+                    playSound('correct');
+                    
+                    if (pairMatched >= 6) {
+                        endPairGame();
+                    }
+                } else {
+                    // 配对失败
+                    c1.classList.add('wrong');
+                    c2.classList.add('wrong');
+                    pairLives--;
+                    document.getElementById('pairLives').textContent = pairLives;
+                    playSound('wrong');
+                    
+                    if (pairLives <= 0) {
+                        endPairGame();
+                    }
+                }
+                
+                setTimeout(() => {
+                    pairSelected.forEach(c => {
+                        c.classList.remove('selected', 'wrong');
+                    });
+                    pairSelected = [];
+                }, 500);
+            }
+        }
+        
+        function endPairGame() {
+            pairGameActive = false;
+            clearInterval(pairTimerInterval);
+            
+            document.getElementById('pairGameBoard').style.display = 'none';
+            document.getElementById('pairGameResult').style.display = 'block';
+            
+            const elapsed = Math.floor((Date.now() - pairStartTime) / 1000);
+            document.getElementById('pairResultTime').textContent = elapsed;
+            
+            if (pairMatched >= 6) {
+                playSound('complete');
+            }
+        }
+        
+        // ====== 目标设置 ======
+        function showGoalSettings() {
+            const currentGoal = challengeData.dailyGoal || 10;
+            const newGoal = prompt('设置每日学习目标（5-50个单词）:', currentGoal);
+            if (newGoal && newGoal >= 5 && newGoal <= 50) {
+                challengeData.dailyGoal = parseInt(newGoal);
+                saveChallenge();
+                document.getElementById('dailyGoalDisplay').textContent = newGoal;
+                alert('每日目标已设置为 ' + newGoal + ' 个单词！');
+            }
+        }
+        
+        function updateGoalDisplays() {
+            const data = loadStats();
+            document.getElementById('dailyGoalDisplay').textContent = challengeData.dailyGoal || 10;
+            document.getElementById('streakGoalDisplay').textContent = streak;
+            document.getElementById('todayGoalDisplay').textContent = data.today || 0;
+        }
+        
+        // ====== 语音输入 ======
+        let voiceRecognition = null;
+        
+        function toggleVoiceInput() {
+            const btn = document.getElementById('voiceBtn');
+            
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('您的浏览器不支持语音识别功能');
+                return;
+            }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (voiceRecognition) {
+                voiceRecognition.stop();
+                voiceRecognition = null;
+                btn.classList.remove('recording');
+                return;
+            }
+            
+            voiceRecognition = new SpeechRecognition();
+            voiceRecognition.continuous = false;
+            voiceRecognition.interimResults = false;
+            
+            btn.classList.add('recording');
+            btn.textContent = '🔴';
+            
+            voiceRecognition.start();
+            
+            voiceRecognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                alert('你说的是: ' + transcript);
+                // 可以添加搜索功能
+                quickSearch(transcript);
+            };
+            
+            voiceRecognition.onerror = () => {
+                btn.classList.remove('recording');
+                btn.textContent = '🎤';
+                alert('语音识别失败，请重试');
+            };
+            
+            voiceRecognition.onend = () => {
+                btn.classList.remove('recording');
+                btn.textContent = '🎤';
+            };
+        }
+        
+        // ====== 增强数据导出 ======
+        function exportToCSV() {
+            const data = {
+                words: words,
+                favorites: favorites,
+                wrongWords: wrongWords,
+                newWords: newWords,
+                history: history,
+                stats: loadStats()
+            };
+            
+            let csv = '单词,音标,释义,状态\n';
+            words.forEach(w => {
+                csv += `${w.word},${w.phonetic || ''},${w.meaning},${w.status || 'new'}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `AI背单词_单词本_${new Date().toLocaleDateString()}.csv`;
+            link.click();
+        }
+        
+        function exportToTxt() {
+            let txt = '=== AI背单词 - 学习数据 ===\n\n';
+            txt += `总学习单词: ${total}个\n`;
+            txt += `正确数: ${correct}个\n`;
+            txt += `正确率: ${total > 0 ? Math.round((correct/total)*100) : 0}%\n`;
+            txt += `连续学习: ${streak}天\n\n`;
+            
+            txt += '=== 收藏的单词 ===\n';
+            favorites.forEach(w => {
+                txt += `${w.word} - ${w.meaning}\n`;
+            });
+            
+            txt += '\n=== 错题本 ===\n';
+            wrongWords.forEach(w => {
+                txt += `${w.word} - ${w.meaning}\n`;
+            });
+            
+            const blob = new Blob([txt], { type: 'text/plain;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `AI背单词_学习记录_${new Date().toLocaleDateString()}.txt`;
+            link.click();
+        }
+        
+        function exportToMarkdown() {
+            let md = '# AI背单词学习报告\n\n';
+            md += `> 生成时间: ${new Date().toLocaleString()}\n\n`;
+            
+            const data = loadStats();
+            md += '## 学习统计\n\n';
+            md += `- 总学习单词: **${total}** 个\n`;
+            md += `- 正确数: **${correct}** 个\n`;
+            md += `- 正确率: **${total > 0 ? Math.round((correct/total)*100) : 0}%**\n`;
+            md += `- 连续学习: **${streak}** 天\n`;
+            md += `- 今日学习: **${data.today || 0}** 个\n\n';
+            
+            md += '## 收藏的单词\n\n';
+            favorites.forEach(w => {
+                md += `- **${w.word}** - ${w.meaning}\n`;
+            });
+            
+            md += '\n## 错题本\n\n';
+            wrongWords.forEach(w => {
+                md += `- ~~${w.word}~~ - ${w.meaning}\n`;
+            });
+            
+            const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `AI背单词_学习报告_${new Date().toLocaleDateString()}.md`;
+            link.click();
+        }
+        
+        // ====== 单词本管理 ======
+        function showWordbookManager() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width:360px;">
+                    <div class="modal-title">📚 单词本管理</div>
+                    <div class="wordbook-manager" id="wordbookManager">
+                        <div class="wordbook-item">
+                            <div class="wordbook-info">
+                                <div class="wordbook-name">❤️ 收藏本</div>
+                                <div class="wordbook-count">${favorites.length} 个单词</div>
+                            </div>
+                            <div class="wordbook-actions">
+                                <button class="btn" style="font-size:11px;padding:6px;" onclick="showTab('tab-favorites')">查看</button>
+                            </div>
+                        </div>
+                        <div class="wordbook-item">
+                            <div class="wordbook-info">
+                                <div class="wordbook-name">❌ 错题本</div>
+                                <div class="wordbook-count">${wrongWords.length} 个单词</div>
+                            </div>
+                            <div class="wordbook-actions">
+                                <button class="btn" style="font-size:11px;padding:6px;" onclick="showTab('tab-wrongbook')">查看</button>
+                            </div>
+                        </div>
+                        <div class="wordbook-item">
+                            <div class="wordbook-info">
+                                <div class="wordbook-name">📖 生词本</div>
+                                <div class="wordbook-count">${newWords.length} 个单词</div>
+                            </div>
+                            <div class="wordbook-actions">
+                                <button class="btn" style="font-size:11px;padding:6px;" onclick="showTab('tab-newwords')">查看</button>
+                            </div>
+                        </div>
+                        <div class="wordbook-item">
+                            <div class="wordbook-info">
+                                <div class="wordbook-name">🔔 待复习</div>
+                                <div class="wordbook-count">${(JSON.parse(localStorage.getItem('wordAI_review') || '[]')).length} 个单词</div>
+                            </div>
+                            <div class="wordbook-actions">
+                                <button class="btn" style="font-size:11px;padding:6px;" onclick="showTab('tab-review')">复习</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;margin-top:15px;" onclick="this.closest('.modal').remove()">关闭</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
         // 页面加载时检查
         window.addEventListener('load', () => {
             setTimeout(checkReminder, 3000);
@@ -1636,15 +2160,29 @@
                 <button class="group-btn" style="width:100%;background:#fff;border:1px solid #667eea;color:#667eea;" onclick="joinGroup()">加入小组</button>
             </div>
             <div class="group-feed" id="groupFeed">
-                <div style="font-size:14px;font-weight:600;margin-bottom:12px;">📢 小组动态</div>
+                <!-- 小组功能即将上线 -->
+                <div style="padding:20px;text-align:center;color:#999;">
+                    <div style="font-size:24px;margin-bottom:8px;">🔜</div>
+                    <div>小组功能开发中</div>
+                    <div style="font-size:12px;margin-top:4px;">即将上线，敬请期待</div>
+                </div>
                 <div id="feedList"></div>
             </div>
             <div class="ranking-list">
-                <div style="font-size:14px;font-weight:600;margin-bottom:12px;">🏆 小组排行榜</div>
+                <!-- 排行榜仅本地 -->
+                <div style="padding:20px;text-align:center;color:#666;">
+                    <div style="font-size:24px;margin-bottom:8px;">📊</div>
+                    <div>本地排行榜</div>
+                    <div style="font-size:12px;margin-top:4px;">记录您的个人学习进度</div>
+                </div>
                 <div id="rankingList"></div>
             </div>
             <div style="padding:16px;">
-                <div style="font-size:14px;font-weight:600;margin-bottom:12px;">👫 推荐好友</div>
+                <!-- 好友功能开发中 -->
+                <div style="padding:20px;text-align:center;color:#999;">
+                    <div style="font-size:24px;margin-bottom:8px;">👫</div>
+                    <div>好友功能开发中</div>
+                </div>
                 <div id="friendRecommendations"></div>
             </div>
         </div>
@@ -2218,18 +2756,18 @@
             </div>
         </div>
 
-        <!-- 单词挑战赛 -->
+        <!-- 单词挑战赛（单机） -->
         <div class="tab-content" id="tab-arena">
             <div class="challenge-arena">
                 <div class="arena-header">
                     <div style="font-size:16px;font-weight:600;">⚔️ 单词挑战赛</div>
-                    <button class="btn" style="font-size:12px;padding:6px 12px;" onclick="showArenaRules()">规则</button>
+                    <span style="font-size:11px;background:#f0f0f0;padding:4px 8px;border-radius:4px;">单机模式</span>
                 </div>
                 <div id="arenaStartScreen">
                     <div style="text-align:center;padding:40px 20px;">
                         <div style="font-size:64px;margin-bottom:20px;">🏆</div>
                         <div style="font-size:18px;font-weight:600;margin-bottom:10px;">挑战你的极限</div>
-                        <div style="font-size:14px;color:#666;margin-bottom:30px;">60秒内回答尽可能多的单词</div>
+                        <div style="font-size:14px;color:#666;margin-bottom:30px;">60秒内回答尽可能多的单词<br><span style="font-size:12px;color:#999;">单机练习模式</span></div>
                         <button class="btn btn-primary" style="width:200px;font-size:16px;" onclick="startArena()">开始挑战</button>
                     </div>
                 </div>
@@ -2264,6 +2802,67 @@
                         <div><div style="font-size:32px;font-weight:bold;color:#f59e0b;" id="resultScore">0</div><div style="font-size:12px;color:#666;">得分</div></div>
                     </div>
                     <button class="btn btn-primary" style="width:200px;" onclick="startArena()">再战一次</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 单词游戏 -->
+        <div class="tab-content" id="tab-game">
+            <div class="pair-game">
+                <div style="font-size:16px;font-weight:600;margin-bottom:15px;">🃏 单词配对</div>
+                
+                <div id="pairGameStart">
+                    <div style="text-align:center;padding:40px 20px;">
+                        <div style="font-size:64px;margin-bottom:20px;">🃏</div>
+                        <div style="font-size:18px;font-weight:600;margin-bottom:10px;">单词配对游戏</div>
+                        <div style="font-size:14px;color:#666;margin-bottom:30px;">找出单词和释义的对应关系</div>
+                        <button class="btn btn-primary" style="width:200px;font-size:16px;" onclick="startPairGame()">开始游戏</button>
+                    </div>
+                </div>
+                
+                <div id="pairGameBoard" style="display:none;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:15px;">
+                        <span>⏱️ <span id="pairTimer">0</span>秒</span>
+                        <span>❤️ <span id="pairLives">3</span></span>
+                    </div>
+                    <div class="pair-grid" id="pairGrid"></div>
+                    <div style="text-align:center;margin-top:15px;">
+                        <button class="btn" onclick="startPairGame()">重新开始</button>
+                    </div>
+                </div>
+                
+                <div id="pairGameResult" style="display:none;text-align:center;padding:30px;">
+                    <div style="font-size:48px;margin-bottom:20px;">🎉</div>
+                    <div style="font-size:24px;font-weight:bold;margin-bottom:20px;">游戏结束！</div>
+                    <div style="font-size:18px;margin-bottom:30px;">用时: <span id="pairResultTime">0</span>秒</div>
+                    <button class="btn btn-primary" style="width:200px;" onclick="startPairGame()">再来一局</button>
+                </div>
+            </div>
+            
+            <div style="padding:16px;">
+                <div style="font-size:16px;font-weight:600;margin-bottom:15px;">🎯 学习目标</div>
+                <div class="goal-setting">
+                    <div class="goal-item">
+                        <div class="goal-label">每日单词目标</div>
+                        <div class="goal-value" id="dailyGoalDisplay">10</div>
+                    </div>
+                    <div class="goal-item">
+                        <div class="goal-label">当前连续天数</div>
+                        <div class="goal-value" id="streakGoalDisplay">0</div>
+                    </div>
+                    <div class="goal-item">
+                        <div class="goal-label">今日已学</div>
+                        <div class="goal-value" id="todayGoalDisplay">0</div>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;margin-top:15px;" onclick="showGoalSettings()">修改目标</button>
+                </div>
+            </div>
+            
+            <div style="padding:16px;">
+                <div style="font-size:16px;font-weight:600;margin-bottom:15px;">🎤 语音指令</div>
+                <div style="text-align:center;">
+                    <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()">🎤</button>
+                    <div style="font-size:14px;color:#666;margin-top:10px;">按住说话查单词</div>
                 </div>
             </div>
         </div>
@@ -2327,12 +2926,17 @@
             </div>
         </div>
 
-        <!-- 排行榜 -->
+        <!-- 排行榜（本地） -->
         <div class="tab-content" id="tab-rank">
             <div class="profile-header">
-                <div class="profile-avatar">🏆</div>
-                <div class="profile-name">排行榜</div>
-                <div class="profile-level">与全国学习者比拼</div>
+                <div class="profile-avatar">📊</div>
+                <div class="profile-name">我的学习记录</div>
+                <div class="profile-level">个人学习数据统计</div>
+            </div>
+            
+            <div style="padding:20px;text-align:center;color:#666;">
+                <p>📈 这是您个人的学习记录</p>
+                <p style="font-size:12px;color:#999;">联网功能开发中，完成后将支持全国排行榜</p>
             </div>
             <div class="rank-tabs" style="display:flex;background:white;padding:10px;border-bottom:1px solid #eee;">
                 <div class="rank-tab active" onclick="switchRankTab('total')" style="flex:1;text-align:center;padding:8px;cursor:pointer;border-radius:8px;background:#667eea;color:white;">总榜</div>
@@ -2375,6 +2979,9 @@
                 <span class="quick-bar-label">我的</span>
             </div>
         </div>
+        
+        <!-- 浮动按钮 -->
+        <button class="fab" onclick="showQuickActions()">⚡</button>
     </div>
 
     <script>
@@ -2793,6 +3400,9 @@
             
             // 检查离线状态
             updateOnlineStatus();
+            
+            // 检查自动夜间模式
+            checkAutoDarkMode();
         }
         
         function preloadResources() {
@@ -5966,6 +6576,8 @@ ${statusText}
                 if (this.dataset.tab === 'arena') { }
                 if (this.dataset.tab === 'analysis') { loadAnalysis(); }
                 if (this.dataset.tab === 'ai') { }
+                if (this.dataset.tab === 'game') { updateGoalDisplays(); }
+                if (this.dataset.tab === 'challenge') { renderCheckinCalendar(); }
             });
         });
 
@@ -6099,6 +6711,123 @@ ${statusText}
             const b = badges[badgeId] || { icon: '🏅', name: badgeId, desc: '成就徽章' };
             alert(`${b.icon} ${b.name}\n${b.desc}`);
         }
+        
+        // ====== 分享海报生成 ======
+        function generateSharePoster() {
+            const data = loadStats();
+            const streak = data.streak || 0;
+            const total = data.total || 0;
+            const accuracy = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width:360px;">
+                    <div class="modal-title">📤 生成学习海报</div>
+                    <div class="share-poster" id="sharePoster">
+                        <div class="poster-title">🎉 AI 背单词</div>
+                        <div style="font-size:14px;opacity:0.9;margin-bottom:20px;">我在坚持学习啦！</div>
+                        <div class="poster-stats">
+                            <div class="poster-stat">
+                                <div class="poster-stat-value">${total}</div>
+                                <div class="poster-stat-label">已学单词</div>
+                            </div>
+                            <div class="poster-stat">
+                                <div class="poster-stat-value">${streak}</div>
+                                <div class="poster-stat-label">连续天数</div>
+                            </div>
+                            <div class="poster-stat">
+                                <div class="poster-stat-value">${accuracy}%</div>
+                                <div class="poster-stat-label">正确率</div>
+                            </div>
+                        </div>
+                        <div class="poster-qr">📚</div>
+                        <div style="font-size:12px;opacity:0.8;">长按保存图片分享朋友圈</div>
+                    </div>
+                    <div style="display:flex;gap:10px;margin-top:15px;">
+                        <button class="btn btn-primary" style="flex:1;" onclick="savePosterImage()">保存图片</button>
+                        <button class="btn" style="flex:1;background:#07C160;color:white;" onclick="shareToSocial('wechat')">查看二维码</button>
+                    </div>
+                    <button class="btn" style="width:100%;margin-top:10px;" onclick="this.closest('.modal').remove()">关闭</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function savePosterImage() {
+            // 模拟保存图片
+            alert('📸 海报已生成！\n\n长按图片保存到本地');
+        }
+        
+        // ====== 成就解锁动画 ======
+        function showAchievementUnlock(icon, name, desc) {
+            const container = document.getElementById('achievementUnlock') || createAchievementContainer();
+            container.innerHTML = `
+                <div class="achievement-content">
+                    <div class="achievement-icon">${icon}</div>
+                    <div class="achievement-name">${name}</div>
+                    <div class="achievement-desc">${desc}</div>
+                </div>
+            `;
+            container.classList.add('active');
+            playSound('badge');
+            
+            setTimeout(() => {
+                container.classList.remove('active');
+            }, 3000);
+        }
+        
+        function createAchievementContainer() {
+            const div = document.createElement('div');
+            div.id = 'achievementUnlock';
+            div.className = 'achievement-unlock';
+            document.body.appendChild(div);
+            return div;
+        }
+        
+        // ====== 每日签到动画 ======
+        function showCheckinAnimation() {
+            const anim = document.createElement('div');
+            anim.className = 'checkin-animation';
+            anim.textContent = '✓';
+            document.body.appendChild(anim);
+            
+            setTimeout(() => anim.remove(), 1500);
+        }
+        
+        // ====== 定时夜间模式 ======
+        function checkAutoDarkMode() {
+            const hour = new Date().getHours();
+            const autoDarkEnabled = localStorage.getItem('wordAI_autoDarkMode') === 'true';
+            
+            if (autoDarkEnabled) {
+                // 晚上10点到早上6点自动开启暗色模式
+                if (hour >= 22 || hour < 6) {
+                    enableDarkMode();
+                } else {
+                    disableDarkMode();
+                }
+            }
+        }
+        
+        function enableDarkMode() {
+            if (!document.body.classList.contains('dark-theme')) {
+                document.body.classList.add('dark-theme');
+            }
+        }
+        
+        function disableDarkMode() {
+            document.body.classList.remove('dark-theme');
+        }
+        
+        function toggleAutoDarkMode() {
+            const current = localStorage.getItem('wordAI_autoDarkMode') === 'true';
+            localStorage.setItem('wordAI_autoDarkMode', (!current).toString());
+            alert((!current ? '开启' : '关闭') + '自动夜间模式成功！\n将在22:00-06:00自动切换暗色主题');
+        }
+        
+        // 每分钟检查一次是否需要切换主题
+        setInterval(checkAutoDarkMode, 60000);
         
         // ====== 移动端手势支持 ======
         function initTouchGestures() {
