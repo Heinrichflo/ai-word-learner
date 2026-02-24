@@ -490,6 +490,11 @@
             <div id="welcomeBanner" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:12px 15px;text-align:center;font-size:13px;display:none;">
                 <span id="welcomeText">👋 欢迎回来！</span>
             </div>
+            <!-- 学习小贴士 -->
+            <div id="tipBanner" style="background:#fff9e6;color:#856404;padding:10px 15px;text-align:center;font-size:12px;display:flex;align-items:center;justify-content:center;gap:6px;border-bottom:1px solid #ffeeba;">
+                <span>💡</span>
+                <span id="tipText">每天复习前一天学习的单词，记忆效果更好！</span>
+            </div>
             <div id="learnProgress" style="padding:10px 15px;background:#f5f5f5;display:none;">
                 <div style="display:flex;justify-content:space-between;font-size:11px;color:#666;margin-bottom:5px;">
                     <span>📊 今日进度</span>
@@ -1384,6 +1389,27 @@
         }
 
         // ====== 用户系统 ======
+        // 学习小贴士
+        const learningTips = [
+            "每天复习前一天学习的单词，记忆效果更好！",
+            "使用空格键可以播放单词发音，尝试跟读！",
+            "按 P 键可以收藏当前单词到收藏夹",
+            "正确率低于60%时，建议降低学习难度",
+            "艾宾浩斯遗忘曲线：复习最佳时间是1天后、3天后、7天后",
+            "每天学习5个新单词，坚持一个月就是150个！",
+            "发音测评可以帮助你纠正中式英语发音",
+            "错题本是你的薄弱点，多复习这些单词",
+            "完成每日目标可以获得徽章奖励",
+            "开启学习音效可以让学习更有趣",
+            "使用快捷键：1不认识 2困难 3认识",
+            "场景化学习可以让你更快掌握实用词汇"
+        ];
+        
+        function showRandomTip() {
+            const tipIndex = Math.floor(Math.random() * learningTips.length);
+            document.getElementById('tipText').textContent = learningTips[tipIndex];
+        }
+        
         function init() {
             loadUser();
             loadExp();
@@ -1399,6 +1425,9 @@
             loadCheckin(); // 加载签到数据
             checkStreakShield(); // 检查打卡保护卡
             updateStreakShieldUI(); // 更新保护卡UI
+            
+            // 显示随机学习小贴士
+            showRandomTip();
             
             // 新手引导
             checkNewUserGuide();
@@ -2035,7 +2064,7 @@
         // ====== 数据导出导入 ======
         function exportAllData() {
             const data = {
-                version: 'v2.2',
+                version: 'v2.3',
                 exportTime: new Date().toISOString(),
                 words: words,
                 favorites: favorites,
