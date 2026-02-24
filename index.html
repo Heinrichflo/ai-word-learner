@@ -1024,6 +1024,9 @@
                 <span>❌ 错题本</span>
                 <span id="wrongCount" style="font-size:12px;color:#999;">0 题</span>
             </div>
+            <div style="padding:15px;">
+                <button class="btn btn-primary" style="width:100%;margin-bottom:15px;" onclick="practiceWrongWords()">🔄 重新练习错题</button>
+            </div>
             <div id="wrongList"></div>
         </div>
 
@@ -1663,6 +1666,81 @@
                 wrongWords.push({...word, wrongCount: 1});
                 saveWrongWords();
             }
+        }
+        
+        function practiceWrongWords() {
+            if (wrongWords.length === 0) {
+                alert('错题本为空，没有需要练习的题目！');
+                return;
+            }
+            
+            // 切换到测验模式，使用错题
+            const wrongCopy = [...wrongWords];
+            let currentIndex = 0;
+            let correct = 0;
+            
+            function showNextWrong() {
+                if (currentIndex >= wrongCopy.length) {
+                    const acc = Math.round((correct / wrongCopy.length) * 100);
+                    alert(`练习完成！\n\n正确: ${correct}/${wrongCopy.length}\n正确率: ${acc}%`);
+                    
+                    // 清除全对的错题
+                    if (acc === 100) {
+                        wrongWords = wrongWords.filter(w => wrongCopy.some(c => c.word !== w.word));
+                        saveWrongWords();
+                        renderWrongWords();
+                    }
+                    return;
+                }
+                
+                const w = wrongCopy[currentIndex];
+                const meanings = words.map(x => x.meaning);
+                const correctMeaning = w.meaning;
+                const options = [correctMeaning];
+                
+                while (options.length < 4 && options.length < meanings.length) {
+                    const random = meanings[Math.floor(Math.random() * meanings.length)];
+                    if (!options.includes(random)) options.push(random);
+                }
+                options.sort(() => Math.random() - 0.5);
+                
+                const quizCard = document.getElementById('quiz-card');
+                quizCard.innerHTML = `
+                    <div class="ai-quiz-badge">❌ 错题重练</div>
+                    <div class="word">${w.word}</div>
+                    <div class="phonetic">${w.phonetic}</div>
+                    <div class="meaning">选择正确的中文释义</div>
+                `;
+                
+                document.getElementById('quiz-options').innerHTML = options.map(opt => `
+                    <button class="quiz-option" onclick="checkWrongAnswer('${opt}', '${correctMeaning}', this)">${opt}</button>
+                `).join('');
+                
+                window.checkWrongAnswer = function(selected, correctAns, btn) {
+                    document.querySelectorAll('.quiz-option').forEach(o => o.disabled = true);
+                    if (selected === correctAns) {
+                        btn.classList.add('correct');
+                        correct++;
+                        playSound('correct');
+                    } else {
+                        btn.classList.add('wrong');
+                        document.querySelectorAll('.quiz-option').forEach(o => {
+                            if (o.textContent === correctAns) o.classList.add('correct');
+                        });
+                        playSound('wrong');
+                    }
+                    currentIndex++;
+                    setTimeout(showNextWrong, 1000);
+                };
+                
+                // 切换到测验标签
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.querySelector('[data-tab="quiz"]').classList.add('active');
+                document.getElementById('tab-quiz').classList.add('active');
+            }
+            
+            showNextWrong();
         }
         
         function removeWrongWord(word) {
