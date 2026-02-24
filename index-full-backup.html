@@ -9,14 +9,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="AI背单词">
     <link rel="manifest" href="manifest.json">
-    
-    <!-- 启动画面 -->
-    <div class="splash-screen" id="splashScreen">
-        <div class="splash-logo">📚</div>
-        <div class="splash-title">AI 背单词</div>
-        <div class="splash-subtitle">智能学习助手</div>
-        <div class="splash-progress"><div class="splash-progress-fill" id="splashProgress"></div></div>
-    </div>
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
     <title>AI 背单词 - 智能学习助手</title>
     <style>
@@ -712,41 +704,6 @@
         /* 语音指令 */
         .voice-btn { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; font-size: 24px; cursor: pointer; margin: 20px auto; display: block; }
         .voice-btn.recording { animation: pulse 1s infinite; background: #ef4444; }
-        
-        /* 单词测验闯关 */
-        .level-game { padding: 16px; }
-        .level-progress { height: 10px; background: #eee; border-radius: 5px; margin: 15px 0; overflow: hidden; }
-        .level-progress-fill { height: 100%; background: linear-gradient(90deg, #52C41A, #73D13D); border-radius: 5px; transition: width 0.5s; }
-        .level-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; margin: 2px; }
-        .level-locked { background: #f5f5f5; color: #999; }
-        .level-unlocked { background: #f6ffed; color: #52C41A; }
-        .level-current { background: #667eea; color: white; }
-        
-        /* 学习周报 */
-        .weekly-report { padding: 16px; }
-        .report-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
-        .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .report-title { font-size: 14px; font-weight: 600; }
-        .report-date { font-size: 12px; color: #999; }
-        .report-stat { display: flex; justify-content: space-around; text-align: center; margin: 15px 0; }
-        .report-stat-item { flex: 1; }
-        .report-stat-value { font-size: 24px; font-weight: bold; color: #667eea; }
-        .report-stat-label { font-size: 11px; color: #666; }
-        
-        /* 启动画面 */
-        .splash-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; color: white; }
-        .splash-logo { font-size: 64px; margin-bottom: 20px; animation: bounce 1s; }
-        .splash-title { font-size: 28px; font-weight: bold; margin-bottom: 10px; }
-        .splash-subtitle { font-size: 14px; opacity: 0.8; }
-        .splash-progress { width: 200px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; margin-top: 30px; overflow: hidden; }
-        .splash-progress-fill { height: 100%; background: white; width: 0%; transition: width 0.3s; }
-        
-        /* 欢迎新手引导 */
-        .guide-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: none; }
-        .guide-overlay.active { display: block; }
-        .guide-card { position: absolute; background: white; border-radius: 16px; padding: 20px; width: 280px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
-        .guide-arrow { position: absolute; width: 0; height: 0; border: 10px solid transparent; }
-        .guide-btn { background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 25px; font-size: 14px; cursor: pointer; margin-top: 15px; width: 100%; }
         .learning-calendar { padding: 10px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .calendar-day { aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999; }
@@ -900,7 +857,6 @@
             <div class="tab" data-tab="arena">挑战</div>
             <div class="tab" data-tab="analysis">分析</div>
             <div class="tab" data-tab="ai">AI</div>
-            <div class="tab" data-tab="level">等级</div>
             <div class="tab" data-tab="game">游戏</div>
             <div class="tab" data-tab="settings">设置</div>
         </div>
@@ -1723,193 +1679,6 @@
             document.body.appendChild(modal);
         }
         
-        // ====== 快速统计小部件 ======
-        function renderQuickStats() {
-            const container = document.getElementById('quickStats');
-            if (!container) return;
-            
-            const data = loadStats();
-            const level = loadUserLevel();
-            
-            container.innerHTML = `
-                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;">
-                    <div>
-                        <div style="font-size:16px;font-weight:bold;color:#667eea;">${data.today || 0}</div>
-                        <div style="font-size:10px;color:#666;">今日</div>
-                    </div>
-                    <div>
-                        <div style="font-size:16px;font-weight:bold;color:#10b981;">${streak}</div>
-                        <div style="font-size:10px;color:#666;">连续</div>
-                    </div>
-                    <div>
-                        <div style="font-size:16px;font-weight:bold;color:#f59e0b;">${level}</div>
-                        <div style="font-size:10px;color:#666;">等级</div>
-                    </div>
-                    <div>
-                        <div style="font-size:16px;font-weight:bold;color:#667eea;">${data.total || 0}</div>
-                        <div style="font-size:10px;color:#666;">总计</div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // ====== 等级系统 ======
-        const levels = [
-            { level: 1, name: '初学者', exp: 0, icon: '🌱' },
-            { level: 2, name: '入门', exp: 100, icon: '📖' },
-            { level: 3, name: '进阶', exp: 300, icon: '📚' },
-            { level: 4, name: '熟练', exp: 600, icon: '💪' },
-            { level', exp: : 5, name: '精通', exp: 1000, icon: '🏆' },
-            { level: 6, name: '专家', exp: 1500, icon: '🎓' },
-            { level: 7, name: '大师', exp: 2200, icon: '👑' },
-            { level: 8, name: '王者', exp: 3000, icon: '💎' }
-        ];
-        
-        function loadUserLevel() {
-            return parseInt(localStorage.getItem('wordAI_userLevel') || '1');
-        }
-        
-        function getUserExp() {
-            return parseInt(localStorage.getItem('wordAI_userExp') || '0');
-        }
-        
-        function addExp(amount) {
-            const currentExp = getUserExp();
-            let newExp = currentExp + amount;
-            let newLevel = loadUserLevel();
-            
-            // 检查升级
-            while (newLevel < levels.length && newExp >= levels[newLevel].exp) {
-                newLevel++;
-                if (newLevel <= levels.length) {
-                    showLevelUp(newLevel);
-                }
-            }
-            
-            localStorage.setItem('wordAI_userExp', newExp.toString());
-            localStorage.setItem('wordAI_userLevel', newLevel.toString());
-            
-            updateLevelUI();
-        }
-        
-        function updateLevelUI() {
-            const level = loadUserLevel();
-            const exp = getUserExp();
-            const currentLevelData = levels[level - 1];
-            const nextLevelData = levels[level] || { exp: currentLevelData.exp + 500 };
-            
-            document.getElementById('currentLevel').textContent = `Lv.${level}`;
-            document.getElementById('currentExp').textContent = exp;
-            
-            const expInLevel = exp - currentLevelData.exp;
-            const expNeeded = nextLevelData.exp - currentLevelData.exp;
-            const progress = Math.min((expInLevel / expNeeded) * 100, 100);
-            
-            document.getElementById('expProgress').style.width = progress + '%';
-            document.getElementById('expNeeded').textContent = nextLevelData.exp - exp;
-            
-            // 更新关卡列表
-            renderLevelList();
-        }
-        
-        function showLevelUp(newLevel) {
-            const levelData = levels[newLevel - 1];
-            playSound('levelup');
-            
-            const modal = document.createElement('div');
-            modal.className = 'modal active';
-            modal.innerHTML = `
-                <div class="modal-content" style="text-align:center;">
-                    <div style="font-size:64px;margin-bottom:15px;">🎉</div>
-                    <div class="modal-title">升级啦！</div>
-                    <div style="font-size:48px;margin-bottom:10px;">${levelData.icon}</div>
-                    <div style="font-size:24px;font-weight:bold;color:#667eea;">${levelData.name}</div>
-                    <p style="color:#666;margin-top:15px;">恭喜达到 Lv.${newLevel}！</p>
-                    <button class="btn btn-primary" style="width:100%;margin-top:20px;" onclick="this.closest('.modal').remove()">继续加油</button>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
-        
-        function renderLevelList() {
-            const container = document.getElementById('levelList');
-            if (!container) return;
-            
-            const currentLevel = loadUserLevel();
-            
-            container.innerHTML = levels.map((l, i) => {
-                const isUnlocked = (i + 1) <= currentLevel;
-                const isCurrent = (i + 1) === currentLevel;
-                return `
-                    <div class="level-badge ${isCurrent ? 'level-current' : isUnlocked ? 'level-unlocked' : 'level-locked'}" onclick="${isUnlocked ? `selectLevel(${i + 1})` : ''}">
-                        ${l.icon} ${l.name}
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        function selectLevel(level) {
-            alert(`选择关卡 ${level} - ${levels[level - 1].name}\n\n功能开发中，敬请期待！`);
-        }
-        
-        function startLevelChallenge() {
-            alert('单词闯关模式即将上线！敬请期待~');
-        }
-        
-        // ====== 学习周报 ======
-        function generateWeeklyReport() {
-            const history = JSON.parse(localStorage.getItem('wordAI_history') || '[]');
-            const now = new Date();
-            const weekAgo = new Date(now.getTime() - 7 * 24 *60 * 1000);
-            
-            // 统计本周数据
-            let weekTotal = 0, weekCorrect = 0, weekDays = 0;
-            history.forEach(h => {
-                const date = new Date(h.date);
-                if (date >= weekAgo) {
-                    weekTotal += h.total || 0;
-                    weekCorrect += h.correct || 0;
-                    if (h.total > 0) weekDays++;
-                }
-            });
-            
-            const accuracy = weekTotal > 0 ? Math.round((weekCorrect / weekTotal) * 100) : 0;
-            
-            const modal = document.createElement('div');
-            modal.className = 'modal active';
-            modal.innerHTML = `
-                <div class="modal-content" style="max-width:360px;">
-                    <div class="modal-title">📊 本周学习报告</div>
-                    <div class="weekly-report">
-                        <div class="report-card">
-                            <div class="report-stat">
-                                <div class="report-stat-item">
-                                    <div class="report-stat-value">${weekTotal}</div>
-                                    <div class="report-stat-label">学习单词</div>
-                                </div>
-                                <div class="report-stat-item">
-                                    <div class="report-stat-value">${weekDays}</div>
-                                    <div class="report-stat-label">学习天数</div>
-                                </div>
-                                <div class="report-stat-item">
-                                    <div class="report-stat-value">${accuracy}%</div>
-                                    <div class="report-stat-label">正确率</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="report-card">
-                            <div style="font-size:14px;font-weight:600;margin-bottom:10px;">📈 本周进步</div>
-                            <div style="font-size:13px;color:#666;">
-                                ${weekDays >= 5 ? '✅ 学习非常勤奋！' : weekDays >= 3 ? '💪 保持不错！' : '📚 要继续加油哦~'}
-                            </div>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" style="width:100%;" onclick="this.closest('.modal').remove()">关闭</button>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
-        
         // ====== 单词配对游戏 ======
         let pairGameActive = false;
         let pairSelected = [];
@@ -2391,29 +2160,15 @@
                 <button class="group-btn" style="width:100%;background:#fff;border:1px solid #667eea;color:#667eea;" onclick="joinGroup()">加入小组</button>
             </div>
             <div class="group-feed" id="groupFeed">
-                <!-- 小组功能即将上线 -->
-                <div style="padding:20px;text-align:center;color:#999;">
-                    <div style="font-size:24px;margin-bottom:8px;">🔜</div>
-                    <div>小组功能开发中</div>
-                    <div style="font-size:12px;margin-top:4px;">即将上线，敬请期待</div>
-                </div>
+                <div style="font-size:14px;font-weight:600;margin-bottom:12px;">📢 小组动态</div>
                 <div id="feedList"></div>
             </div>
             <div class="ranking-list">
-                <!-- 排行榜仅本地 -->
-                <div style="padding:20px;text-align:center;color:#666;">
-                    <div style="font-size:24px;margin-bottom:8px;">📊</div>
-                    <div>本地排行榜</div>
-                    <div style="font-size:12px;margin-top:4px;">记录您的个人学习进度</div>
-                </div>
+                <div style="font-size:14px;font-weight:600;margin-bottom:12px;">🏆 小组排行榜</div>
                 <div id="rankingList"></div>
             </div>
             <div style="padding:16px;">
-                <!-- 好友功能开发中 -->
-                <div style="padding:20px;text-align:center;color:#999;">
-                    <div style="font-size:24px;margin-bottom:8px;">👫</div>
-                    <div>好友功能开发中</div>
-                </div>
+                <div style="font-size:14px;font-weight:600;margin-bottom:12px;">👫 推荐好友</div>
                 <div id="friendRecommendations"></div>
             </div>
         </div>
@@ -2987,18 +2742,18 @@
             </div>
         </div>
 
-        <!-- 单词挑战赛（单机） -->
+        <!-- 单词挑战赛 -->
         <div class="tab-content" id="tab-arena">
             <div class="challenge-arena">
                 <div class="arena-header">
                     <div style="font-size:16px;font-weight:600;">⚔️ 单词挑战赛</div>
-                    <span style="font-size:11px;background:#f0f0f0;padding:4px 8px;border-radius:4px;">单机模式</span>
+                    <button class="btn" style="font-size:12px;padding:6px 12px;" onclick="showArenaRules()">规则</button>
                 </div>
                 <div id="arenaStartScreen">
                     <div style="text-align:center;padding:40px 20px;">
                         <div style="font-size:64px;margin-bottom:20px;">🏆</div>
                         <div style="font-size:18px;font-weight:600;margin-bottom:10px;">挑战你的极限</div>
-                        <div style="font-size:14px;color:#666;margin-bottom:30px;">60秒内回答尽可能多的单词<br><span style="font-size:12px;color:#999;">单机练习模式</span></div>
+                        <div style="font-size:14px;color:#666;margin-bottom:30px;">60秒内回答尽可能多的单词</div>
                         <button class="btn btn-primary" style="width:200px;font-size:16px;" onclick="startArena()">开始挑战</button>
                     </div>
                 </div>
@@ -3034,37 +2789,6 @@
                     </div>
                     <button class="btn btn-primary" style="width:200px;" onclick="startArena()">再战一次</button>
                 </div>
-            </div>
-        </div>
-
-        <!-- 单词闯关 -->
-        <div class="tab-content" id="tab-level">
-            <div class="level-game">
-                <div style="font-size:16px;font-weight:600;margin-bottom:15px;">🎮 单词闯关</div>
-                
-                <div class="report-card">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div>
-                            <div style="font-size:14px;">当前等级</div>
-                            <div style="font-size:24px;font-weight:bold;color:#667eea;" id="currentLevel">Lv.1</div>
-                        </div>
-                        <div style="text-align:right;">
-                            <div style="font-size:14px;">经验值</div>
-                            <div style="font-size:18px;font-weight:bold;" id="currentExp">0</div>
-                        </div>
-                    </div>
-                    <div class="level-progress">
-                        <div class="level-progress-fill" id="expProgress" style="width:0%"></div>
-                    </div>
-                    <div style="font-size:12px;color:#666;text-align:center;">距离下一级还需 <span id="expNeeded">100</span> 经验</div>
-                </div>
-                
-                <div style="margin:20px 0;">
-                    <div style="font-size:14px;font-weight:600;margin-bottom:10px;">关卡选择</div>
-                    <div id="levelList"></div>
-                </div>
-                
-                <button class="btn btn-primary" style="width:100%;margin-top:15px;" onclick="startLevelChallenge()">开始闯关</button>
             </div>
         </div>
 
@@ -3188,17 +2912,12 @@
             </div>
         </div>
 
-        <!-- 排行榜（本地） -->
+        <!-- 排行榜 -->
         <div class="tab-content" id="tab-rank">
             <div class="profile-header">
-                <div class="profile-avatar">📊</div>
-                <div class="profile-name">我的学习记录</div>
-                <div class="profile-level">个人学习数据统计</div>
-            </div>
-            
-            <div style="padding:20px;text-align:center;color:#666;">
-                <p>📈 这是您个人的学习记录</p>
-                <p style="font-size:12px;color:#999;">联网功能开发中，完成后将支持全国排行榜</p>
+                <div class="profile-avatar">🏆</div>
+                <div class="profile-name">排行榜</div>
+                <div class="profile-level">与全国学习者比拼</div>
             </div>
             <div class="rank-tabs" style="display:flex;background:white;padding:10px;border-bottom:1px solid #eee;">
                 <div class="rank-tab active" onclick="switchRankTab('total')" style="flex:1;text-align:center;padding:8px;cursor:pointer;border-radius:8px;background:#667eea;color:white;">总榜</div>
@@ -3211,8 +2930,6 @@
             </div>
         </div>
 
-        <div class="stats" id="quickStats" style="display:none;"></div>
-        
         <div class="stats">
             <div class="stat-item"><div class="stat-value" id="total">0</div><div class="stat-label">已学习</div></div>
             <div class="stat-item"><div class="stat-value" id="correct">0</div><div class="stat-label">正确</div></div>
@@ -3613,29 +3330,6 @@
             preloadResources();
         }
         
-        // ====== 启动画面 ======
-        function showSplashScreen() {
-            const splash = document.getElementById('splashScreen');
-            const progress = document.getElementById('splashProgress');
-            let width = 0;
-            
-            const interval = setInterval(() => {
-                width += Math.random() * 20;
-                if (width >= 100) {
-                    width = 100;
-                    clearInterval(interval);
-                    
-                    // 延迟关闭启动画面
-                    setTimeout(() => {
-                        splash.style.opacity = '0';
-                        splash.style.transition = 'opacity 0.5s';
-                        setTimeout(() => splash.style.display = 'none', 500);
-                    }, 300);
-                }
-                progress.style.width = width + '%';
-            }, 100);
-        }
-        
         function performInit() {
             loadUser();
             loadExp();
@@ -3690,9 +3384,6 @@
             
             // 检查自动夜间模式
             checkAutoDarkMode();
-            
-            // 渲染快速统计
-            renderQuickStats();
         }
         
         function preloadResources() {
@@ -6867,7 +6558,6 @@ ${statusText}
                 if (this.dataset.tab === 'analysis') { loadAnalysis(); }
                 if (this.dataset.tab === 'ai') { }
                 if (this.dataset.tab === 'game') { updateGoalDisplays(); }
-                if (this.dataset.tab === 'level') { updateLevelUI(); }
                 if (this.dataset.tab === 'challenge') { renderCheckinCalendar(); }
             });
         });
@@ -7037,7 +6727,7 @@ ${statusText}
                     </div>
                     <div style="display:flex;gap:10px;margin-top:15px;">
                         <button class="btn btn-primary" style="flex:1;" onclick="savePosterImage()">保存图片</button>
-                        <button class="btn" style="flex:1;background:#07C160;color:white;" onclick="shareToSocial('wechat')">查看二维码</button>
+                        <button class="btn" style="flex:1;background:#07C160;color:white;" onclick="shareToSocial('wechat')">分享微信</button>
                     </div>
                     <button class="btn" style="width:100%;margin-top:10px;" onclick="this.closest('.modal').remove()">关闭</button>
                 </div>
@@ -7047,7 +6737,7 @@ ${statusText}
         
         function savePosterImage() {
             // 模拟保存图片
-            alert('📸 海报已生成！\n\n长按图片保存到本地');
+            alert('📸 海报已保存到相册！\n\n快去分享到朋友圈吧~');
         }
         
         // ====== 成就解锁动画 ======
@@ -7280,570 +6970,6 @@ ${statusText}
                 }
             } catch (e) {}
         }, 60 * 60 * 1000); // 每小时检查一次
-        
-        // ====== [融合新功能] 增强型SM2间隔重复算法 ======
-        // 基于AnyMemo和开源算法的优化实现
-        const EnhancedSM2 = {
-            // 计算下次复习间隔
-            calculate: function(quality, repetitions, easeFactor, interval) {
-                // quality: 0-5 (0-2 = 失败, 3-5 = 成功)
-                if (quality < 3) {
-                    // 回答错误，重新开始
-                    return {
-                        repetitions: 0,
-                        easeFactor: Math.max(1.3, easeFactor - 0.2),
-                        interval: 1
-                    };
-                }
-                
-                // 回答正确
-                let newInterval, newRepetitions = repetitions + 1;
-                let newEaseFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
-                newEaseFactor = Math.max(1.3, newEaseFactor); // 最小1.3
-                
-                if (newRepetitions === 1) {
-                    newInterval = 1;
-                } else if (newRepetitions === 2) {
-                    newInterval = 6;
-                } else {
-                    newInterval = Math.round(interval * newEaseFactor);
-                }
-                
-                return {
-                    repetitions: newRepetitions,
-                    easeFactor: newEaseFactor,
-                    interval: newInterval
-                };
-            },
-            
-            // 获取记忆保持率预测
-            getRetentionPrediction: function(daysSinceReview, easeFactor, interval) {
-                // 基于艾宾浩斯遗忘曲线改良版
-                const baseRetention = Math.exp(-daysSinceReview / (interval * easeFactor * 0.5));
-                return Math.max(0, Math.min(100, Math.round(baseRetention * 100)));
-            }
-        };
-        
-        // ====== [融合新功能] Anki导入功能 ======
-        // 从Carden和Ulangi学习的一键导入
-        const AnkiImport = {
-            // 解析Anki导出的CSV格式
-            parseAnkiFormat: function(csvText) {
-                const lines = csvText.split('\n').filter(l => l.trim());
-                const cards = [];
-                
-                lines.forEach(line => {
-                    // 处理带引号的CSV
-                    const parts = [];
-                    let current = '';
-                    let inQuotes = false;
-                    
-                    for (let char of line) {
-                        if (char === '"') {
-                            inQuotes = !inQuotes;
-                        } else if (char === ';' && !inQuotes) {
-                            parts.push(current.trim());
-                            current = '';
-                        } else {
-                            current += char;
-                        }
-                    }
-                    parts.push(current.trim());
-                    
-                    if (parts.length >= 2) {
-                        cards.push({
-                            word: parts[0].replace(/<[^>]+>/g, ''), // 去除HTML标签
-                            meaning: parts[1].replace(/<[^>]+>/g, ''),
-                            phonetic: parts[2] || ''
-                        });
-                    }
-                });
-                
-                return cards;
-            },
-            
-            // 解析标准CSV格式
-            parseCSV: function(csvText) {
-                const lines = csvText.split('\n').filter(l => l.trim());
-                const cards = [];
-                
-                // 跳过标题行
-                for (let i = 1; i < lines.length; i++) {
-                    const parts = lines[i].split(',').map(p => p.trim().replace(/^"|"$/g, ''));
-                    if (parts.length >= 2) {
-                        cards.push({
-                            word: parts[0],
-                            meaning: parts[1],
-                            phonetic: parts[2] || ''
-                        });
-                    }
-                }
-                
-                return cards;
-            },
-            
-            // 从文件导入
-            importFromFile: function(file) {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        try {
-                            const text = e.target.result;
-                            const cards = this.parseCSV(text);
-                            resolve(cards);
-                        } catch (err) {
-                            reject(err);
-                        }
-                    };
-                    reader.onerror = reject;
-                    reader.readAsText(file);
-                });
-            },
-            
-            // 导入到学习库
-            importCards: async function(cards) {
-                if (!cards || cards.length === 0) {
-                    alert('导入失败：文件格式不正确');
-                    return;
-                }
-                
-                const wordBook = JSON.parse(localStorage.getItem('wordAI_wordBook') || '[]');
-                let addedCount = 0;
-                
-                cards.forEach(card => {
-                    // 避免重复添加
-                    if (!wordBook.some(w => w.word.toLowerCase() === card.word.toLowerCase())) {
-                        wordBook.push({
-                            word: card.word,
-                            meaning: card.meaning,
-                            phonetic: card.phonetic || '',
-                            learned: false,
-                            correct: 0,
-                            wrong: 0,
-                            addedAt: Date.now()
-                        });
-                        addedCount++;
-                    }
-                });
-                
-                localStorage.setItem('wordAI_wordBook', JSON.stringify(wordBook));
-                
-                alert('成功导入 ' + addedCount + ' 个单词！');
-                renderWordBook();
-            }
-        };
-        
-        // ====== [融合新功能] 发音评分系统 ======
-        // 从LangHelper学习的AI发音评估
-        const PronunciationScore = {
-            recognition: null,
-            isRecording: false,
-            
-            // 初始化语音识别
-            init: function() {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!SpeechRecognition) {
-                    alert('您的浏览器不支持语音识别功能');
-                    return false;
-                }
-                
-                this.recognition = new SpeechRecognition();
-                this.recognition.continuous = false;
-                this.recognition.interimResults = true;
-                this.recognition.lang = 'en-US';
-                
-                return true;
-            },
-            
-            // 开始录音
-            startRecording: function(targetWord, onResult, onError) {
-                if (!this.recognition && !this.init()) return;
-                
-                this.isRecording = true;
-                
-                this.recognition.onresult = (event) => {
-                    let transcript = '';
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                        transcript += event.results[i][0].transcript;
-                    }
-                    onResult(transcript);
-                };
-                
-                this.recognition.onerror = (event) => {
-                    this.isRecording = false;
-                    onError(event.error);
-                };
-                
-                this.recognition.onend = () => {
-                    this.isRecording = false;
-                };
-                
-                this.recognition.start();
-            },
-            
-            // 停止录音
-            stopRecording: function() {
-                if (this.recognition && this.isRecording) {
-                    this.recognition.stop();
-                    this.isRecording = false;
-                }
-            },
-            
-            // 计算发音相似度评分
-            calculateScore: function(spoken, target) {
-                if (!spoken || !target) return 0;
-                
-                spoken = spoken.toLowerCase().trim();
-                target = target.toLowerCase().trim();
-                
-                // 完全匹配
-                if (spoken === target) return 100;
-                
-                // 计算Levenshtein距离
-                const m = spoken.length;
-                const n = target.length;
-                const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
-                
-                for (let i = 0; i <= m; i++) dp[i][0] = i;
-                for (let j = 0; j <= n; j++) dp[0][j] = j;
-                
-                for (let i = 1; i <= m; i++) {
-                    for (let j = 1; j <= n; j++) {
-                        if (spoken[i-1] === target[j-1]) {
-                            dp[i][j] = dp[i-1][j-1];
-                        } else {
-                            dp[i][j] = Math.min(dp[i-1][j-1], dp[i-1][j], dp[i-1][j-1]) + 1;
-                        }
-                    }
-                }
-                
-                const distance = dp[m][n];
-                const similarity = 1 - (distance / Math.max(m, n));
-                
-                return Math.round(similarity * 100);
-            }
-        };
-        
-        // ====== [融合新功能] AI口语对话 ======
-        // 从LangHelper学习的对话功能
-        const AIConversation = {
-            messages: [],
-            isActive: false,
-            currentScenario: 'free',
-            
-            scenarios: {
-                free: { name: '自由对话', icon: '💬' },
-                interview: { name: '面试练习', icon: '👔' },
-                travel: { name: '旅行英语', icon: '✈️' },
-                business: { name: '商务英语', icon: '💼' },
-                daily: { name: '日常对话', icon: '🏠' }
-            },
-            
-            // 初始化对话
-            init: function() {
-                this.messages = [];
-                this.isActive = true;
-                this.addMessage('ai', '你好！我是你的AI英语口语教练。让我们开始练习吧！你可以用英语和我对话，或者选择一个场景。');
-            },
-            
-            // 添加消息
-            addMessage: function(type, content) {
-                this.messages.push({ type, content, time: Date.now() });
-                this.render();
-            },
-            
-            // 发送用户消息
-            send: async function(text) {
-                this.addMessage('user', text);
-                
-                // 模拟AI回复（实际项目中可以接入GPT API）
-                const replies = [
-                    'That is interesting! Can you tell me more about that?',
-                    'Great! How do you feel about that?',
-                    'I see. Could you elaborate a bit more?',
-                    'Well said! What other experiences do you have?',
-                    'Perfect! Let us try a different topic. What do you like to do in your free time?'
-                ];
-                
-                // 模拟网络延迟
-                await new Promise(r => setTimeout(r, 1000));
-                
-                const reply = replies[Math.floor(Math.random() * replies.length)];
-                this.addMessage('ai', reply);
-            },
-            
-            // 渲染对话
-            render: function() {
-                const container = document.getElementById('conversationMessages');
-                if (!container) return;
-                
-                container.innerHTML = this.messages.map(m => 
-                    '<div class="dialogue-msg ' + m.type + '"><div class="dialogue-bubble">' + m.content + '</div></div>'
-                ).join('');
-                
-                container.scrollTop = container.scrollHeight;
-            },
-            
-            // 切换场景
-            setScenario: function(scenario) {
-                this.currentScenario = scenario;
-                this.messages = [];
-                this.addMessage('ai', '好的，让我们开始' + this.scenarios[scenario].name + '！我来扮演对话中的角色。');
-            }
-        };
-        
-        // ====== [融合新功能] 数据导出功能 ======
-        const DataExport = {
-            // 导出为CSV
-            exportCSV: function() {
-                const wordBook = JSON.parse(localStorage.getItem('wordAI_wordBook') || '[]');
-                const reviewData = JSON.parse(localStorage.getItem('wordAI_review') || '[]');
-                
-                let csv = '单词,释义,音标,学习次数,正确次数,错误次数,掌握等级\n';
-                
-                wordBook.forEach(word => {
-                    const review = reviewData.find(r => r.word === word.word) || {};
-                    const level = this.calculateLevel(word);
-                    csv += '"' + word.word + '","' + word.meaning + '","' + (word.phonetic || '') + '",' + ((word.correct || 0) + (word.wrong || 0)) + ',' + (word.correct || 0) + ',' + (word.wrong || 0) + ',' + level + '\n';
-                });
-                
-                this.downloadFile(csv, 'word-ai-export.csv', 'text/csv');
-            },
-            
-            // 导出为Anki格式
-            exportAnki: function() {
-                const wordBook = JSON.parse(localStorage.getItem('wordAI_wordBook') || '[]');
-                
-                let ankiFormat = '';
-                
-                wordBook.forEach(word => {
-                    ankiFormat += word.word + ';' + word.meaning + ';' + (word.phonetic || '') + '\n';
-                });
-                
-                this.downloadFile(ankiFormat, 'word-ai-anki.txt', 'text/plain');
-            },
-            
-            // 计算掌握等级
-            calculateLevel: function(word) {
-                const total = (word.correct || 0) + (word.wrong || 0);
-                if (total === 0) return '未学习';
-                const rate = (word.correct || 0) / total;
-                if (rate >= 0.9) return '精通';
-                if (rate >= 0.7) return '熟悉';
-                if (rate >= 0.5) return '一般';
-                return '生疏';
-            },
-            
-            // 下载文件
-            downloadFile: function(content, filename, type) {
-                const blob = new Blob([content], { type: type });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                a.click();
-                URL.revokeObjectURL(url);
-            }
-        };
-        
-        // 显示导入弹窗
-        function showImportDialog() {
-            const modal = document.createElement('div');
-            modal.className = 'modal active';
-            modal.innerHTML = '<div class="modal-content" style="max-width:360px;"><div class="modal-title">📥 导入单词</div><p style="color:#666;font-size:13px;margin:15px 0;">支持从Anki、Quizlet等应用导入单词</p><div style="margin-top:15px;"><div style="font-size:13px;color:#666;margin-bottom:8px;">选择导入方式：</div><label class="export-option" style="cursor:pointer;"><div class="export-icon" style="background:#fff7e6;">📄</div><div style="flex:1;"><div style="font-size:14px;">CSV文件</div><div style="font-size:12px;color:#666;">标准格式: 单词,释义,音标</div></div><input type="file" accept=".csv,.txt" style="display:none;" onchange="handleFileImport(this)"></label><label class="export-option" style="cursor:pointer;"><div class="export-icon" style="background:#f0f7ff;">📋</div><div style="flex:1;"><div style="font-size:14px;">Anki格式</div><div style="font-size:12px;color:#666;">Anki导出的txt文件</div></div><input type="file" accept=".txt" style="display:none;" onchange="handleAnkiImport(this)"></label></div><button class="btn" style="width:100%;margin-top:15px;" onclick="this.closest(\'.modal\').remove()">取消</button></div>';
-            document.body.appendChild(modal);
-        }
-        
-        // 处理CSV文件导入
-        async function handleFileImport(input) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            try {
-                const cards = await AnkiImport.importFromFile(file);
-                await AnkiImport.importCards(cards);
-                input.closest('.modal').remove();
-            } catch (err) {
-                alert('导入失败: ' + err.message);
-            }
-        }
-        
-        // 处理Anki格式导入
-        async function handleAnkiImport(input) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            try {
-                const text = await file.text();
-                const cards = AnkiImport.parseAnkiFormat(text);
-                await AnkiImport.importCards(cards);
-                input.closest('.modal').remove();
-            } catch (err) {
-                alert('导入失败: ' + err.message);
-            }
-        }
-        
-        // 显示导出弹窗
-        function showExportDialog() {
-            const modal = document.createElement('div');
-            modal.className = 'modal active';
-            modal.innerHTML = '<div class="modal-content" style="max-width:360px;"><div class="modal-title">📤 导出单词</div><p style="color:#666;font-size:13px;margin:15px 0;">将你的学习数据导出备份</p><div style="display:flex;flex-direction:column;gap:10px;margin-top:15px;"><button class="btn" onclick="DataExport.exportCSV();this.closest(\'.modal\').remove();">📊 导出为CSV</button><button class="btn" onclick="DataExport.exportAnki();this.closest(\'.modal\').remove();">📋 导出为Anki格式</button></div><button class="btn" style="width:100%;margin-top:15px;" onclick="this.closest(\'.modal\').remove()">取消</button></div>';
-            document.body.appendChild(modal);
-        }
-        
-        // ====== [融合新功能] 显示AI口语对话 ======
-        function showAIDialogue() {
-            const modal = document.createElement('div');
-            modal.className = 'modal active';
-            modal.style.maxWidth = '500px';
-            let scenariosHtml = '';
-            for (const [k, v] of Object.entries(AIConversation.scenarios)) {
-                scenariosHtml += '<button onclick="AIConversation.setScenario(\'' + k + '\')" style="padding:6px 12px;border:none;border-radius:15px;background:rgba(255,255,255,0.2);color:white;font-size:12px;cursor:pointer;white-space:nowrap;">' + v.icon + ' ' + v.name + '</button>';
-            }
-            modal.innerHTML = '<div style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:20px;border-radius:20px 20px 0 0;"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:18px;font-weight:bold;">🗣️ AI口语陪练</div><button onclick="this.closest(\'.modal\').remove()" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">✕</button></div><div style="display:flex;gap:8px;margin-top:12px;overflow-x:auto;padding-bottom:5px;">' + scenariosHtml + '</div></div><div id="conversationMessages" style="height:300px;overflow-y:auto;padding:15px;background:#f9f9f9;"></div><div style="display:flex;gap:10px;padding:15px;background:white;border-top:1px solid #eee;"><input type="text" id="dialogueInput" placeholder="用英语输入..." style="flex:1;padding:12px;border:1px solid #ddd;border-radius:25px;outline:none;"><button onclick="sendDialogue()" style="width:45px;height:45px;border-radius:50%;background:#667eea;color:white;border:none;cursor:pointer;font-size:18px;">➤</button></div>';
-            document.body.appendChild(modal);
-            AIConversation.init();
-            
-            // 回车发送
-            document.getElementById('dialogueInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') sendDialogue();
-            });
-        }
-        
-        function sendDialogue() {
-            const input = document.getElementById('dialogueInput');
-            const text = input.value.trim();
-            if (!text) return;
-            
-            AIConversation.send(text);
-            input.value = '';
-        }
-        
-        // ====== [融合新功能] 发音练习模式 ======
-        function startPronunciationPractice() {
-            const wordBook = JSON.parse(localStorage.getItem('wordAI_wordBook') || '[]');
-            if (wordBook.length === 0) {
-                alert('请先添加一些单词！');
-                return;
-            }
-            
-            const randomWord = wordBook[Math.floor(Math.random() * wordBook.length)];
-            
-            const modal = document.createElement('div');
-            modal.className = 'modal active';
-            modal.innerHTML = '<div class="modal-content" style="max-width:360px;text-align:center;"><div class="modal-title">🎤 发音练习</div><div style="margin:30px 0;"><div style="font-size:36px;font-weight:bold;color:#333;margin-bottom:10px;">' + randomWord.word + '</div><div style="font-size:16px;color:#666;margin-bottom:20px;">' + (randomWord.phonetic || '') + '</div><button onclick="playPronunciation(\'' + randomWord.word + '\')" class="btn" style="font-size:16px;padding:12px 24px;">🔊 播放发音</button></div><div style="margin:20px 0;"><button id="recordBtn" onclick="toggleRecording(\'' + randomWord.word + '\')" class="record-btn" style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;font-size:24px;cursor:pointer;">🎤</button><div class="record-hint" style="font-size:13px;color:#666;margin-top:10px;">点击录音，朗读上方单词</div></div><div id="pronunciationResult" style="display:none;margin:20px 0;"><div style="font-size:14px;color:#666;">你的发音得分</div><div id="pronScore" style="font-size:48px;font-weight:bold;color:#667eea;">--</div><div id="pronFeedback" style="font-size:13px;color:#666;margin-top:8px;"></div></div><button class="btn" style="width:100%;margin-top:15px;" onclick="this.closest(\'.modal\').remove()">关闭</button></div>';
-            document.body.appendChild(modal);
-        }
-        
-        function playPronunciation(word) {
-            const utterance = new SpeechSynthesisUtterance(word);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.8;
-            speechSynthesis.speak(utterance);
-        }
-        
-        let currentRecordWord = '';
-        
-        function toggleRecording(word) {
-            currentRecordWord = word;
-            const btn = document.getElementById('recordBtn');
-            
-            if (PronunciationScore.isRecording) {
-                PronunciationScore.stopRecording();
-                btn.classList.remove('recording');
-                btn.innerHTML = '🎤';
-            } else {
-                PronunciationScore.startRecording(word, 
-                    function(transcript) {
-                        const score = PronunciationScore.calculateScore(transcript, word);
-                        showPronunciationResult(score, transcript);
-                    },
-                    function(error) {
-                        alert('录音失败: ' + error);
-                    }
-                );
-                btn.classList.add('recording');
-                btn.innerHTML = '⏹️';
-            }
-        }
-        
-        function showPronunciationResult(score, transcript) {
-            const resultDiv = document.getElementById('pronunciationResult');
-            const scoreEl = document.getElementById('pronScore');
-            const feedbackEl = document.getElementById('pronFeedback');
-            
-            resultDiv.style.display = 'block';
-            scoreEl.textContent = score;
-            
-            if (score >= 90) {
-                scoreEl.style.color = '#10b981';
-                feedbackEl.textContent = '🎉 太棒了！发音非常标准！';
-            } else if (score >= 70) {
-                scoreEl.style.color = '#f59e0b';
-                feedbackEl.textContent = '👍 很不错！再练习一下会更完美~';
-            } else {
-                scoreEl.style.color = '#ef4444';
-                feedbackEl.textContent = '💪 继续努力，多听多跟读~';
-            }
-            
-            // 更新分数显示动画
-            scoreEl.classList.add('updated');
-            setTimeout(function() { scoreEl.classList.remove('updated'); }, 300);
-        }
-        
-        // ====== [融合新功能] FSRS算法 ======
-        // 基于 open-spaced-repetition/py-fsrs 的最新间隔重复算法
-        var FSRS = {
-            defaultParameters: [0.212, 1.2931, 2.3065, 8.2956, 6.4133, 0.8334, 3.0194, 0.001, 1.8722, 0.1666, 0.796, 1.4835, 0.0614, 0.2629, 1.6483, 0.6014, 1.8729, 0.5425, 0.0912, 0.0658, 0.1542],
-            states: { learning: 1, review: 2, relearning: 3 },
-            rating: { again: 1, hard: 2, good: 3, easy: 4 },
-            learningSteps: [1, 10], relearningSteps: [10], maximumInterval: 36500, desiredRetention: 0.9,
-            init: function(params) { this.params = params || this.defaultParameters; },
-            getRetrievability: function(stability, days) { return Math.exp(-days / stability); },
-            predictMemoryCurve: function(stability, days) {
-                var curve = [];
-                for (var d = 0; d <= days; d++) { curve.push({ day: d, retention: this.getRetrievability(stability, d) * 100 }); }
-                return curve;
-            },
-            schedule: function(currentStability, rating) {
-                var r = this.rating, newStability = currentStability, interval = 1;
-                switch(rating) {
-                    case r.again: newStability = Math.max(1, currentStability * 0.5); interval = 1/1440; break;
-                    case r.hard: newStability = currentStability * 1.2; interval = currentStability * 0.8; break;
-                    case r.good: newStability = currentStability * 1.5; interval = currentStability * this.desiredRetention; break;
-                    case r.easy: newStability = currentStability * 2.5; interval = currentStability * 1.3; break;
-                }
-                interval = Math.max(1, Math.min(interval, this.maximumInterval));
-                return { stability: newStability, interval: Math.round(interval), nextReview: Date.now() + interval * 24 * 60 * 60 * 1000 };
-            }
-        };
-        FSRS.init();
-        
-        function showFSRSMemoryCurve() {
-            var modal = document.createElement('div');
-            modal.className = 'modal active';
-            modal.innerHTML = '<div class="modal-content" style="max-width:400px;"><div class="modal-title">🧠 FSRS记忆曲线</div><p style="color:#666;font-size:13px;margin:15px 0;">基于Free Spaced Repetition Scheduler算法</p><div id="fsrsCurveContainer" style="height:200px;position:relative;margin:20px 0;"></div><div style="display:flex;justify-content:space-around;margin:15px 0;"><div style="text-align:center;"><div style="font-size:24px;font-weight:bold;color:#667eea;">10</div><div style="font-size:11px;color:#666;">稳定性(天)</div></div><div style="text-align:center;"><div style="font-size:24px;font-weight:bold;color:#10b981;">90%</div><div style="font-size:11px;color:#666;">目标保持率</div></div></div><button class="btn" style="width:100%;" onclick="this.closest(\'.modal\').remove()">关闭</button></div>';
-            document.body.appendChild(modal);
-            setTimeout(function() {
-                var container = document.getElementById('fsrsCurveContainer');
-                var curve = FSRS.predictMemoryCurve(10, 30);
-                var width = container.offsetWidth - 20, height = 180, html = '';
-                for (var i = 0; i < curve.length; i++) {
-                    var x = (i / 30) * width, y = height - (curve[i].retention / 100) * height;
-                    if (i > 0) {
-                        var prevX = ((i-1) / 30) * width, prevY = height - (curve[i-1].retention / 100) * height;
-                        var length = Math.sqrt((x - prevX) ** 2 + (y - prevY) ** 2);
-                        var angle = Math.atan2(y - prevY, x - prevX) * 180 / Math.PI;
-                        html += '<div style="position:absolute;left:' + prevX + 'px;bottom:' + prevY + 'px;width:' + length + 'px;height:2px;background:#667eea;transform-origin:left center;transform:rotate(' + angle + 'deg);"></div>';
-                    }
-                    if (i === 1 || i === 7 || i === 14 || i === 30) {
-                        html += '<div style="position:absolute;left:' + x + 'px;bottom:' + y + 'px;width:8px;height:8px;background:#667eea;border-radius:50%;"></div>';
-                    }
-                }
-                container.innerHTML = html;
-            }, 100);
-        }
-        
     </script>
 </body>
 </html>

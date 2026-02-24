@@ -156,8 +156,21 @@
 - **AnyMemo** (https://github.com/helloworld1/AnyMemo) - SM2算法实现
 - **LangHelper** (https://github.com/NsLearning/LangHelper) - AI口语对话设计
 - **Anki** (https://github.com/ankitects/anki) - 间隔重复行业标杆
+- **py-fsrs** (https://github.com/open-spaced-repetition/py-fsrs) - FSRS先进算法
+
+---
+
+## 八、新增FSRS算法功能
+
+### FSRS (Free Spaced Repetition Scheduler)
+比SM2更先进的间隔重复算法：
+- 基于21个机器学习优化参数
+- 预测记忆保持率 (Retrievability)
+- 个性化复习间隔
+- 可视化记忆曲线
 
 ---
 
 _2026-02-24: 首次调研分析_
 _2026-02-24: 完成功能融合_
+_2026-02-24: 融合FSRS算法_

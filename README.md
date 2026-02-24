@@ -38,6 +38,7 @@
 | **AnyMemo** | [helloworld1/AnyMemo](https://github.com/helloworld1/AnyMemo) | SM2算法实现 |
 | **LangHelper** | [NsLearning/LangHelper](https://github.com/NsLearning/LangHelper) | AI口语对话设计 |
 | **Anki** | [ankitects/anki](https://github.com/ankitects/anki) | 间隔重复行业标杆 |
+| **py-fsrs** | [open-spaced-repetition/py-fsrs](https://github.com/open-spaced-repetition/py-fsrs) | FSRS先进算法 |
 
 感谢这些开源作者的贡献！
 
