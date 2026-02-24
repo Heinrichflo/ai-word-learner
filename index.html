@@ -405,6 +405,7 @@
     <div class="container">
         <div class="header">
             <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+            <div id="offlineIndicator" style="display:none;position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#ff9800;color:white;padding:2px 8px;border-radius:10px;font-size:10px;">📴 离线</div>
             <h1>🤖 AI 背单词</h1>
             <p id="headerSubtitle">智能学习助手</p>
             <div class="user-info" id="userInfo" onclick="showSettings()">未登录</div>
@@ -1160,6 +1161,18 @@
             
             // 启动学习计时
             startStudyTimer();
+            
+            // 离线检测
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            updateOnlineStatus();
+        }
+        
+        function updateOnlineStatus() {
+            const indicator = document.getElementById('offlineIndicator');
+            if (indicator) {
+                indicator.style.display = navigator.onLine ? 'none' : 'block';
+            }
         }
         
         // ====== 学习时长追踪 ======
@@ -1274,9 +1287,12 @@
         // ====== 主题切换 ======
         function loadTheme() {
             const saved = localStorage.getItem('wordAI_theme');
-            if (saved === 'dark') {
+            // 优先使用用户设置，否则跟随系统
+            if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.body.classList.add('dark-theme');
                 document.querySelector('.theme-toggle').textContent = '☀️';
+            } else {
+                document.querySelector('.theme-toggle').textContent = '🌙';
             }
         }
         
