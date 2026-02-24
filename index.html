@@ -268,6 +268,14 @@
         .quote-text { font-size: 18px; line-height: 1.8; margin-bottom: 16px; font-style: italic; }
         .quote-author { font-size: 14px; opacity: 0.8; }
 
+        /* VIP会员 */
+        .vip-header { background: linear-gradient(135deg, #FFD700, #FFA500); padding: 30px; text-align: center; color: white; }
+        .vip-badge { font-size: 48px; }
+        .vip-title { font-size: 24px; font-weight: bold; margin: 10px 0; }
+        .vip-features { padding: 20px; }
+        .vip-feature { display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 10px; margin-bottom: 8px; }
+        .vip-btn { background: linear-gradient(135deg, #FFD700, #FFA500); color: white; border: none; padding: 12px 30px; border-radius: 20px; font-size: 16px; cursor: pointer; }
+
         /* 测验模式 */
         .quiz-mode-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 16px; }
         .quiz-mode-card { background: white; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; border: 2px solid transparent; }
@@ -455,6 +463,7 @@
         <div class="tabs">
             <div class="tab active" data-tab="learn">背单词</div>
             <div class="tab" data-tab="quote">每日</div>
+            <div class="tab" data-tab="vip">VIP</div>
             <div class="tab" data-tab="profile">我的</div>
             <div class="tab" data-tab="map">地图</div>
             <div class="tab" data-tab="pk">PK</div>
@@ -594,6 +603,24 @@
                 <div style="text-align:center;font-size:16px;font-weight:600;margin-bottom:20px;">🗺️ 学习地图</div>
 
         <!-- 每日一句 -->
+        <!-- VIP会员 -->
+        <div class="tab-content" id="tab-vip">
+            <div class="vip-header">
+                <div class="vip-badge">💎</div>
+                <div class="vip-title">VIP会员</div>
+                <div>解锁全部高级功能</div>
+            </div>
+            <div class="vip-features">
+                <div class="vip-feature"><span>☁️</span><span>云端数据同步</span></div>
+                <div class="vip-feature"><span>👥</span><span>好友PK对战</span></div>
+                <div class="vip-feature"><span>📊</span><span>高级学习报告</span></div>
+                <div class="vip-feature"><span>🎯</span><span>AI精准出题</span></div>
+                <div class="vip-feature"><span>🏆</span><span>专属徽章</span></div>
+            </div>
+            <div style="text-align:center;padding:20px;">
+                <button class="vip-btn" onclick="upgradeVIP()">立即开通VIP</button>
+            </div>
+        </div>
         <div class="tab-content" id="tab-quote">
             <div id="dailyQuote"></div>
         </div>
@@ -3258,6 +3285,15 @@ ${statusText}
             {text: "The beautiful thing about learning is that no one can take it away from you.", author: "B.B. King"}
         ];
         
+        // ====== VIP会员 ======
+        let isVIP = localStorage.getItem("wordAI_vip") === "true";
+        
+        function upgradeVIP() {
+            isVIP = true;
+            localStorage.setItem("wordAI_vip", "true");
+            alert("恭喜您成为VIP会员！");
+        }
+
         function renderDailyQuote() {
             const today = new Date().toDateString();
             const savedDate = localStorage.getItem("quoteDate");
