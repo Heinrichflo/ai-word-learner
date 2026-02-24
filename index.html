@@ -1198,6 +1198,36 @@
             });
         }
         
+        // ====== 触摸滑动切换 ======
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+        
+        function handleSwipe() {
+            const diff = touchStartX - touchEndX;
+            const threshold = 50;
+            
+            if (Math.abs(diff) > threshold) {
+                if (diff > 0) {
+                    // 左滑 - 下一个
+                    showNextWord();
+                } else {
+                    // 右滑 - 认识（上一个）
+                    if (currentIndex > 0) currentIndex--;
+                    else currentIndex = words.length - 1;
+                    showCard();
+                }
+            }
+        }
+        
         function showNextWord() {
             currentIndex = (currentIndex + 1) % words.length;
             showCard();
