@@ -334,6 +334,46 @@
         
         /* 记忆曲线图表 */
         .memory-chart { height: 150px; display: flex; align-items: flex-end; justify-content: space-between; padding: 10px; gap: 4px; }
+        
+        /* 复习计划 */
+        .review-plan { padding: 16px; }
+        .review-timeline { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; }
+        .review-day { min-width: 60px; text-align: center; }
+        .review-day-date { font-size: 11px; color: #999; margin-bottom: 5px; }
+        .review-day-count { font-size: 16px; font-weight: bold; color: #667eea; }
+        .review-day-label { font-size: 10px; color: #666; }
+        .review-day.overdue .review-day-count { color: #ef4444; }
+        .review-day.today { background: #f0f7ff; border-radius: 8px; padding: 5px; }
+        
+        /* 专注模式 */
+        .focus-mode { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #667eea, #764ba2); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        .focus-mode.active { display: flex; }
+        .focus-timer { font-size: 72px; font-weight: bold; margin: 20px 0; font-variant-numeric: tabular-nums; }
+        .focus-stats { display: flex; gap: 30px; margin: 20px 0; }
+        .focus-stat { text-align: center; }
+        .focus-stat-value { font-size: 28px; font-weight: bold; }
+        .focus-stat-label { font-size: 12px; opacity: 0.8; }
+        .focus-exit { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
+        
+        /* 智能建议 */
+        .smart-suggestion { background: linear-gradient(135deg, #667eea20, #764ba220); border-radius: 12px; padding: 16px; margin: 12px; }
+        .suggestion-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .suggestion-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-icon { font-size: 20px; }
+        .suggestion-text { flex: 1; font-size: 13px; }
+        .suggestion-action { color: #667eea; font-size: 12px; cursor: pointer; }
+        
+        /* 学习目标进度环 */
+        .goal-ring { width: 100px; height: 100px; margin: 10px auto; position: relative; }
+        .goal-ring svg { transform: rotate(-90deg); }
+        .goal-ring circle { fill: none; stroke-width: 8; }
+        .goal-ring .bg { stroke: #eee; }
+        .goal-ring .progress { stroke: #667eea; stroke-linecap: round; transition: stroke-dashoffset 0.5s; }
+        .goal-ring.completed .progress { stroke: #52C41A; }
+        .goal-ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .goal-ring-value { font-size: 20px; font-weight: bold; }
+        .goal-ring-label { font-size: 10px; color: #999; }
         .learning-calendar { padding: 10px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .calendar-day { aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999; }
@@ -482,6 +522,7 @@
             <div class="tab" data-tab="wrongbook">错题</div>
             <div class="tab" data-tab="reminder">提醒</div>
             <div class="tab" data-tab="history">记录</div>
+            <div class="tab" data-tab="plan">计划</div>
             <div class="tab" data-tab="settings">设置</div>
         </div>
 
@@ -564,6 +605,200 @@
                 <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="document.getElementById('reportModal').classList.remove('active')">关闭</button>
             </div>
         </div>
+
+        <!-- 智能建议数据 -->
+        <script>
+        // ====== 智能学习建议系统 ======
+        function generateSmartSuggestions() {
+            const container = document.getElementById('smartSuggestions');
+            if (!container) return;
+            
+            const suggestions = [];
+            const data = loadStats();
+            
+            // 基于学习数据分析
+            if (data.today >= (challengeData.dailyGoal || 10)) {
+                suggestions.push({ icon: '🎉', text: '今日目标已达成！可以继续挑战更高目标', action: '设置更高目标', actionFn: 'showGoalSetting' });
+            } else if (data.today === 0) {
+                suggestions.push({ icon: '🚀', text: '今天还没有开始学习，快来背单词吧！', action: '开始学习', actionFn: "showTab('tab-learn')" });
+            } else {
+                const remaining = (challengeData.dailyGoal || 10) - data.today;
+                suggestions.push({ icon: '💪', text: `今日还差 ${remaining} 个单词就能达成目标！`, action: '继续学习', actionFn: "showTab('tab-learn')" });
+            }
+            
+            // 检查错题
+            if (wrongWords.length > 0) {
+                suggestions.push({ icon: '📝', text: `你有 ${wrongWords.length} 个错题需要复习`, action: '复习错题', actionFn: 'practiceWrongWords' });
+            }
+            
+            // 检查待复习
+            const reviewData = JSON.parse(localStorage.getItem('wordAI_review') || '[]');
+            const now = Date.now();
+            const dueCount = reviewData.filter(w => w.nextReview && w.nextReview <= now).length;
+            if (dueCount > 0) {
+                suggestions.push({ icon: '🔔', text: `你有 ${dueCount} 个单词需要复习`, action: '开始复习', actionFn: "showTab('tab-review');startReview()" });
+            }
+            
+            // 检查连续打卡
+            if (streak >= 7) {
+                suggestions.push({ icon: '🔥', text: `太棒了！已经连续学习 ${streak} 天了！`, action: '分享成就', actionFn: 'shareAchievement' });
+            }
+            
+            // 随机鼓励
+            const encouragements = [
+                { icon: '🌟', text: '坚持就是胜利，每天进步一点点！' },
+                { icon: '📚', text: '知识就是力量，学习让你更强大！' },
+                { icon: '⏰', text: '利用碎片时间，随时随地背单词！' },
+                { icon: '🎯', text: '设定目标，让学习更有方向！' }
+            ];
+            suggestions.push(encouragements[Math.floor(Math.random() * encouragements.length)]);
+            
+            container.innerHTML = suggestions.map(s => `
+                <div class="suggestion-item">
+                    <span class="suggestion-icon">${s.icon}</span>
+                    <span class="suggestion-text">${s.text}</span>
+                    ${s.action ? `<span class="suggestion-action" onclick="${s.actionFn}">${s.action}</span>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        // ====== 复习计划时间线 ======
+        function renderReviewTimeline() {
+            const container = document.getElementById('reviewTimeline');
+            if (!container) return;
+            
+            const reviewData = JSON.parse(localStorage.getItem('wordAI_review') || '[]');
+            const today = new Date();
+            let html = '';
+            
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0];
+                const dateDisplay = i === 0 ? '今天' : i === 1 ? '明天' : (date.getMonth() + 1) + '/' + date.getDate();
+                
+                let reviewCount = 0;
+                if (i === 0) {
+                    reviewCount = reviewData.filter(w => w.nextReview && new Date(w.nextReview) <= today.getTime() + 86400000).length;
+                } else {
+                    const dayStart = new Date(date);
+                    dayStart.setHours(0, 0, 0, 0);
+                    const dayEnd = new Date(date);
+                    dayEnd.setHours(23, 59, 59, 999);
+                    reviewCount = reviewData.filter(w => w.nextReview && w.nextReview >= dayStart.getTime() && w.nextReview <= dayEnd.getTime()).length;
+                }
+                
+                const isToday = i === 0;
+                const isOverdue = i === 0 && reviewCount > 5;
+                
+                html += `
+                    <div class="review-day ${isToday ? 'today' : ''} ${isOverdue ? 'overdue' : ''}">
+                        <div class="review-day-date">${dateDisplay}</div>
+                        <div class="review-day-count">${reviewCount}</div>
+                        <div class="review-day-label">复习</div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+        
+        // ====== 目标进度环 ======
+        function updateGoalRing() {
+            const data = loadStats();
+            const goal = challengeData.dailyGoal || 10;
+            const progress = Math.min((data.today / goal) * 100, 100);
+            const circumference = 264;
+            const offset = circumference - (progress / 100) * circumference;
+            
+            const progressCircle = document.querySelector('#goalRing .progress');
+            const goalPercent = document.getElementById('goalPercent');
+            
+            if (progressCircle) progressCircle.style.strokeDashoffset = offset;
+            if (goalPercent) goalPercent.textContent = Math.round(progress) + '%';
+            
+            const goalRing = document.getElementById('goalRing');
+            if (data.today >= goal) goalRing.classList.add('completed');
+            else goalRing.classList.remove('completed');
+        }
+        
+        // ====== 专注模式 ======
+        let focusTimer = null;
+        let focusTimeLeft = 25 * 60;
+        let focusWordsLearned = 0;
+        let focusCorrectCount = 0;
+        
+        function startFocusMode() {
+            focusTimeLeft = 25 * 60;
+            focusWordsLearned = 0;
+            focusCorrectCount = 0;
+            
+            document.getElementById('focusMode').classList.add('active');
+            updateFocusDisplay();
+            
+            focusTimer = setInterval(() => {
+                focusTimeLeft--;
+                updateFocusDisplay();
+                if (focusTimeLeft <= 0) endFocusSession();
+            }, 1000);
+        }
+        
+        function updateFocusDisplay() {
+            const minutes = Math.floor(focusTimeLeft / 60);
+            const seconds = focusTimeLeft % 60;
+            document.getElementById('focusTimer').textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+            document.getElementById('focusWords').textContent = focusWordsLearned;
+            document.getElementById('focusCorrect').textContent = focusCorrectCount;
+            document.getElementById('focusTime').textContent = 25 - Math.ceil(focusTimeLeft / 60);
+        }
+        
+        function exitFocusMode() {
+            if (confirm('确定要退出专注模式吗？')) {
+                clearInterval(focusTimer);
+                document.getElementById('focusMode').classList.remove('active');
+            }
+        }
+        
+        function endFocusSession() {
+            clearInterval(focusTimer);
+            playSound('complete');
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="text-align:center;">
+                    <div style="font-size:48px;margin-bottom:15px;">🎉</div>
+                    <div class="modal-title">专注完成！</div>
+                    <p style="color:#666;margin-bottom:15px;">25分钟专注学习结束</p>
+                    <div style="display:flex;justify-content:space-around;margin:20px 0;">
+                        <div><div style="font-size:24px;font-weight:bold;color:#667eea;">${focusWordsLearned}</div><div style="font-size:12px;color:#999;">学习词数</div></div>
+                        <div><div style="font-size:24px;font-weight:bold;color:#10b981;">${focusCorrectCount}</div><div style="font-size:12px;color:#999;">正确数</div></div>
+                        <div><div style="font-size:24px;font-weight:bold;color:#f59e0b;">25</div><div style="font-size:12px;color:#999;">分钟</div></div>
+                    </div>
+                    <button class="btn btn-primary" onclick="this.closest('.modal').remove();document.getElementById('focusMode').classList.remove('active');">太棒了！</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('[data-tab="' + tabId.replace('tab-', '') + '"]').classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+        
+        // 拦截学习函数追踪专注模式
+        const originalOnWordLearned = onWordLearned;
+        onWordLearned = function() {
+            originalOnWordLearned();
+            // 检测是否在专注模式
+            if (document.getElementById('focusMode').classList.contains('active')) {
+                focusWordsLearned++;
+                focusCorrectCount++;
+                updateFocusDisplay();
+            }
+        };
+        </script>
 
         <!-- 语言切换 -->
         <div class="tab-content" id="tab-lang">
@@ -1081,6 +1316,60 @@
             <div class="history-list" id="historyList">
                 <div class="empty-state">暂无学习记录</div>
             </div>
+        </div>
+
+        <!-- 学习计划 -->
+        <div class="tab-content" id="tab-plan">
+            <div class="review-plan">
+                <div style="font-size:16px;font-weight:600;margin-bottom:15px;">📅 复习计划</div>
+                <div class="smart-suggestion">
+                    <div class="suggestion-title">💡 智能学习建议</div>
+                    <div id="smartSuggestions"></div>
+                </div>
+                <div style="margin-top:15px;">
+                    <div style="font-size:14px;font-weight:600;margin-bottom:10px;">📊 未来7天复习安排</div>
+                    <div class="review-timeline" id="reviewTimeline"></div>
+                </div>
+                <div style="margin-top:15px;display:flex;justify-content:space-around;">
+                    <div class="goal-ring" id="goalRing">
+                        <svg width="100" height="100">
+                            <circle cx="50" cy="50" r="42" class="bg"/>
+                            <circle cx="50" cy="50" r="42" class="progress" stroke-dasharray="264" stroke-dashoffset="264"/>
+                        </svg>
+                        <div class="goal-ring-text">
+                            <div class="goal-ring-value" id="goalPercent">0%</div>
+                            <div class="goal-ring-label">今日目标</div>
+                        </div>
+                    </div>
+                    <div style="text-align:center;padding-top:20px;">
+                        <div style="font-size:14px;color:#666;margin-bottom:8px;">🎯 专注模式</div>
+                        <button class="btn btn-primary" onclick="startFocusMode()" style="width:100%;">开始专注</button>
+                        <p style="font-size:11px;color:#999;margin-top:8px;">番茄工作法，25分钟专注学习</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 专注模式遮罩 -->
+        <div class="focus-mode" id="focusMode">
+            <button class="focus-exit" onclick="exitFocusMode()">✕ 退出</button>
+            <div style="font-size:24px;margin-bottom:10px;">🎯 专注学习中</div>
+            <div class="focus-timer" id="focusTimer">25:00</div>
+            <div class="focus-stats">
+                <div class="focus-stat">
+                    <div class="focus-stat-value" id="focusWords">0</div>
+                    <div class="focus-stat-label">已学单词</div>
+                </div>
+                <div class="focus-stat">
+                    <div class="focus-stat-value" id="focusCorrect">0</div>
+                    <div class="focus-stat-label">正确数</div>
+                </div>
+                <div class="focus-stat">
+                    <div class="focus-stat-value" id="focusTime">0</div>
+                    <div class="focus-stat-label">分钟</div>
+                </div>
+            </div>
+            <div style="font-size:14px;opacity:0.8;margin-top:20px;">保持专注，拒绝干扰</div>
         </div>
 
         <!-- 排行榜 -->
@@ -2064,7 +2353,7 @@
         // ====== 数据导出导入 ======
         function exportAllData() {
             const data = {
-                version: 'v3.0',
+                version: 'v3.1',
                 exportTime: new Date().toISOString(),
                 words: words,
                 favorites: favorites,
@@ -4334,6 +4623,7 @@ ${statusText}
                 if (this.dataset.tab === 'quote') { renderDailyQuote(); }
                 if (this.dataset.tab === 'pk') { }
                 if (this.dataset.tab === 'review') { loadReviewData(); }
+                if (this.dataset.tab === 'plan') { generateSmartSuggestions(); renderReviewTimeline(); updateGoalRing(); }
             });
         });
 
