@@ -935,13 +935,19 @@
         // ====== 个人中心 ======
         function updateProfile() {
             const name = user ? user.username : '学习者';
-            const level = user ? (user.level === 'beginner' ? '初学者' : user.level === 'intermediate' ? '中级' : '高级') : '初学者';
+            // 使用经验值等级
+            const levelName = expConfig.levelNames[userExp.level - 1] || '神话';
             document.getElementById('profileName').textContent = name;
-            document.getElementById('profileLevel').textContent = level;
+            document.getElementById('profileLevel').textContent = `${levelName} Lv.${userExp.level}`;
             document.getElementById('profileTotal').textContent = total;
             document.getElementById('profileStreak').textContent = streak;
             document.getElementById('profileBadges').textContent = challengeData.badges ? challengeData.badges.length : 0;
             document.getElementById('profileChallengeStreak').textContent = challengeData.streakDays || 0;
+            
+            // 更新头像
+            if (user && user.avatar) {
+                document.getElementById('profileAvatar').textContent = user.avatar;
+            }
         }
         
         // ====== 学习报告 ======
