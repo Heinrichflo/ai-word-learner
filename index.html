@@ -850,7 +850,20 @@
                     <div class="reminder-toggle active" id="soundToggle" onclick="toggleSound()"></div>
                 </div>
                 
-                <h3>API 设置</h3>
+                <h3 style="margin-top:20px;">🎯 每日目标</h3>
+                <div class="reminder-item">
+                    <span class="reminder-label">学习单词数</span>
+                    <select id="dailyGoalSelect" onchange="updateDailyGoal()" style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;">
+                        <option value="5">5 个</option>
+                        <option value="10" selected>10 个</option>
+                        <option value="15">15 个</option>
+                        <option value="20">20 个</option>
+                        <option value="30">30 个</option>
+                    </select>
+                </div>
+                <p style="font-size:11px;color:#999;margin-top:5px;">完成目标后显示庆祝动画</p>
+                
+                <h3 style="margin-top:20px;">API 设置</h3>
                 <p style="font-size:12px;color:#666;margin:10px 0;">输入 MiniMax API Key 以启用 AI 出题功能</p>
                 <input type="text" id="apiKey" placeholder="sk-xxx" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;margin-bottom:10px;">
                 <button class="btn btn-primary" onclick="saveApiKey()" style="width:100%;">保存 API Key</button>
@@ -2604,9 +2617,16 @@ ${statusText}
             if (data.lastDate !== today) {
                 data.today = 0;
             }
+            const prevToday = data.today;
             data.today++;
             data.lastDate = today;
             localStorage.setItem('wordAI_stats', JSON.stringify(data));
+            
+            // 检查是否达成目标
+            const goal = challengeData.dailyGoal || 10;
+            if (prevToday < goal && data.today === goal) {
+                showGoalCelebration();
+            }
             
             // 添加经验值
             addExp(expConfig.perWord);
@@ -2626,6 +2646,35 @@ ${statusText}
             saveChallenge();
             updateChallengeUI();
             checkBadges();
+        }
+
+        function showGoalCelebration() {
+            // 创建庆祝动画
+            const modal = document.createElement('div');
+            modal.id = 'goalCelebration';
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;z-index:9999;';
+            
+            const goal = challengeData.dailyGoal || 10;
+            modal.innerHTML = `
+                <div style="background:white;border-radius:20px;padding:40px;text-align:center;max-width:300px;animation:bounceIn 0.6s;">
+                    <div style="font-size:60px;margin-bottom:15px;">🎉</div>
+                    <div style="font-size:22px;font-weight:bold;color:#667eea;margin-bottom:10px;">🎯 目标达成！</div>
+                    <div style="font-size:14px;color:#666;margin-bottom:20px;">今天已学习 ${goal} 个单词！</div>
+                    <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+                        <span style="font-size:30px;">⭐</span>
+                        <span style="font-size:30px;">🏆</span>
+                        <span style="font-size:30px;">💪</span>
+                    </div>
+                    <button onclick="document.getElementById('goalCelebration').remove()" style="margin-top:25px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;padding:12px 30px;border-radius:25px;font-size:14px;cursor:pointer;">太棒了！</button>
+                </div>
+                <style>
+                    @keyframes bounceIn {0%{transform:scale(0);}50%{transform:scale(1.1);}70%{transform:scale(0.95);}100%{transform:scale(1);}}
+                </style>
+            `;
+            document.body.appendChild(modal);
+            
+            // 播放庆祝音效
+            if (soundEnabled) playSound('levelup');
         }
 
         function updateLearnProgress() {
@@ -3564,6 +3613,13 @@ ${statusText}
                 if (this.dataset.tab === 'review') { loadReviewData(); }
             });
         });
+
+        function updateDailyGoal() {
+            const goal = parseInt(document.getElementById('dailyGoalSelect').value);
+            challengeData.dailyGoal = goal;
+            saveChallenge();
+            alert('每日目标已设置为 ' + goal + ' 个单词！');
+        }
 
         function saveApiKey() {
             const apiKey = document.getElementById('apiKey').value.trim();
