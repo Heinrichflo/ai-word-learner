@@ -3101,6 +3101,33 @@
                 </div>
             </div>
             
+            <!-- 拼写挑战 -->
+            <div style="padding:16px;border-top:1px solid #eee;margin-top:10px;">
+                <div style="font-size:16px;font-weight:600;margin-bottom:15px;">✍️ 拼写挑战</div>
+                <div id="spellingChallenge">
+                    <div style="text-align:center;padding:20px;">
+                        <div style="font-size:48px;margin-bottom:15px;">✍️</div>
+                        <div style="font-size:14px;color:#666;margin-bottom:20px;">听音拼写单词</div>
+                        <button class="btn btn-primary" style="width:180px;" onclick="startSpellingChallenge()">开始挑战</button>
+                    </div>
+                </div>
+                <div id="spellingGame" style="display:none;">
+                    <div style="text-align:center;margin-bottom:20px;">
+                        <div style="font-size:14px;color:#666;margin-bottom:10px;">请拼写以下单词:</div>
+                        <div style="font-size:24px;font-weight:bold;margin-bottom:10px;" id="spellingWord">-</div>
+                        <button class="btn" style="background:#667eea;color:white;" onclick="playSpellingWord()">🔊 播放发音</button>
+                    </div>
+                    <input type="text" id="spellingInput" placeholder="输入单词拼写..." style="width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:16px;margin-bottom:10px;text-align:center;" onkeypress="if(event.key==='Enter')checkSpelling()">
+                    <div style="text-align:center;">
+                        <button class="btn btn-primary" style="width:100%;" onclick="checkSpelling()">提交</button>
+                    </div>
+                    <div id="spellingResult" style="text-align:center;margin-top:15px;font-size:16px;font-weight:bold;"></div>
+                    <div style="text-align:center;margin-top:10px;">
+                        <button class="btn" style="background:#666;color:white;" onclick="endSpellingChallenge()">退出</button>
+                    </div>
+                </div>
+            </div>
+            
             <div style="padding:16px;">
                 <div style="font-size:16px;font-weight:600;margin-bottom:15px;">🎯 学习目标</div>
                 <div class="goal-setting">
@@ -3487,6 +3514,64 @@
             if (user && user.avatar) {
                 document.getElementById('profileAvatar').textContent = user.avatar;
             }
+        }
+        
+        // ====== 拼写挑战 ======
+        let spellingWord = null;
+        let spellingScore = 0;
+        
+        function startSpellingChallenge() {
+            // 选择一个随机单词
+            spellingWord = words[Math.floor(Math.random() * words.length)];
+            document.getElementById('spellingChallenge').style.display = 'none';
+            document.getElementById('spellingGame').style.display = 'block';
+            document.getElementById('spellingWord').textContent = spellingWord.meaning;
+            document.getElementById('spellingInput').value = '';
+            document.getElementById('spellingResult').textContent = '';
+            spellingScore = 0;
+            // 自动播放发音
+            setTimeout(playSpellingWord, 500);
+        }
+        
+        function playSpellingWord() {
+            if (!spellingWord) return;
+            const utterance = new SpeechSynthesisUtterance(spellingWord.word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.8;
+            speechSynthesis.speak(utterance);
+        }
+        
+        function checkSpelling() {
+            const input = document.getElementById('spellingInput').value.trim().toLowerCase();
+            const result = document.getElementById('spellingResult');
+            
+            if (!input) {
+                result.textContent = '请输入单词拼写';
+                result.style.color = '#666';
+                return;
+            }
+            
+            if (input === spellingWord.word.toLowerCase()) {
+                result.textContent = '✅ 正确！' + spellingWord.word + ' /' + spellingWord.phonetic + '/';
+                result.style.color = '#52c41a';
+                spellingScore++;
+                // 答对了，切换到下一个单词
+                setTimeout(() => {
+                    spellingWord = words[Math.floor(Math.random() * words.length)];
+                    document.getElementById('spellingWord').textContent = spellingWord.meaning;
+                    document.getElementById('spellingInput').value = '';
+                    document.getElementById('spellingResult').textContent = '';
+                    playSpellingWord();
+                }, 1500);
+            } else {
+                result.textContent = '❌ 错误！正确拼写: ' + spellingWord.word;
+                result.style.color = '#ff4d4f';
+            }
+        }
+        
+        function endSpellingChallenge() {
+            document.getElementById('spellingChallenge').style.display = 'block';
+            document.getElementById('spellingGame').style.display = 'none';
         }
         
         // ====== 学习报告 ======
