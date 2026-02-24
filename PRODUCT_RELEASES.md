@@ -98,23 +98,24 @@
 
 ---
 
-## 🚀 待上传到GitHub
+## 🚀 已上传到GitHub
 
-| 产品 | 状态 | 产出位置 |
-|------|------|----------|
-| SmartHub | ✅ 等待上传 | info_collection_research/ |
-| Toolkit Pro | ✅ 等待上传 | efficiency-tool-product-design.md |
-| MediaForge | ✅ 等待上传 | analyzed_projects/ |
+| 产品 | 状态 | GitHub仓库 |
+|------|------|------------|
+| AI背单词 | ✅ 已上传 | https://github.com/Heinrichflo/ai-word-learner |
+| SmartHub | ✅ 已上传 | https://github.com/Heinrichflo/smart-hub |
+| Toolkit Pro | ✅ 已上传 | https://github.com/Heinrichflo/toolkit-pro |
+| MediaForge | ✅ 已上传 | https://github.com/Heinrichflo/mediaforge |
 
 ---
 
 ## 📝 发布计划
 
-### 第一批上线
+### 第一批上线 ✅ 完成
 1. ✅ AI背单词 - 已上传GitHub
-2. ⏳ SmartHub - 等待创建仓库
-3. ⏳ Toolkit Pro - 等待创建仓库
-4. ⏳ MediaForge - 等待创建仓库
+2. ✅ SmartHub - 已上传GitHub
+3. ✅ Toolkit Pro - 已上传GitHub
+4. ✅ MediaForge - 已上传GitHub
 
 ---
 
