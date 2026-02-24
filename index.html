@@ -8,6 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="AI背单词">
+    <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
     <title>AI 背单词 - 智能学习助手</title>
     <style>
@@ -28,6 +29,7 @@
             width: 100%;
             max-width: 420px;
             overflow: hidden;
+            padding-bottom: 70px;
         }
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -213,6 +215,24 @@
         body.dark-theme .tab, body.dark-theme .collection-tabs { background: #1f2937; border-color: #333; }
         body.dark-theme .tab-item { color: #aaa; }
         body.dark-theme .header { background: linear-gradient(135deg, #1f2937, #374151); }
+        body.dark-theme .stats { background: #1f2937; }
+        body.dark-theme .stat-item { background: #1f2937; }
+        body.dark-theme .stat-value { color: #667eea; }
+        body.dark-theme .btn-group { background: #1f2937; }
+        body.dark-theme .btn { background: #374151; color: #eee; }
+        body.dark-theme .btn-primary { background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+        body.dark-theme .modal-content { background: #1f2937; }
+        body.dark-theme .input-group input, body.dark-theme select, body.dark-theme textarea { background: #374151; border-color: #4b5563; color: #eee; }
+        body.dark-theme .settings { background: #16213e; }
+        body.dark-theme .setting-item { border-color: #374151; }
+        body.dark-theme .quick-bar { background: #1f2937; border-top: 1px solid #374151; }
+        body.dark-theme .quick-bar-label { color: #aaa; }
+        body.dark-theme .insight-value { color: #818cf8; }
+        body.dark-theme .milestone-status { background: #374151; color: #aaa; }
+        body.dark-theme .milestone-icon { background: #374151; }
+        body.dark-theme .book-card { background: #1f2937; border-color: #374151; }
+        body.dark-theme .review-day { background: #1f2937; }
+        body.dark-theme .goal-ring circle.gauge-bg { stroke: #374151; }
         .theme-toggle { position: absolute; top: 15px; left: 15px; cursor: pointer; font-size: 18px; }
         
         /* 个人中心 */
@@ -459,6 +479,60 @@
         .quick-action:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .quick-action-icon { font-size: 24px; margin-bottom: 4px; }
         .quick-action-label { font-size: 11px; color: #666; }
+        
+        /* 底部快捷栏 */
+        .quick-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 10px 5px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 100; }
+        .quick-bar-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 5px 10px; border-radius: 8px; transition: background 0.3s; }
+        .quick-bar-item:hover { background: #f5f5f5; }
+        .quick-bar-icon { font-size: 20px; }
+        .quick-bar-label { font-size: 10px; color: #666; }
+        
+        /* 骨架屏 */
+        .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; }
+        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        
+        /* 加载动画 */
+        .loading-spinner { width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* 单词卡片翻转动画 */
+        .card.flipping { animation: cardFlip 0.6s ease-in-out; }
+        @keyframes cardFlip { 0% { transform: rotateY(0deg); } 50% { transform: rotateY(90deg); } 100% { transform: rotateY( }
+        
+        /*0deg); } 按钮点击波纹效果 */
+        .ripple { position: relative; overflow: hidden; }
+        .ripple::after { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; background: rgba(255,255,255,0.3); border-radius: 50%; transform: translate(-50%, -50%); transition: width 0.6s, height 0.6s; }
+        .ripple:active::after { width: 300px; height: 300px; }
+        
+        /* 数字滚动动画 */
+        .counter { display: inline-block; transition: all 0.3s; }
+        .counter.updated { transform: scale(1.2); color: #52C41A; }
+        
+        /* 进度条动画 */
+        .progress-animate { transition: width 0.5s ease-out; }
+        
+        /* 弹跳动画 */
+        .bounce { animation: bounce 0.5s; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        
+        /* 脉冲动画 */
+        .pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        
+        /* 摇晃动画 */
+        .shake { animation: shake 0.5s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        
+        /* 离线状态 */
+        body.offline::before { content: '📴 已离线'; position: fixed; top: 0; left: 0; right: 0; background: #f59e0b; color: white; text-align: center; padding: 8px; font-size: 12px; z-index: 10000; }
+        
+        /* 无障碍支持 */
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+        
+        /* 减少动画（无障碍） */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
         .learning-calendar { padding: 10px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; }
         .calendar-day { aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999; }
@@ -884,7 +958,107 @@
                 focusCorrectCount++;
                 updateFocusDisplay();
             }
+            // 更新数字动画
+            animateCounter('total');
         };
+        
+        // 数字动画函数
+        function animateCounter(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('updated');
+                setTimeout(() => el.classList.remove('updated'), 300);
+            }
+        }
+        
+        // ====== 年度学习报告 ======
+        function generateAnnualReport() {
+            const report = {
+                year: new Date().getFullYear(),
+                totalWords: total,
+                totalCorrect: correct,
+                accuracy: total > 0 ? Math.round((correct / total) * 100) : 0,
+                streak: streak,
+                maxStreak: Math.max(streak, parseInt(localStorage.getItem('wordAI_maxStreak') || '0')),
+                totalDays: history.length,
+                totalTime: loadStats().totalTime || 0,
+                books: Object.keys(JSON.parse(localStorage.getItem('wordAI_bookProgress') || '{}')).length
+            };
+            
+            // 保存最高连续记录
+            if (streak > report.maxStreak) {
+                localStorage.setItem('wordAI_maxStreak', streak.toString());
+                report.maxStreak = streak;
+            }
+            
+            return report;
+        }
+        
+        function showAnnualReport() {
+            const report = generateAnnualReport();
+            const hours = Math.floor(report.totalTime / 60);
+            const mins = report.totalTime % 60;
+            
+            // 根据学习成就生成评价
+            let evaluation = '';
+            if (report.totalWords >= 1000) evaluation = '🏆 学霸级人物';
+            else if (report.totalWords >= 500) evaluation = '📚 学习达人';
+            else if (report.totalWords >= 100) evaluation = '💪 进步青年';
+            else if (report.totalWords >= 50) evaluation = '🌱 初露头角';
+            else evaluation = '🚀 刚刚起步';
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width:360px;text-align:center;">
+                    <div style="font-size:48px;margin-bottom:10px;">📊</div>
+                    <div class="modal-title">${report.year}年度学习报告</div>
+                    <div style="font-size:20px;font-weight:bold;color:#667eea;margin-bottom:20px;">${evaluation}</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:20px 0;">
+                        <div style="background:#f9f9f9;padding:15px;border-radius:12px;">
+                            <div style="font-size:24px;font-weight:bold;color:#667eea;">${report.totalWords}</div>
+                            <div style="font-size:11px;color:#666;">学习单词</div>
+                        </div>
+                        <div style="background:#f9f9f9;padding:15px;border-radius:12px;">
+                            <div style="font-size:24px;font-weight:bold;color:#10b981;">${report.accuracy}%</div>
+                            <div style="font-size:11px;color:#666;">正确率</div>
+                        </div>
+                        <div style="background:#f9f9f9;padding:15px;border-radius:12px;">
+                            <div style="font-size:24px;font-weight:bold;color:#f59e0b;">${report.streak}</div>
+                            <div style="font-size:11px;color:#666;">当前连续</div>
+                        </div>
+                        <div style="background:#f9f9f9;padding:15px;border-radius:12px;">
+                            <div style="font-size:24px;font-weight:bold;color:#ef4444;">${report.maxStreak}</div>
+                            <div style="font-size:11px;color:#666;">最高连续</div>
+                        </div>
+                    </div>
+                    <div style="background:#f0f7ff;padding:15px;border-radius:12px;margin:15px 0;">
+                        <div style="font-size:14px;color:#333;">📅 学习天数: <b>${report.totalDays}</b> 天</div>
+                        <div style="font-size:14px;color:#333;margin-top:8px;">⏱️ 总学习时长: <b>${hours}小时${mins}分钟</b></div>
+                        <div style="font-size:14px;color:#333;margin-top:8px;">📖 词书数量: <b>${report.books}</b> 本</div>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;" onclick="this.closest('.modal').remove()">太棒了！</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // 检查是否是周年庆（每月同一日期）
+        function checkAnniversary() {
+            const lastShown = localStorage.getItem('wordAI_anniversaryShown');
+            const today = new Date().toDateString();
+            
+            if (lastShown !== today) {
+                const data = loadStats();
+                if (data.total > 50 && data.today === 0) {
+                    // 随机显示年度报告
+                    if (Math.random() < 0.3) {
+                        setTimeout(showAnnualReport, 3000);
+                        localStorage.setItem('wordAI_anniversaryShown', today);
+                    }
+                }
+            }
+        }
         
         // ====== 词书分类系统 ======
         const wordBooks = [
@@ -1882,6 +2056,30 @@
             <div class="stat-item"><div class="stat-value" id="streak">0</div><div class="stat-label">连续</div></div>
             <div class="stat-item"><div class="stat-value" id="accuracy">0%</div><div class="stat-label">正确率</div></div>
         </div>
+        
+        <!-- 底部快捷操作栏 -->
+        <div class="quick-bar">
+            <div class="quick-bar-item" onclick="showTab('tab-learn')">
+                <span class="quick-bar-icon">📚</span>
+                <span class="quick-bar-label">背单词</span>
+            </div>
+            <div class="quick-bar-item" onclick="showTab('tab-review')">
+                <span class="quick-bar-icon">📝</span>
+                <span class="quick-bar-label">复习</span>
+            </div>
+            <div class="quick-bar-item" onclick="showTab('tab-challenge')">
+                <span class="quick-bar-icon">🎯</span>
+                <span class="quick-bar-label">挑战</span>
+            </div>
+            <div class="quick-bar-item" onclick="showTab('tab-plan')">
+                <span class="quick-bar-icon">⏱️</span>
+                <span class="quick-bar-label">专注</span>
+            </div>
+            <div class="quick-bar-item" onclick="showTab('tab-profile')">
+                <span class="quick-bar-icon">👤</span>
+                <span class="quick-bar-label">我的</span>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -2186,6 +2384,20 @@
         }
         
         function init() {
+            // 使用requestIdleCallback优化初始化
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(() => {
+                    performInit();
+                }, { timeout: 2000 });
+            } else {
+                setTimeout(performInit, 0);
+            }
+            
+            // 预加载关键资源
+            preloadResources();
+        }
+        
+        function performInit() {
             loadUser();
             loadExp();
             loadHistory();
@@ -2200,6 +2412,7 @@
             loadCheckin(); // 加载签到数据
             checkStreakShield(); // 检查打卡保护卡
             updateStreakShieldUI(); // 更新保护卡UI
+            checkBackupStatus(); // 检查备份状态
             
             // 显示随机学习小贴士
             showRandomTip();
@@ -2222,6 +2435,28 @@
             
             // 启动学习计时
             startStudyTimer();
+            
+            // 延迟加载非关键功能
+            setTimeout(() => {
+                updateLearnProgress();
+                checkDueReview();
+                checkAnniversary();
+            }, 1000);
+            
+            // 初始化移动端手势
+            initTouchGestures();
+            
+            // 检查离线状态
+            updateOnlineStatus();
+        }
+        
+        function preloadResources() {
+            // 预加载关键图片和资源
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📚</text></svg>';
+            document.head.appendChild(link);
+        }
             
             // 离线检测
             window.addEventListener('online', updateOnlineStatus);
@@ -2839,7 +3074,7 @@
         // ====== 数据导出导入 ======
         function exportAllData() {
             const data = {
-                version: 'v3.3',
+                version: 'v3.4',
                 exportTime: new Date().toISOString(),
                 words: words,
                 favorites: favorites,
@@ -5210,6 +5445,69 @@ ${statusText}
                 } catch (e) {}
             }
         }
+        
+        // ====== 移动端手势支持 ======
+        function initTouchGestures() {
+            let touchStartX = 0;
+            let touchStartY = 0;
+            const card = document.querySelector('.card');
+            if (!card) return;
+            
+            card.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+            
+            card.addEventListener('touchend', (e) => {
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+                const diffX = touchEndX - touchStartX;
+                const diffY = touchEndY - touchStartY;
+                
+                // 水平滑动 > 50px 且 垂直滑动 < 30px
+                if (Math.abs(diffX) > 50 && Math.abs(diffY) < 30) {
+                    if (diffX > 0) {
+                        // 右滑 - 认识
+                        markWord(2);
+                    } else {
+                        // 左滑 - 不认识
+                        markWord(1);
+                    }
+                }
+            }, { passive: true });
+        }
+        
+        // ====== 离线状态处理 ======
+        function updateOnlineStatus() {
+            const isOnline = navigator.onLine;
+            if (!isOnline) {
+                document.body.classList.add('offline');
+            } else {
+                document.body.classList.remove('offline');
+            }
+        }
+        
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+            const backup = localStorage.getItem('wordAI_autoBackup');
+            if (backup) {
+                try {
+                    const data = JSON.parse(backup);
+                    const backupTime = new Date(data.backupTime);
+                    const now = new Date();
+                    const diffMs = now - backupTime;
+                    const diffMins = Math.floor(diffMs / 60000);
+                    
+                    if (diffMins < 1) {
+                        document.getElementById('backupInfo').textContent = '最近备份: 刚刚';
+                    } else if (diffMins < 60) {
+                        document.getElementById('backupInfo').textContent = '最近备份: ' + diffMins + '分钟前';
+                    } else {
+                        document.getElementById('backupInfo').textContent = '最近备份: ' + backupTime.toLocaleDateString();
+                    }
+                } catch (e) {}
+            }
+        }
         }
         
         // ====== PWA 安装提示 ======
@@ -5259,6 +5557,55 @@ ${statusText}
 
         // 启动
         init();
+        
+        // ====== 性能监控 ======
+        if ('performance' in window) {
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    const perfData = window.performance.timing;
+                    const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
+                    const domReady = perfData.domContentLoadedEventEnd - perfData.navigationStart;
+                    console.log(`页面加载时间: ${pageLoadTime}ms, DOM就绪: ${domReady}ms`);
+                }, 0);
+            });
+        }
+        
+        // ====== 全局错误处理 ======
+        window.addEventListener('error', (e) => {
+            console.error('页面错误:', e.message);
+            // 记录错误到localStorage
+            const errors = JSON.parse(localStorage.getItem('wordAI_errors') || '[]');
+            errors.push({
+                message: e.message,
+                filename: e.filename,
+                lineno: e.lineno,
+                time: new Date().toISOString()
+            });
+            // 只保留最近10个错误
+            if (errors.length > 10) errors.shift();
+            localStorage.setItem('wordAI_errors', JSON.stringify(errors));
+        });
+        
+        // ====== Service Worker 注册 (PWA离线支持) ======
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {
+                // Service Worker 注册失败，忽略
+            });
+        }
+        
+        // ====== 内存优化 ======
+        // 定期清理不需要的数据
+        setInterval(() => {
+            try {
+                const reviewData = JSON.parse(localStorage.getItem('wordAI_review') || '[]');
+                // 清理超过30天的复习数据
+                const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+                const cleanedData = reviewData.filter(w => !w.lastReview || new Date(w.lastReview).getTime() > thirtyDaysAgo);
+                if (cleanedData.length !== reviewData.length) {
+                    localStorage.setItem('wordAI_review', JSON.stringify(cleanedData));
+                }
+            } catch (e) {}
+        }, 60 * 60 * 1000); // 每小时检查一次
     </script>
 </body>
 </html>
