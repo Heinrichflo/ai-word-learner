@@ -1169,11 +1169,34 @@
             const monthCorrect = history.slice(-30).reduce((s, h) => s + (h.correct || 0), 0);
             const mastered = words.filter(w => w.status === 'mastered').length;
             
+            // 计算本周学习天数
+            const weekDays = history.slice(-7).filter(h => h.total > 0).length;
+            const weekAvg = weekDays > 0 ? Math.round(weekTotal / weekDays) : 0;
+            
+            // 生成鼓励语
+            const encouragements = [
+                '太棒了！继续保持！🌟',
+                '学习是一种习惯，坚持就是胜利！💪',
+                '每天进步一点点，终将成就伟大的自己！🚀',
+                '你正在变得越来越强大！🔥',
+                '学习是最好的投资，为自己点赞！⭐'
+            ];
+            const encouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
+            
             report.innerHTML = `
+                <div class="report-card" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;">
+                    <div style="text-align:center;">
+                        <div style="font-size:36px;margin-bottom:10px;">📊</div>
+                        <div style="font-size:14px;opacity:0.9;">${new Date().toLocaleDateString('zh-CN', {month:'long'})} 学习报告</div>
+                        <div style="font-size:24px;font-weight:bold;margin-top:10px;">${encouragement}</div>
+                    </div>
+                </div>
                 <div class="report-card">
                     <div class="report-title">📅 本周数据</div>
                     <div class="report-summary">
                         <div class="report-item"><div class="report-value">${weekTotal}</div><div class="report-label">学习词数</div></div>
+                        <div class="report-item"><div class="report-value">${weekDays}/7</div><div class="report-label">学习天数</div></div>
+                        <div class="report-item"><div class="report-value">${weekAvg}</div><div class="report-label">日均</div></div>
                         <div class="report-item"><div class="report-value">${weekTotal > 0 ? Math.round((weekCorrect/weekTotal)*100) : 0}%</div><div class="report-label">正确率</div></div>
                     </div>
                 </div>
@@ -1189,10 +1212,41 @@
                     <div class="report-summary">
                         <div class="report-item"><div class="report-value">${total}</div><div class="report-label">总学习</div></div>
                         <div class="report-item"><div class="report-value">${mastered}</div><div class="report-label">已掌握</div></div>
+                        <div class="report-item"><div class="report-value">${streak}</div><div class="report-label">连续天数</div></div>
+                        <div class="report-item"><div class="report-value">${challengeData.badges?.length || 0}</div><div class="report-label">徽章数</div></div>
                     </div>
                 </div>
+                <button class="btn" style="width:100%;margin-top:10px;background:#07C160;color:white;" onclick="shareWeeklyReport()">📤 分享周报</button>
             `;
             document.getElementById('reportModal').classList.add('active');
+        }
+        
+        // ====== 分享周报 ======
+        function shareWeeklyReport() {
+            const weekTotal = history.slice(-7).reduce((s, h) => s + (h.total || 0), 0);
+            const weekCorrect = history.slice(-7).reduce((s, h) => s + (h.correct || 0), 0);
+            const accuracy = weekTotal > 0 ? Math.round((weekCorrect/weekTotal)*100) : 0;
+            
+            const text = `📊 我的 AI 背单词周报
+
+📅 ${new Date().toLocaleDateString('zh-CN', {year:'numeric', month:'long', day:'numeric'})}
+
+✅ 本周学习：${weekTotal} 个单词
+🎯 正确率：${accuracy}%
+🔥 连续打卡：${streak} 天
+⭐ 当前等级：Lv.${userExp.level} ${expConfig.levelNames[userExp.level-1]}
+
+🤖 一起用 AI 背单词小程序学习英语吧！
+
+#AI背单词 #英语学习 #周报`;
+
+            if (navigator.share) {
+                navigator.share({ title: 'AI背单词周报', text: text });
+            } else {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('周报已复制到剪贴板！');
+                });
+            }
         }
         
         // ====== 分享功能 ======
