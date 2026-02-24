@@ -476,6 +476,7 @@
             <div class="tab" data-tab="stats">统计</div>
             <div class="tab" data-tab="speak">发音</div>
             <div class="tab" data-tab="flashcard">速记</div>
+            <div class="tab" data-tab="dictation">听写</div>
             <div class="tab" data-tab="review">复习</div>
             <div class="tab" data-tab="favorites">收藏</div>
             <div class="tab" data-tab="wrongbook">错题</div>
@@ -900,6 +901,31 @@
                         <button class="btn" style="background:#dbeafe;color:#3b82f6;" onclick="rateReview(4)">🎯 精通</button>
                     </div>
                     <button class="btn" style="width:100%;margin-top:10px;background:#f5f5f5;" onclick="showTab('tab-review')">退出复习</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 听写模式 -->
+        <div class="tab-content" id="tab-dictation">
+            <div style="padding:20px;text-align:center;">
+                <div style="font-size:14px;color:#666;margin-bottom:15px;">✍️ 听写测试</div>
+                <div style="font-size:12px;color:#999;margin-bottom:20px;">听发音，拼写单词</div>
+            </div>
+            <div class="card" id="dictationCard">
+                <button class="tts-btn" onclick="playDictationWord()" style="width:60px;height:60px;font-size:24px;margin-bottom:15px;">🔊</button>
+                <div id="dictationHint" style="font-size:13px;color:#666;margin:10px 0;">点击播放按钮听单词</div>
+                <input type="text" id="dictationInput" placeholder="输入单词拼写..." style="width:80%;padding:12px;border:2px solid #ddd;border-radius:10px;font-size:16px;text-align:center;margin:10px auto;">
+                <div id="dictationResult" style="margin-top:15px;font-size:14px;"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="checkDictation()">✓ 检查</button>
+                <button class="btn" style="background:#667eea;color:white;" onclick="nextDictation()">下一个</button>
+            </div>
+            <div style="padding:15px;text-align:center;">
+                <div style="display:flex;justify-content:space-around;font-size:12px;color:#666;">
+                    <span>正确: <b id="dictCorrect" style="color:#10b981;">0</b></span>
+                    <span>错误: <b id="dictWrong" style="color:#ef4444;">0</b></span>
+                    <span>正确率: <b id="dictAcc">0%</b></span>
                 </div>
             </div>
         </div>
@@ -3806,6 +3832,68 @@ ${statusText}
             showFlashcard();
         }
         
+        // ====== 听写模式 ======
+        let dictationWord = null;
+        let dictCorrect = 0;
+        let dictWrong = 0;
+        
+        function startDictation() {
+            dictCorrect = 0;
+            dictWrong = 0;
+            updateDictationStats();
+            nextDictation();
+        }
+        
+        function nextDictation() {
+            dictationWord = words[Math.floor(Math.random() * words.length)];
+            document.getElementById('dictationInput').value = '';
+            document.getElementById('dictationResult').innerHTML = '';
+            document.getElementById('dictationHint').textContent = '点击播放按钮听单词';
+            document.getElementById('dictationInput').focus();
+            playDictationWord();
+        }
+        
+        function playDictationWord() {
+            if (dictationWord) {
+                playTTS(dictationWord.word);
+                document.getElementById('dictationHint').textContent = '请拼写刚才的单词';
+            }
+        }
+        
+        function checkDictation() {
+            if (!dictationWord) return;
+            
+            const input = document.getElementById('dictationInput').value.trim().toLowerCase();
+            const correct = dictationWord.word.toLowerCase();
+            
+            const resultEl = document.getElementById('dictationResult');
+            
+            if (input === correct) {
+                dictCorrect++;
+                resultEl.innerHTML = `<div style="color:#10b981;font-weight:bold;">✅ 正确！</div>
+                    <div style="font-size:12px;color:#666;margin-top:5px;">${dictationWord.word} ${dictationWord.phonetic}</div>
+                    <div style="font-size:12px;color:#999;">${dictationWord.meaning}</div>`;
+                playSound('correct');
+            } else {
+                dictWrong++;
+                resultEl.innerHTML = `<div style="color:#ef4444;font-weight:bold;">❌ 错误</div>
+                    <div style="font-size:12px;color:#666;margin-top:5px;">正确答案: ${dictationWord.word}</div>
+                    <div style="font-size:12px;color:#999;">${dictationWord.phonetic} - ${dictationWord.meaning}</div>`;
+                playSound('wrong');
+            }
+            
+            updateDictationStats();
+            addExp(input === correct ? 10 : 2);
+        }
+        
+        function updateDictationStats() {
+            document.getElementById('dictCorrect').textContent = dictCorrect;
+            document.getElementById('dictWrong').textContent = dictWrong;
+            const total = dictCorrect + dictWrong;
+            const acc = total > 0 ? Math.round((dictCorrect / total) * 100) : 0;
+            document.getElementById('dictAcc').textContent = acc + '%';
+        }
+        
         function nextSpeak() {
             const w = words[Math.floor(Math.random() * words.length)];
             document.getElementById('speak-word').textContent = w.word;
@@ -3978,6 +4066,7 @@ ${statusText}
                 }
                 if (this.dataset.tab === 'speak') nextSpeak();
                 if (this.dataset.tab === 'flashcard') startFlashcard();
+                if (this.dataset.tab === 'dictation') startDictation();
                 if (this.dataset.tab === 'challenge') { loadChallenge(); renderCheckinUI(); }
                 if (this.dataset.tab === 'stats') { renderStats(); }
                 if (this.dataset.tab === 'scenes') { nextSceneWord(); }
