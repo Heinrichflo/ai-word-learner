@@ -736,22 +736,42 @@
                 <div class="scene-card active" onclick="selectScene('travel')">
                     <div class="scene-icon">✈️</div>
                     <div class="scene-name">旅行</div>
-                    <div class="scene-count">120 单词</div>
+                    <div class="scene-count">12 单词</div>
                 </div>
                 <div class="scene-card" onclick="selectScene('business')">
                     <div class="scene-icon">💼</div>
                     <div class="scene-name">职场</div>
-                    <div class="scene-count">200 单词</div>
+                    <div class="scene-count">12 单词</div>
                 </div>
                 <div class="scene-card" onclick="selectScene('daily')">
                     <div class="scene-icon">🏠</div>
                     <div class="scene-name">日常</div>
-                    <div class="scene-count">150 单词</div>
+                    <div class="scene-count">12 单词</div>
                 </div>
                 <div class="scene-card" onclick="selectScene('tech')">
                     <div class="scene-icon">💻</div>
                     <div class="scene-name">科技</div>
-                    <div class="scene-count">180 单词</div>
+                    <div class="scene-count">12 单词</div>
+                </div>
+                <div class="scene-card" onclick="selectScene('medical')">
+                    <div class="scene-icon">🏥</div>
+                    <div class="scene-name">医疗</div>
+                    <div class="scene-count">10 单词</div>
+                </div>
+                <div class="scene-card" onclick="selectScene('finance')">
+                    <div class="scene-icon">💰</div>
+                    <div class="scene-name">金融</div>
+                    <div class="scene-count">10 单词</div>
+                </div>
+                <div class="scene-card" onclick="selectScene('education')">
+                    <div class="scene-icon">📖</div>
+                    <div class="scene-name">教育</div>
+                    <div class="scene-count">10 单词</div>
+                </div>
+                <div class="scene-card" onclick="selectScene('fitness')">
+                    <div class="scene-icon">🏋️</div>
+                    <div class="scene-name">健身</div>
+                    <div class="scene-count">10 单词</div>
                 </div>
             </div>
             <div class="card" id="scene-card">
@@ -1107,7 +1127,7 @@
         
         // ====== 单词库 ======
         const defaultWords = [
-            // 基础级
+            // 基础级 - 科技词汇
             { word: "variable", phonetic: "/ˈveəriəbl/", meaning: "n. 变量", level: "beginner" },
             { word: "debug", phonetic: "/diːˈbʌɡ/", meaning: "v. 调试", level: "beginner" },
             { word: "network", phonetic: "/ˈnetwɜːrk/", meaning: "n. 网络", level: "beginner" },
@@ -1118,7 +1138,18 @@
             { word: "code", phonetic: "/koʊd/", meaning: "n. 代码", level: "beginner" },
             { word: "bug", phonetic: "/bʌɡ/", meaning: "n. 缺陷", level: "beginner" },
             { word: "web", phonetic: "/web/", meaning: "n. 网页", level: "beginner" },
-            // 中级
+            // 基础级 - 日常词汇
+            { word: "hello", phonetic: "/həˈloʊ/", meaning: "int. 你好", level: "beginner" },
+            { word: "world", phonetic: "/wɜːrld/", meaning: "n. 世界", level: "beginner" },
+            { word: "water", phonetic: "/ˈwɔːtər/", meaning: "n. 水", level: "beginner" },
+            { word: "food", phonetic: "/fuːd/", meaning: "n. 食物", level: "beginner" },
+            { word: "book", phonetic: "/bʊk/", meaning: "n. 书", level: "beginner" },
+            { word: "school", phonetic: "/skuːl/", meaning: "n. 学校", level: "beginner" },
+            { word: "friend", phonetic: "/frend/", meaning: "n. 朋友", level: "beginner" },
+            { word: "family", phonetic: "/ˈfæməli/", meaning: "n. 家庭", level: "beginner" },
+            { word: "time", phonetic: "/taɪm/", meaning: "n. 时间", level: "beginner" },
+            { word: "money", phonetic: "/ˈmʌni/", meaning: "n. 钱", level: "beginner" },
+            // 中级 - 科技词汇
             { word: "database", phonetic: "/ˈdeɪtəbeɪs/", meaning: "n. 数据库", level: "intermediate" },
             { word: "function", phonetic: "/ˈfʌŋkʃən/", meaning: "n. 功能；函数", level: "intermediate" },
             { word: "interface", phonetic: "/ˈɪntəfeɪs/", meaning: "n. 界面；接口", level: "intermediate" },
@@ -1129,8 +1160,18 @@
             { word: "algorithm", phonetic: "/ˈælɡərɪðəm/", meaning: "n. 算法", level: "intermediate" },
             { word: "cloud", phonetic: "/klaʊd/", meaning: "n. 云", level: "intermediate" },
             { word: "security", phonetic: "/sɪˈkjʊrəti/", meaning: "n. 安全", level: "intermediate" },
-            // 高级
-            { word: "algorithm", phonetic: "/ˈælɡərɪðəm/", meaning: "n. 算法", level: "advanced" },
+            // 中级 - 日常词汇
+            { word: "communication", phonetic: "/kəˌmjuːnɪˈkeɪʃən/", meaning: "n. 交流", level: "intermediate" },
+            { word: "environment", phonetic: "/ɪnˈvaɪrənmənt/", meaning: "n. 环境", level: "intermediate" },
+            { word: "technology", phonetic: "/tekˈnɑːlədʒi/", meaning: "n. 技术", level: "intermediate" },
+            { word: "education", phonetic: "/ˌedʒuˈkeɪʃən/", meaning: "n. 教育", level: "intermediate" },
+            { word: "experience", phonetic: "/ɪkˈspɪriəns/", meaning: "n. 经验", level: "intermediate" },
+            { word: "information", phonetic: "/ˌɪnfərˈmeɪʃən/", meaning: "n. 信息", level: "intermediate" },
+            { word: "development", phonetic: "/dɪˈveləpmənt/", meaning: "n. 发展", level: "intermediate" },
+            { word: "application", phonetic: "/ˌæplɪˈkeɪʃən/", meaning: "n. 应用", level: "intermediate" },
+            { word: "management", phonetic: "/ˈmænɪdʒmənt/", meaning: "n. 管理", level: "intermediate" },
+            { word: "organization", phonetic: "/ˌɔːrɡənɪˈzeɪʃən/", meaning: "n. 组织", level: "intermediate" },
+            // 高级 - 科技词汇
             { word: "compile", phonetic: "/kəmˈpaɪl/", meaning: "v. 编译", level: "advanced" },
             { word: "paradigm", phonetic: "/ˈpærədaɪm/", meaning: "n. 范式", level: "advanced" },
             { word: "optimize", phonetic: "/ˈɑːptɪmaɪz/", meaning: "v. 优化", level: "advanced" },
@@ -1139,7 +1180,19 @@
             { word: "deployment", phonetic: "/dɪˈplɔɪmənt/", meaning: "n. 部署", level: "advanced" },
             { word: "scalability", phonetic: "/ˌskeɪləˈbɪləti/", meaning: "n. 可扩展性", level: "advanced" },
             { word: "microservice", phonetic: "/ˌmaɪkroʊˈsɜːrvɪs/", meaning: "n. 微服务", level: "advanced" },
-            { word: "container", phonetic: "/kənˈteɪnər/", meaning: "n. 容器", level: "advanced" }
+            { word: "container", phonetic: "/kənˈteɪnər/", meaning: "n. 容器", level: "advanced" },
+            { word: "blockchain", phonetic: "/ˈblɒktʃeɪn/", meaning: "n. 区块链", level: "advanced" },
+            // 高级 - 商务词汇
+            { word: "strategy", phonetic: "/ˈstrætədʒi/", meaning: "n. 战略", level: "advanced" },
+            { word: "investment", phonetic: "/ɪnˈvestmənt/", meaning: "n. 投资", level: "advanced" },
+            { word: "revenue", phonetic: "/ˈrevənuː/", meaning: "n. 收入", level: "advanced" },
+            { word: "performance", phonetic: "/pərˈfɔːrməns/", meaning: "n. 性能", level: "advanced" },
+            { word: "innovation", phonetic: "/ˌɪnəˈveɪʃən/", meaning: "n. 创新", level: "advanced" },
+            { word: "collaboration", phonetic: "/kəˌlæbəˈreɪʃən/", meaning: "n. 协作", level: "advanced" },
+            { word: "authentication", phonetic: "/ɔːˌθentɪˈkeɪʃən/", meaning: "n. 认证", level: "advanced" },
+            { word: "authorization", phonetic: "/ˌɔːθərɪˈzeɪʃən/", meaning: "n. 授权", level: "advanced" },
+            { word: "encryption", phonetic: "/ɪnˈkrɪpʃən/", meaning: "n. 加密", level: "advanced" },
+            { word: "virtualization", phonetic: "/ˌvɜːrtʃuəlɪˈzeɪʃən/", meaning: "n. 虚拟化", level: "advanced" }
         ];
 
         // ====== 状态 ======
@@ -3424,28 +3477,53 @@ ${statusText}
                 { word: 'world', phonetic: '/wɜːrld/', meaning: '世界' },
                 { word: 'love', phonetic: '/lʌv/', meaning: '爱' },
                 { word: 'happy', phonetic: '/ˈhæpi/', meaning: '快乐' },
-                { word: 'learn', phonetic: '/lɜːrn/', meaning: '学习' }
+                { word: 'learn', phonetic: '/lɜːrn/', meaning: '学习' },
+                { word: 'book', phonetic: '/bʊk/', meaning: '书' },
+                { word: 'water', phonetic: '/ˈwɔːtər/', meaning: '水' },
+                { word: 'food', phonetic: '/fuːd/', meaning: '食物' },
+                { word: 'friend', phonetic: '/frend/', meaning: '朋友' },
+                { word: 'family', phonetic: '/ˈfæməli/', meaning: '家庭' },
+                { word: 'time', phonetic: '/taɪm/', meaning: '时间' },
+                { word: 'money', phonetic: '/ˈmʌni/', meaning: '钱' },
+                { word: 'work', phonetic: '/wɜːrk/', meaning: '工作' },
+                { word: 'study', phonetic: '/ˈstʌdi/', meaning: '学习' },
+                { word: 'computer', phonetic: '/kəmˈpjuːtər/', meaning: '电脑' }
             ],
             ja: [
                 { word: 'こんにちは', phonetic: 'kon-ni-chi-wa', meaning: '你好' },
                 { word: 'さようなら', phonetic: 'sa-yo-na-ra', meaning: '再见' },
                 { word: 'ありがとう', phonetic: 'a-ri-ga-to', meaning: '谢谢' },
                 { word: '食べる', phonetic: 'ta-be-ru', meaning: '吃' },
-                { word: '飲む', phonetic: 'no-mu', meaning: '喝' }
+                { word: '飲む', phonetic: 'no-mu', meaning: '喝' },
+                { word: '水', phonetic: 'mi-zu', meaning: '水' },
+                { word: '本', phonetic: 'hon', meaning: '书' },
+                { word: '友達', phonetic: 'to-mo-da-chi', meaning: '朋友' },
+                { word: '家族', phonetic: 'ka-zo-ku', meaning: '家族' },
+                { word: '仕事', phonetic: 'shi-go-to', meaning: '工作' }
             ],
             ko: [
                 { word: '안녕하세요', phonetic: 'an-nyeong-ha-se-yo', meaning: '你好' },
                 { word: '감사합니다', phonetic: 'gam-sa-ham-ni-da', meaning: '谢谢' },
-                { word: '再见', phonetic: 'an-nyeong', meaning: '再见' },
+                { word: '안녕', phonetic: 'an-nyeong', meaning: '再见' },
                 { word: '사랑', phonetic: 'sa-rang', meaning: '爱' },
-                { word: '음식', phonetic: 'eum-sik', meaning: '食物' }
+                { word: '음식', phonetic: 'eum-sik', meaning: '食物' },
+                { word: '물', phonetic: 'mul', meaning: '水' },
+                { word: '책', phonetic: 'chaek', meaning: '书' },
+                { word: '친구', phonetic: 'chin-gu', meaning: '朋友' },
+                { word: '가족', phonetic: 'ga-jok', meaning: '家庭' },
+                { word: '일', phonetic: 'il', meaning: '工作' }
             ],
             fr: [
                 { word: 'bonjour', phonetic: '/bɔ̃ʒuʁ/', meaning: '你好' },
                 { word: 'merci', phonetic: '/mɛʁsi/', meaning: '谢谢' },
                 { word: 'amour', phonetic: '/amuʁ/', meaning: '爱' },
                 { word: 'bon', phonetic: '/bɔ̃/', meaning: '好' },
-                { word: 'apprendre', phonetic: '/apʁɑ̃dʁ/', meaning: '学习' }
+                { word: 'apprendre', phonetic: '/apʁɑ̃dʁ/', meaning: '学习' },
+                { word: 'eau', phonetic: '/o/', meaning: '水' },
+                { word: 'livre', phonetic: '/livʁ/', meaning: '书' },
+                { word: 'ami', phonetic: '/ami/', meaning: '朋友' },
+                { word: 'famille', phonetic: '/famij/', meaning: '家庭' },
+                { word: 'travail', phonetic: '/travaj/', meaning: '工作' }
             ]
         };
         
@@ -3655,7 +3733,11 @@ ${statusText}
                 { word: 'destination', phonetic: '/ˌdestɪˈneɪʃən/', meaning: '目的地' },
                 { word: 'luggage', phonetic: '/ˈlʌɡɪdʒ/', meaning: '行李' },
                 { word: 'boarding', phonetic: '/ˈbɔːrdɪŋ/', meaning: '登机' },
-                { word: 'reservation', phonetic: '/ˌrezərˈveɪʃən/', meaning: '预订' }
+                { word: 'reservation', phonetic: '/ˌrezərˈveɪʃən/', meaning: '预订' },
+                { word: 'airport', phonetic: '/ˈerpɔːrt/', meaning: '机场' },
+                { word: 'departure', phonetic: '/dɪˈpɑːrtʃər/', meaning: '出发' },
+                { word: 'arrival', phonetic: '/əˈraɪvəl/', meaning: '到达' },
+                { word: 'luggage', phonetic: '/ˈlʌɡɪdʒ/', meaning: '行李' }
             ],
             business: [
                 { word: 'meeting', phonetic: '/ˈmiːtɪŋ/', meaning: '会议' },
@@ -3665,7 +3747,11 @@ ${statusText}
                 { word: 'colleague', phonetic: '/ˈkɑːliːɡ/', meaning: '同事' },
                 { word: 'schedule', phonetic: '/ˈskedʒuːl/', meaning: '日程' },
                 { word: 'email', phonetic: '/ˈiːmeɪl/', meaning: '邮件' },
-                { word: 'report', phonetic: '/rɪˈpɔːrt/', meaning: '报告' }
+                { word: 'report', phonetic: '/rɪˈpɔːrt/', meaning: '报告' },
+                { word: 'proposal', phonetic: '/prəˈpoʊzəl/', meaning: '提案' },
+                { word: 'contract', phonetic: '/ˈkɒntrækt/', meaning: '合同' },
+                { word: 'conference', phonetic: '/ˈkɒnfərəns/', meaning: '会议' },
+                { word: 'negotiation', phonetic: '/nɪˌɡoʊʃiˈeɪʃən/', meaning: '谈判' }
             ],
             daily: [
                 { word: 'breakfast', phonetic: '/ˈbrekfəst/', meaning: '早餐' },
@@ -3675,7 +3761,11 @@ ${statusText}
                 { word: 'laundry', phonetic: '/ˈlɔːndri/', meaning: '洗衣' },
                 { word: 'supermarket', phonetic: '/ˈsuːpərmɑːrkɪt/', meaning: '超市' },
                 { word: 'pharmacy', phonetic: '/ˈfɑːrməsi/', meaning: '药店' },
-                { word: 'restaurant', phonetic: '/ˈrestərɑːnt/', meaning: '餐厅' }
+                { word: 'restaurant', phonetic: '/ˈrestərɑːnt/', meaning: '餐厅' },
+                { word: 'vegetables', phonetic: '/ˈvedʒtəblz/', meaning: '蔬菜' },
+                { word: 'fruits', phonetic: '/fruːts/', meaning: '水果' },
+                { word: 'beverage', phonetic: '/ˈbevərɪdʒ/', meaning: '饮料' },
+                { word: 'household', phonetic: '/ˈhaʊshoʊld/', meaning: '家庭用品' }
             ],
             tech: [
                 { word: 'software', phonetic: '/ˈsɔːftwer/', meaning: '软件' },
@@ -3685,7 +3775,63 @@ ${statusText}
                 { word: 'security', phonetic: '/sɪˈkjʊrəti/', meaning: '安全' },
                 { word: 'platform', phonetic: '/ˈplætfɔːrm/', meaning: '平台' },
                 { word: 'interface', phonetic: '/ˈɪntərfeɪs/', meaning: '界面' },
-                { word: 'function', phonetic: '/ˈfʌŋkʃən/', meaning: '功能' }
+                { word: 'function', phonetic: '/ˈfʌŋkʃən/', meaning: '功能' },
+                { word: 'browser', phonetic: '/ˈbraʊzər/', meaning: '浏览器' },
+                { word: 'download', phonetic: '/ˈdaʊnloʊd/', meaning: '下载' },
+                { word: 'upload', phonetic: '/ˈʌploʊd/', meaning: '上传' },
+                { word: 'password', phonetic: '/ˈpæswɜːrd/', meaning: '密码' }
+            ],
+            // 新增：医疗健康场景
+            medical: [
+                { word: 'symptom', phonetic: '/ˈsɪmptəm/', meaning: '症状' },
+                { word: 'prescription', phonetic: '/prɪˈskrɪpʃən/', meaning: '处方' },
+                { word: 'diagnosis', phonetic: '/ˌdaɪəɡˈnoʊsɪs/', meaning: '诊断' },
+                { word: 'treatment', phonetic: '/ˈtriːtmənt/', meaning: '治疗' },
+                { word: 'hospital', phonetic: '/ˈhɒspɪtəl/', meaning: '医院' },
+                { word: 'emergency', phonetic: '/ɪˈmɜːrdʒənsi/', meaning: '急诊' },
+                { word: 'medicine', phonetic: '/ˈmedɪsɪn/', meaning: '药' },
+                { word: 'health', phonetic: '/helθ/', meaning: '健康' },
+                { word: 'doctor', phonetic: '/ˈdɒktər/', meaning: '医生' },
+                { word: 'nurse', phonetic: '/nɜːrs/', meaning: '护士' }
+            ],
+            // 新增：金融场景
+            finance: [
+                { word: 'investment', phonetic: '/ɪnˈvestmənt/', meaning: '投资' },
+                { word: 'stock', phonetic: '/stɒk/', meaning: '股票' },
+                { word: 'bank', phonetic: '/bæŋk/', meaning: '银行' },
+                { word: 'credit', phonetic: '/ˈkredɪt/', meaning: '信用' },
+                { word: 'loan', phonetic: '/loʊn/', meaning: '贷款' },
+                { word: 'insurance', phonetic: '/ɪnˈʃʊrəns/', meaning: '保险' },
+                { word: 'tax', phonetic: '/tæks/', meaning: '税' },
+                { word: ' salary', phonetic: '/ˈsæləri/', meaning: '工资' },
+                { word: 'expense', phonetic: '/ɪkˈspens/', meaning: '支出' },
+                { word: 'saving', phonetic: '/ˈseɪvɪŋ/', meaning: '储蓄' }
+            ],
+            // 新增：教育场景
+            education: [
+                { word: 'student', phonetic: '/ˈstuːdənt/', meaning: '学生' },
+                { word: 'teacher', phonetic: '/ˈtiːtʃər/', meaning: '老师' },
+                { word: 'classroom', phonetic: '/ˈklæsrʊm/', meaning: '教室' },
+                { word: 'homework', phonetic: '/ˈhoʊmwɜːrk/', meaning: '作业' },
+                { word: 'exam', phonetic: '/ɪɡˈzæm/', meaning: '考试' },
+                { word: 'grade', phonetic: '/ɡreɪd/', meaning: '成绩' },
+                { word: 'subject', phonetic: '/ˈsʌbdʒekt/', meaning: '科目' },
+                { word: 'college', phonetic: '/ˈkɒlɪdʒ/', meaning: '大学' },
+                { word: 'degree', phonetic: '/dɪˈɡriː/', meaning: '学位' },
+                { word: 'certificate', phonetic: '/sərˈtɪfɪkɪt/', meaning: '证书' }
+            ],
+            // 新增：运动健身场景
+            fitness: [
+                { word: 'exercise', phonetic: '/ˈeksərsaɪz/', meaning: '锻炼' },
+                { word: 'workout', phonetic: '/ˈwɜːrkaʊt/', meaning: '健身' },
+                { word: 'gym', phonetic: '/dʒɪm/', meaning: '健身房' },
+                { word: 'muscle', phonetic: '/ˈmʌsəl/', meaning: '肌肉' },
+                { word: 'strength', phonetic: '/streŋθ/', meaning: '力量' },
+                { word: 'cardio', phonetic: '/ˈkɑːrdioʊ/', meaning: '有氧运动' },
+                { word: 'yoga', phonetic: '/ˈjoʊɡə/', meaning: '瑜伽' },
+                { word: 'nutrition', phonetic: '/nuːˈtrɪʃən/', meaning: '营养' },
+                { word: 'protein', phonetic: '/ˈproʊtiːn/', meaning: '蛋白质' },
+                { word: 'weight', phonetic: '/weɪt/', meaning: '体重' }
             ]
         };
         
