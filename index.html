@@ -244,6 +244,19 @@
         .ranking-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 10px; margin-bottom: 8px; }
         .ranking-num { font-size: 18px; font-weight: bold; width: 30px; color: #667eea; }
         
+        /* 学习地图 */
+        .map-container { padding: 16px; }
+        .map-node { width: 50px; height: 50px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 10px auto; }
+        .map-node.unlocked { background: linear-gradient(135deg, #52C41A, #73D13D); }
+        .map-node.current { background: linear-gradient(135deg, #667eea, #764ba2); animation: pulse 1s infinite; }
+        
+        /* PK对战 */
+        .pk-arena { text-align: center; padding: 20px; }
+        .pk-vs { font-size: 32px; font-weight: bold; margin: 20px 0; }
+        .pk-player { display: flex; align-items: center; justify-content: center; gap: 20px; }
+        .pk-avatar { width: 60px; height: 60px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+        .pk-score { font-size: 36px; font-weight: bold; }
+        
         /* 统计图表增强 */
         .chart-wrapper { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
         .chart-bar { display: flex; align-items: flex-end; height: 100px; gap: 4px; }
@@ -389,8 +402,8 @@
         <div class="tabs">
             <div class="tab active" data-tab="learn">背单词</div>
             <div class="tab" data-tab="profile">我的</div>
-            <div class="tab" data-tab="lang">语言</div>
-            <div class="tab" data-tab="group">小组</div>
+            <div class="tab" data-tab="map">地图</div>
+            <div class="tab" data-tab="pk">PK</div>
             <div class="tab" data-tab="quiz">AI出题</div>
             <div class="tab" data-tab="newwords">生词</div>
             <div class="tab" data-tab="challenge">挑战</div>
@@ -517,6 +530,36 @@
             <div class="ranking-list">
                 <div style="font-size:14px;font-weight:600;margin-bottom:12px;">🏆 小组排行榜</div>
                 <div id="rankingList"></div>
+            </div>
+        </div>
+
+        <!-- 学习地图 -->
+        <div class="tab-content" id="tab-map">
+            <div class="map-container">
+                <div style="text-align:center;font-size:16px;font-weight:600;margin-bottom:20px;">🗺️ 学习地图</div>
+                <div id="mapNodes"></div>
+            </div>
+        </div>
+
+        <!-- PK对战 -->
+        <div class="tab-content" id="tab-pk">
+            <div class="pk-arena">
+                <div style="font-size:16px;font-weight:600;">⚔️ 学习PK</div>
+                <div class="pk-player">
+                    <div>
+                        <div class="pk-avatar">😀</div>
+                        <div>我</div>
+                        <div class="pk-score" id="pkMyScore">0</div>
+                    </div>
+                    <div class="pk-vs">VS</div>
+                    <div>
+                        <div class="pk-avatar">🤖</div>
+                        <div>AI对手</div>
+                        <div class="pk-score" id="pkAiScore">0</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="startPK()">开始PK</button>
+                <div class="pk-result" id="pkResult"></div>
             </div>
         </div>
 
@@ -904,6 +947,8 @@
         let quizWord = null;
         let mediaRecorder = null;
         let audioChunks = [];
+        let studyStartTime = null; // 学习开始时间
+        let todayStudyMinutes = 0; // 今日学习分钟数
         
         // ====== 每日挑战系统 ======
         let challengeData = {
@@ -1037,6 +1082,7 @@
             loadNewWords();
             loadReminder();
             loadTheme();
+            loadStudyTime(); // 加载学习时长
             if (!user) {
                 document.getElementById('loginModal').classList.add('active');
             } else {
@@ -1049,6 +1095,53 @@
             
             // 初始化键盘快捷键
             initKeyboardShortcuts();
+            
+            // 启动学习计时
+            startStudyTimer();
+        }
+        
+        // ====== 学习时长追踪 ======
+        function loadStudyTime() {
+            const saved = localStorage.getItem('wordAI_studyTime');
+            const today = new Date().toDateString();
+            if (saved) {
+                const data = JSON.parse(saved);
+                if (data.date === today) {
+                    todayStudyMinutes = data.minutes || 0;
+                } else {
+                    // 新的一天，重置时长
+                    todayStudyMinutes = 0;
+                }
+            }
+        }
+        
+        function saveStudyTime() {
+            const data = {
+                date: new Date().toDateString(),
+                minutes: todayStudyMinutes
+            };
+            localStorage.setItem('wordAI_studyTime', JSON.stringify(data));
+        }
+        
+        function startStudyTimer() {
+            if (!studyStartTime) {
+                studyStartTime = Date.now();
+                // 每分钟更新一次
+                setInterval(() => {
+                    if (studyStartTime) {
+                        todayStudyMinutes++;
+                        saveStudyTime();
+                    }
+                }, 60000);
+            }
+        }
+        
+        function getStudyTimeString() {
+            if (todayStudyMinutes < 1) return '刚刚开始';
+            if (todayStudyMinutes < 60) return todayStudyMinutes + '分钟';
+            const hours = Math.floor(todayStudyMinutes / 60);
+            const mins = todayStudyMinutes % 60;
+            return hours + '小时' + mins + '分钟';
         }
         
         // ====== 键盘快捷键 ======
@@ -1372,7 +1465,7 @@
         // ====== 数据导出导入 ======
         function exportAllData() {
             const data = {
-                version: 'v1.2',
+                version: 'v1.3',
                 exportTime: new Date().toISOString(),
                 words: words,
                 favorites: favorites,
@@ -2589,6 +2682,68 @@ ${statusText}
             }
         }
         
+        // ====== 学习地图 ======
+        const mapLevels = [
+            { id: 1, name: '入门', icon: '🌱', unlockScore: 0 },
+            { id: 2, name: '基础', icon: '📖', unlockScore: 10 },
+            { id: 3, name: '进阶', icon: '📚', unlockScore: 50 },
+            { id: 4, name: '中级', icon: '💪', unlockScore: 100 },
+            { id: 5, name: '高级', icon: '🏆', unlockScore: 200 },
+            { id: 6, name: '大师', icon: '👑', unlockScore: 500 }
+        ];
+        
+        function renderMap() {
+            const container = document.getElementById('mapNodes');
+            container.innerHTML = mapLevels.map((level, i) => {
+                const unlocked = total >= level.unlockScore;
+                const current = i === mapLevels.findIndex(l => total >= l.unlockScore);
+                return `
+                    <div style="text-align:center;margin:20px 0;">
+                        <div class="map-node ${unlocked ? 'unlocked' : ''} ${current ? 'current' : ''}">
+                            ${level.icon}
+                        </div>
+                        <div class="map-label">${level.name}</div>
+                        <div style="font-size:10px;color:#999;">${level.unlockScore}词</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // ====== PK对战 ======
+        let pkActive = false;
+        let pkMyScore = 0;
+        let pkAiScore = 0;
+        
+        function startPK() {
+            if (pkActive) return;
+            pkActive = true;
+            pkMyScore = 0;
+            pkAiScore = 0;
+            document.getElementById('pkMyScore').textContent = '0';
+            document.getElementById('pkAiScore').textContent = '0';
+            document.getElementById('pkResult').textContent = '';
+            
+            // 模拟PK
+            let round = 0;
+            const pkInterval = setInterval(() => {
+                round++;
+                pkMyScore += Math.floor(Math.random() * 5);
+                pkAiScore += Math.floor(Math.random() * 5);
+                document.getElementById('pkMyScore').textContent = pkMyScore;
+                document.getElementById('pkAiScore').textContent = pkAiScore;
+                
+                if (round >= 10) {
+                    clearInterval(pkInterval);
+                    pkActive = false;
+                    let result = '';
+                    if (pkMyScore > pkAiScore) result = '🎉 胜利！';
+                    else if (pkMyScore < pkAiScore) result = '💪 再接再厉！';
+                    else result = '🤝 平局！';
+                    document.getElementById('pkResult').textContent = result;
+                }
+            }, 500);
+        }
+        
         // ====== 场景化学习 ======
         const sceneWords = {
             travel: [
@@ -2982,6 +3137,8 @@ ${statusText}
                 if (this.dataset.tab === 'lang') { }
                 if (this.dataset.tab === 'newwords') { renderNewWords(); }
                 if (this.dataset.tab === 'group') { loadGroup(); }
+                if (this.dataset.tab === 'map') { renderMap(); }
+                if (this.dataset.tab === 'pk') { }
                 if (this.dataset.tab === 'review') { loadReviewData(); }
             });
         });
