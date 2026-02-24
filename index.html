@@ -3417,7 +3417,18 @@
             { id: 'quiz10', name: '刷题达人', icon: '📝', condition: 'quizzesDone >= 10' },
             { id: 'month', name: '月度挑战', icon: '🏆', condition: 'streak >= 30' },
             { id: 'first_challenge', name: '首次挑战', icon: '🎖️', condition: 'challengeData.completed === true' },
-            { id: 'streak_7days', name: '一周打卡', icon: '📅', condition: 'challengeData.streakDays >= 7' }
+            { id: 'streak_7days', name: '一周打卡', icon: '📅', condition: 'challengeData.streakDays >= 7' },
+            // 新增徽章
+            { id: 'hundred', name: '百词斩', icon: '💯', condition: 'wordsLearned >= 100' },
+            { id: 'five_hundred', name: '词汇量', icon: '📚', condition: 'wordsLearned >= 500' },
+            { id: 'thousand', name: '千词王', icon: '👑', condition: 'wordsLearned >= 1000' },
+            { id: 'speech_master', name: '口语大师', icon: '🗣️', condition: 'challengeData.speakCount >= 10' },
+            { id: 'dialogue_hero', name: '对话达人', icon: '💬', condition: 'challengeData.dialogueCount >= 20' },
+            { id: 'night_owl', name: '夜猫子', icon: '🦉', condition: 'challengeData.nightStudy === true' },
+            { id: 'early_bird', name: '早起鸟', icon: '🐦', condition: 'challengeData.morningStudy === true' },
+            { id: 'review_master', name: '复习大师', icon: '📖', condition: 'challengeData.reviewCount >= 50' },
+            { id: 'streak_100', name: '百日英雄', icon: '🏅', condition: 'challengeData.streakDays >= 100' },
+            { id: 'perfectionist', name: '完美主义者', icon: '💎', condition: 'challengeData.perfectDays >= 10' }
         ];
 
         // ====== 个人中心 ======
@@ -6458,7 +6469,16 @@ ${statusText}
             "What's your favorite food?",
             "Do you like traveling?",
             "What did you do today?",
-            "What's your hobby?"
+            "What's your hobby?",
+            // 新增场景
+            "Describe your hometown",
+            "What's your dream job?",
+            "Tell me about your family",
+            "What do you usually do on weekends?",
+            "What's your favorite movie?",
+            "Do you prefer cats or dogs?",
+            "What's your biggest achievement?",
+            "If you could travel anywhere, where would you go?"
         ];
         
         let currentDialogueTopic = '';
@@ -6474,13 +6494,21 @@ ${statusText}
             messages.scrollTop = messages.scrollHeight;
             input.value = '';
             
-            // 模拟AI回复
+            // 模拟AI回复 - 改进版
             setTimeout(() => {
                 const replies = [
                     `Good! Try saying: "${currentDialogueTopic || dialogueTopics[Math.floor(Math.random() * dialogueTopics.length)]}"`,
                     "Great! Keep practicing! Would you like to try another topic?",
                     "Nice response! Let's practice more. What did you eat for breakfast today?",
-                    "Excellent! You're making progress! Tell me about your family."
+                    "Excellent! You're making progress! Tell me about your family.",
+                    // 新增回复
+                    "That's interesting! Can you tell me more?",
+                    "Well done! Try adding more details to your answer.",
+                    "Good pronunciation! Let's try another sentence.",
+                    "You're improving fast! What's your next topic?",
+                    "Nice vocabulary! Try using some adjectives.",
+                    "Great grammar! Can you make it longer?",
+                    "Fantastic! You sound more confident now!"
                 ];
                 const reply = replies[Math.floor(Math.random() * replies.length)];
                 messages.innerHTML += `<div class="dialogue-msg ai"><div class="dialogue-bubble">${reply}</div></div>`;
