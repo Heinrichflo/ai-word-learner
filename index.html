@@ -967,6 +967,16 @@
                         <div style="text-align:center;"><div style="font-weight:bold;font-size:16px;color:#667eea;" id="statStreak">${streak}</div><div style="color:#999;">连续天数</div></div>
                     </div>
                 </div>
+                
+                <h3 style="margin-top:24px;">📖 使用帮助</h3>
+                <div style="margin-top:12px;padding:15px;background:#f0f7ff;border-radius:12px;font-size:12px;line-height:1.8;">
+                    <div><b>🎯 每日挑战</b>：完成每日学习目标获得徽章</div>
+                    <div><b>⌨️ 快捷键</b>：1不认识 2困难 3认识 空格发音</div>
+                    <div><b>📊 复习</b>：基于艾宾浩斯遗忘曲线</div>
+                    <div><b>⭐ 收藏</b>：按P收藏当前单词</div>
+                    <div><b>🏆 排行榜</b>：与全国学习者比拼</div>
+                    <div style="margin-top:10px;color:#667eea;"><b>💡 提示</b>：数据自动保存在本地</div>
+                </div>
             </div>
         </div>
 
@@ -1307,6 +1317,10 @@
             loadCheckin(); // 加载签到数据
             checkStreakShield(); // 检查打卡保护卡
             updateStreakShieldUI(); // 更新保护卡UI
+            
+            // 新手引导
+            checkNewUserGuide();
+            
             if (!user) {
                 document.getElementById('loginModal').classList.add('active');
             } else {
@@ -1327,6 +1341,32 @@
             window.addEventListener('online', updateOnlineStatus);
             window.addEventListener('offline', updateOnlineStatus);
             updateOnlineStatus();
+        }
+        
+        // ====== 新手引导 ======
+        function checkNewUserGuide() {
+            const firstVisit = localStorage.getItem('wordAI_firstVisit');
+            if (!firstVisit) {
+                // 首次访问，显示引导
+                localStorage.setItem('wordAI_firstVisit', Date.now());
+                setTimeout(() => {
+                    showTipModal('🚀 欢迎使用 AI 背单词！', '开始学习：点击"认识"或"不认识"按钮来学习单词。使用快捷键 1/2/3 更高效！');
+                }, 1000);
+            }
+        }
+        
+        function showTipModal(title, content) {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="text-align:center;padding:25px;">
+                    <div style="font-size:36px;margin-bottom:10px;">💡</div>
+                    <div style="font-size:16px;font-weight:bold;margin-bottom:10px;">${title}</div>
+                    <div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:20px;">${content}</div>
+                    <button onclick="this.closest('.modal').remove()" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;padding:12px 30px;border-radius:20px;font-size:14px;cursor:pointer;">知道了！</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
         }
         
         function updateOnlineStatus() {
