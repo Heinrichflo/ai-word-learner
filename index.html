@@ -262,6 +262,11 @@
         .pk-player { display: flex; align-items: center; justify-content: center; gap: 20px; }
         .pk-avatar { width: 60px; height: 60px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 28px; }
         .pk-score { font-size: 36px; font-weight: bold; }
+
+        /* 每日一句 */
+        .quote-card { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 30px; border-radius: 16px; margin: 16px; text-align: center; }
+        .quote-text { font-size: 18px; line-height: 1.8; margin-bottom: 16px; font-style: italic; }
+        .quote-author { font-size: 14px; opacity: 0.8; }
         
         /* 统计图表增强 */
         .chart-wrapper { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
@@ -407,6 +412,7 @@
         
         <div class="tabs">
             <div class="tab active" data-tab="learn">背单词</div>
+            <div class="tab" data-tab="quote">每日</div>
             <div class="tab" data-tab="profile">我的</div>
             <div class="tab" data-tab="map">地图</div>
             <div class="tab" data-tab="pk">PK</div>
@@ -544,6 +550,11 @@
         <div class="tab-content" id="tab-map">
             <div class="map-container">
                 <div style="text-align:center;font-size:16px;font-weight:600;margin-bottom:20px;">🗺️ 学习地图</div>
+
+        <!-- 每日一句 -->
+        <div class="tab-content" id="tab-quote">
+            <div id="dailyQuote"></div>
+        </div>
                 <div id="mapNodes"></div>
             </div>
         </div>
@@ -1598,7 +1609,7 @@
         // ====== 数据导出导入 ======
         function exportAllData() {
             const data = {
-                version: 'v1.3',
+                version: 'v1.4',
                 exportTime: new Date().toISOString(),
                 words: words,
                 favorites: favorites,
@@ -2901,6 +2912,35 @@ ${statusText}
             }).join('');
         }
         
+        // ====== 每日一句 ======
+        const quotes = [
+            {text: "The only way to do great work is to love what you do.", author: "Steve Jobs"},
+            {text: "Learning is not attained by chance, it must be sought for with ardor.", author: "Abigail Adams"},
+            {text: "Education is the most powerful weapon which you can use to change the world.", author: "Nelson Mandela"},
+            {text: "Live as if you were to die tomorrow. Learn as if you were to live forever.", author: "Mahatma Gandhi"},
+            {text: "The beautiful thing about learning is that no one can take it away from you.", author: "B.B. King"}
+        ];
+        
+        function renderDailyQuote() {
+            const today = new Date().toDateString();
+            const savedDate = localStorage.getItem("quoteDate");
+            let quoteIndex = 0;
+            if (savedDate === today) {
+                quoteIndex = parseInt(localStorage.getItem("quoteIndex") || "0");
+            } else {
+                quoteIndex = Math.floor(Math.random() * quotes.length);
+                localStorage.setItem("quoteDate", today);
+                localStorage.setItem("quoteIndex", quoteIndex);
+            }
+            const q = quotes[quoteIndex];
+            document.getElementById("dailyQuote").innerHTML = `
+                <div class="quote-card">
+                    <div class="quote-text">"${q.text}"</div>
+                    <div class="quote-author">— ${q.author}</div>
+                </div>
+            `;
+        }
+
         // ====== PK对战 ======
         let pkActive = false;
         let pkMyScore = 0;
@@ -3384,6 +3424,7 @@ ${statusText}
                 if (this.dataset.tab === 'newwords') { renderNewWords(); }
                 if (this.dataset.tab === 'group') { loadGroup(); }
                 if (this.dataset.tab === 'map') { renderMap(); }
+                if (this.dataset.tab === 'quote') { renderDailyQuote(); }
                 if (this.dataset.tab === 'pk') { }
                 if (this.dataset.tab === 'review') { loadReviewData(); }
             });
