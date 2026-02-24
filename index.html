@@ -394,6 +394,30 @@
     </style>
 </head>
 <body>
+    <!-- 启动画面 -->
+    <div id="splashScreen" style="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999;color:white;">
+        <div style="font-size:64px;margin-bottom:20px;">📚</div>
+        <div style="font-size:28px;font-weight:bold;margin-bottom:10px;">AI 背单词</div>
+        <div style="font-size:14px;opacity:0.8;margin-bottom:30px;">智能学习助手</div>
+        <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 1s linear infinite;"></div>
+        <style>@keyframes spin {to{transform:rotate(360deg);}}</style>
+    </div>
+    
+    <script>
+        // 隐藏启动画面
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                var splash = document.getElementById('splashScreen');
+                if (splash) {
+                    splash.style.opacity = '0';
+                    splash.style.transition = 'opacity 0.5s';
+                    setTimeout(function() {
+                        splash.style.display = 'none';
+                    }, 500);
+                }
+            }, 800);
+        });
+    </script>
     <!-- 登录弹窗 -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
