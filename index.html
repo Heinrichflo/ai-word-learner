@@ -3791,7 +3791,7 @@
         }
         
         // 用户经验值数据
-        // ====== Storage 工具类 ======
+        // ====== Storage 工具类增强版 ======
         const Storage = {
             prefix: 'wordAI_',
             get(key, defaultValue = null) {
@@ -3825,6 +3825,60 @@
             getBoolean(key, defaultValue = false) {
                 const value = localStorage.getItem(this.prefix + key);
                 return value === 'true' ? true : (value === 'false' ? false : defaultValue);
+            },
+            // 获取存储空间使用情况
+            getStorageUsage() {
+                let total = 0;
+                for (let key in localStorage) {
+                    if (localStorage.hasOwnProperty(key) && key.startsWith(this.prefix)) {
+                        total += localStorage[key].length + key.length;
+                    }
+                }
+                return {
+                    used: total,
+                    usedKB: (total / 1024).toFixed(2),
+                    usedMB: (total / 1024 / 1024).toFixed(2)
+                };
+            },
+            // 验证数据完整性
+            validate(key) {
+                try {
+                    const value = localStorage.getItem(this.prefix + key);
+                    if (!value) return { valid: false, reason: 'not_found' };
+                    JSON.parse(value);
+                    return { valid: true };
+                } catch (e) {
+                    return { valid: false, reason: 'corrupted', error: e.message };
+                }
+            },
+            // 批量获取多个键值
+            getMultiple(keys) {
+                const result = {};
+                keys.forEach(key => {
+                    result[key] = this.get(key);
+                });
+                return result;
+            },
+            // 批量设置多个键值
+            setMultiple(data) {
+                let success = true;
+                Object.keys(data).forEach(key => {
+                    if (!this.set(key, data[key])) {
+                        success = false;
+                    }
+                });
+                return success;
+            },
+            // 清除所有应用数据
+            clearAll() {
+                const keys = [];
+                for (let key in localStorage) {
+                    if (localStorage.hasOwnProperty(key) && key.startsWith(this.prefix)) {
+                        keys.push(key);
+                    }
+                }
+                keys.forEach(key => localStorage.removeItem(key));
+                return keys.length;
             }
         };
         
