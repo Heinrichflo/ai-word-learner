@@ -3293,6 +3293,32 @@
             levelNames: ['初学者', '入门', '进阶', '熟练', '精通', '专家', '大师', '王者', '传奇', '神话']
         };
         
+        // ====== 工具函数 ======
+        // 防抖函数 - 限制函数执行频率
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // 节流函数 - 确保函数在指定时间间隔内最多执行一次
+        function throttle(func, limit) {
+            let inThrottle;
+            return function(...args) {
+                if (!inThrottle) {
+                    func.apply(this, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            };
+        }
+        
         // 用户经验值数据
         // ====== Storage 工具类 ======
         const Storage = {
@@ -4617,22 +4643,22 @@
             container.innerHTML = html;
         }
 
-        function quickSearch(query) {
+        // 防抖版本的搜索
+        const debouncedSearch = debounce((query) => {
             if (!query || query.length < 1) {
-                // 如果搜索框为空，重新渲染收藏列表
                 renderFavorites();
                 return;
             }
-            // 搜索当前tab的内容
             const currentTab = document.querySelector('.collection-tab.active').textContent;
             let searchList = currentTab.includes('收藏') ? favorites : wrongWords;
-            
-            // 同时搜索所有单词
             const wordResults = searchWords(query);
-            
             if (wordResults.length > 0) {
                 showSearchResults(wordResults, 'collectionList');
             }
+        }, 300);
+
+        function quickSearch(query) {
+            debouncedSearch(query);
         }
 
         // 每天检查复习到期
