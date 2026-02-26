@@ -1189,6 +1189,27 @@
             document.body.appendChild(modal);
         }
         
+        // ====== Toast 提示组件 ======
+        const Toast = {
+            show(message, duration = 2000, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = 'toast toast-' + type;
+                toast.innerHTML = '<span class="toast-icon">' + (type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ') + '</span><span class="toast-message">' + message + '</span>';
+                
+                const style('style');
+                = document.createElement style.textContent = '.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:12px 20px;border-radius:25px;font-size:14px;z-index:9999;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);animation:toastIn 0.3s ease}.toast-success{background:#10b981}.toast-error{background:#ef4444}.toast-info{background:#667eea}@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}.toast-icon{font-weight:bold}';
+                if (!document.getElementById('toastStyle')) {
+                    style.id = 'toastStyle';
+                    document.head.appendChild(style);
+                }
+                document.body.appendChild(toast);
+                setTimeout(() => { toast.style.animation = 'toastIn 0.3s ease reverse'; setTimeout(() => toast.remove(), 300); }, duration);
+            },
+            success(msg) { this.show(msg, 2000, 'success'); },
+            error(msg) { this.show(msg, 3000, 'error'); },
+            info(msg) { this.show(msg, 2000, 'info'); }
+        };
+        
         function showTab(tabId) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -1467,7 +1488,7 @@
             words = [...bookWords, ...defaultWords.filter(w => w.level === 'beginner')];
             currentIndex = 0;
             showCard();
-            alert('已切换到 ' + wordBooks.find(b => b.id === bookId).name + ' 词书');
+            Toast.success('已切换到 ' + wordBooks.find(b => b.id === bookId).name + ' 词书');
         }
         
         function getBookWords(bookId) {
@@ -1483,7 +1504,10 @@
                     { word: 'deployment', phonetic: '/dɪˈplɔɪmənt/', meaning: 'n. 部署', level: 'advanced' },
                     { word: 'container', phonetic: '/kənˈteɪnər/', meaning: 'n. 容器', level: 'advanced' },
                     { word: 'microservice', phonetic: '/ˌmaɪkrəʊˈsɜːvɪs/', meaning: 'n. 微服务', level: 'advanced' },
-                    { word: 'encryption', phonetic: '/ɪnˈkrɪpʃən/', meaning: 'n. 加密', level: 'advanced' }
+                    { word: 'encryption', phonetic: '/ɪnˈkrɪpʃən/', meaning: 'n. 加密', level: 'advanced' },
+                    { word: 'paradigm', phonetic: '/ˈpærədaɪm/', meaning: 'n. 范式', level: 'advanced' },
+                    { word: 'paradigm shift', phonetic: '/ˈpærədaɪm ʃɪft/', meaning: '范式转变', level: 'advanced' },
+                    { word: 'paradigm', phonetic: '/ˈpærədaɪm/', meaning: 'n. 典范; 范式', level: 'advanced' }
                 ],
                 'cet4': [
                     { word: 'abandon', phonetic: '/əˈbændən/', meaning: 'v. 放弃', level: 'beginner' },
@@ -1493,14 +1517,166 @@
                     { word: 'above', phonetic: '/əˈbʌv/', meaning: 'prep. 在...上面', level: 'beginner' },
                     { word: 'abroad', phonetic: '/əˈbrɔːd/', meaning: 'adv. 在国外', level: 'beginner' },
                     { word: 'absence', phonetic: '/ˈæbsəns/', meaning: 'n. 缺席', level: 'intermediate' },
-                    { word: 'absolute', phonetic: '/ˈæbsəluːt/', meaning: 'adj. 绝对的', level: 'intermediate' }
+                    { word: 'absolute', phonetic: '/ˈæbsəluːt/', meaning: 'adj. 绝对的', level: 'intermediate' },
+                    { word: 'abundant', phonetic: '/əˈbʌndənt/', meaning: 'adj. 丰富的', level: 'intermediate' },
+                    { word: 'academic', phonetic: '/ˌækəˈdemɪk/', meaning: 'adj. 学术的', level: 'intermediate' },
+                    { word: 'access', phonetic: '/ˈækses/', meaning: 'n. 入口; v. 访问', level: 'intermediate' },
+                    { word: 'accident', phonetic: '/ˈæksɪdənt/', meaning: 'n. 事故', level: 'beginner' },
+                    { word: 'accompany', phonetic: '/əˈkʌmpəni/', meaning: 'v. 陪伴', level: 'intermediate' },
+                    { word: 'accomplish', phonetic: '/əˈkʌmplɪʃ/', meaning: 'v. 完成', level: 'intermediate' },
+                    { word: 'account', phonetic: '/əˈkaʊnt/', meaning: 'n. 账户; 叙述', level: 'intermediate' },
+                    { word: 'accurate', phonetic: '/ˈækjərət/', meaning: 'adj. 准确的', level: 'intermediate' },
+                    { word: 'achieve', phonetic: '/əˈtʃiːv/', meaning: 'v. 达到; 实现', level: 'intermediate' },
+                    { word: 'acknowledge', phonetic: '/əkˈnɒlɪdʒ/', meaning: 'v. 承认; 认可', level: 'intermediate' },
+                    { word: 'acquire', phonetic: '/əˈkwaɪər/', meaning: 'v. 获得', level: 'intermediate' },
+                    { word: 'across', phonetic: '/əˈkrɒs/', meaning: 'prep. 穿过', level: 'beginner' },
+                    { word: 'action', phonetic: '/ˈækʃən/', meaning: 'n. 行动', level: 'beginner' },
+                    { word: 'active', phonetic: '/ˈæktɪv/', meaning: 'adj. 积极的', level: 'beginner' },
+                    { word: 'activity', phonetic: '/ækˈtɪvəti/', meaning: 'n. 活动', level: 'beginner' },
+                    { word: 'actor', phonetic: '/ˈæktər/', meaning: 'n. 演员', level: 'beginner' },
+                    { word: 'actual', phonetic: '/ˈæktʃuəl/', meaning: 'adj. 实际的', level: 'intermediate' },
+                    { word: 'adapt', phonetic: '/əˈdæpt/', meaning: 'v. 适应; 改编', level: 'intermediate' },
+                    { word: 'add', phonetic: '/æd/', meaning: 'v. 添加', level: 'beginner' },
+                    { word: 'address', phonetic: '/əˈdres/', meaning: 'n. 地址', level: 'beginner' },
+                    { word: 'adequate', phonetic: '/ˈædɪkwət/', meaning: 'adj. 足够的', level: 'intermediate' },
+                    { word: 'adjust', phonetic: '/əˈdʒʌst/', meaning: 'v. 调整', level: 'intermediate' }
+                ],
+                'cet6': [
+                    { word: 'abandon', phonetic: '/əˈbændən/', meaning: 'v. 放弃', level: 'intermediate' },
+                    { word: 'abnormal', phonetic: '/æbˈnɔːrml/', meaning: 'adj. 反常的', level: 'advanced' },
+                    { word: 'aboard', phonetic: '/əˈbɔːrd/', meaning: 'prep. 在船上', level: 'intermediate' },
+                    { word: 'abolish', phonetic: '/əˈbɒlɪʃ/', meaning: 'v. 废除', level: 'advanced' },
+                    { word: 'abound', phonetic: '/əˈbaʊnd/', meaning: 'v. 充满', level: 'advanced' },
+                    { word: 'abrupt', phonetic: '/əˈbrʌpt/', meaning: 'adj. 突然的', level: 'advanced' },
+                    { word: 'absence', phonetic: '/ˈæbsəns/', meaning: 'n. 缺席', level: 'intermediate' },
+                    { word: 'absolute', phonetic: '/ˈæbsəluːt/', meaning: 'adj. 绝对的', level: 'intermediate' },
+                    { word: 'absorb', phonetic: '/əbˈzɔːrb/', meaning: 'v. 吸收', level: 'intermediate' },
+                    { word: 'abstract', phonetic: '/ˈæbstrækt/', meaning: 'adj. 抽象的', level: 'intermediate' },
+                    { word: 'abundant', phonetic: '/əˈbʌndənt/', meaning: 'adj. 丰富的', level: 'intermediate' },
+                    { word: 'abuse', phonetic: '/əˈbjuːz/', meaning: 'v. 滥用', level: 'intermediate' },
+                    { word: 'academic', phonetic: '/ˌækəˈdemɪk/', meaning: 'adj. 学术的', level: 'intermediate' },
+                    { word: 'accelerate', phonetic: '/əkˈseləreɪt/', meaning: 'v. 加速', level: 'advanced' },
+                    { word: 'accept', phonetic: '/əkˈsept/', meaning: 'v. 接受', level: 'intermediate' },
+                    { word: 'access', phonetic: '/ˈækses/', meaning: 'n. 入口; v. 访问', level: 'intermediate' },
+                    { word: 'accident', phonetic: '/ˈæksɪdənt/', meaning: 'n. 事故', level: 'intermediate' },
+                    { word: 'accompany', phonetic: '/əˈkʌmpəni/', meaning: 'v. 陪伴', level: 'intermediate' },
+                    { word: 'accomplish', phonetic: '/əˈkʌmplɪʃ/', meaning: 'v. 完成', level: 'intermediate' },
+                    { word: 'account', phonetic: '/əˈkaʊnt/', meaning: 'n. 账户', level: 'intermediate' },
+                    { word: 'accumulate', phonetic: '/əˈkjuːmjəleɪt/', meaning: 'v. 积累', level: 'advanced' },
+                    { word: 'accurate', phonetic: '/ˈækjərət/', meaning: 'adj. 准确的', level: 'intermediate' },
+                    { word: 'achieve', phonetic: '/əˈtʃiːv/', meaning: 'v. 实现', level: 'intermediate' },
+                    { word: 'acknowledge', phonetic: '/əkˈnɒlɪdʒ/', meaning: 'v. 承认', level: 'advanced' },
+                    { word: 'acquire', phonetic: '/əˈkwaɪər/', meaning: 'v. 获得', level: 'intermediate' }
                 ],
                 'ielts': [
                     { word: 'accomplish', phonetic: '/əˈkʌmplɪʃ/', meaning: 'v. 完成', level: 'intermediate' },
                     { word: 'adequate', phonetic: '/ˈædɪkwət/', meaning: 'adj. 足够的', level: 'intermediate' },
                     { word: 'adjust', phonetic: '/əˈdʒʌst/', meaning: 'v. 调整', level: 'intermediate' },
                     { word: 'advocate', phonetic: '/ˈædvəkeɪt/', meaning: 'v. 提倡', level: 'advanced' },
-                    { word: 'aesthetic', phonetic: '/iːsˈθetɪk/', meaning: 'adj. 审美的', level: 'advanced' }
+                    { word: 'aesthetic', phonetic: '/iːsˈθetɪk/', meaning: 'adj. 审美的', level: 'advanced' },
+                    { word: 'affluent', phonetic: '/ˈæfluənt/', meaning: 'adj. 富有的', level: 'advanced' },
+                    { word: 'aggregate', phonetic: '/ˈæɡrɪɡət/', meaning: 'v. 聚集', level: 'advanced' },
+                    { word: 'alleviate', phonetic: '/əˈliːvɪeɪt/', meaning: 'v. 减轻', level: 'advanced' },
+                    { word: 'alternative', phonetic: '/ɔːlˈtɜːrnətɪv/', meaning: 'n. 替代品', level: 'intermediate' },
+                    { word: 'ambiguous', phonetic: '/æmˈbɪɡjuəs/', meaning: 'adj. 模糊的', level: 'advanced' },
+                    { word: 'amend', phonetic: '/əˈmend/', meaning: 'v. 修改', level: 'advanced' },
+                    { word: 'analyze', phonetic: '/ˈænəlaɪz/', meaning: 'v. 分析', level: 'intermediate' },
+                    { word: 'annual', phonetic: '/ˈænjuəl/', meaning: 'adj. 年度的', level: 'intermediate' },
+                    { word: 'anticipate', phonetic: '/ænˈtɪsɪpeɪt/', meaning: 'v. 预期', level: 'advanced' },
+                    { word: 'apparent', phonetic: '/əˈpærənt/', meaning: 'adj. 明显的', level: 'intermediate' },
+                    { word: 'appreciate', phonetic: '/əˈpriːʃieɪt/', meaning: 'v. 欣赏', level: 'intermediate' },
+                    { word: 'approach', phonetic: '/əˈproʊtʃ/', meaning: 'n. 方法', level: 'intermediate' },
+                    { word: 'appropriate', phonetic: '/əˈproʊpriət/', meaning: 'adj. 适当的', level: 'intermediate' },
+                    { word: 'approximate', phonetic: '/əˈprɒksɪmət/', meaning: 'adj. 大约的', level: 'advanced' },
+                    { word: 'arbitrary', phonetic: '/ˈɑːrbɪtreri/', meaning: 'adj. 任意的', level: 'advanced' }
+                ],
+                'toefl': [
+                    { word: 'abandon', phonetic: '/əˈbændən/', meaning: 'v. 放弃', level: 'intermediate' },
+                    { word: 'abdomen', phonetic: '/ˈæbdəmən/', meaning: 'n. 腹部', level: 'advanced' },
+                    { word: 'aberrant', phonetic: '/æˈberənt/', meaning: 'adj. 异常的', level: 'advanced' },
+                    { word: 'abide', phonetic: '/əˈbaɪd/', meaning: 'v. 遵守', level: 'advanced' },
+                    { word: 'abolish', phonetic: '/əˈbɒlɪʃ/', meaning: 'v. 废除', level: 'advanced' },
+                    { word: 'abort', phonetic: '/əˈbɔːrt/', meaning: 'v. 中止', level: 'advanced' },
+                    { word: 'abrasion', phonetic: '/əˈbreɪʒən/', meaning: 'n. 磨损', level: 'advanced' },
+                    { word: 'abrupt', phonetic: '/əˈbrʌpt/', meaning: 'adj. 突然的', level: 'advanced' },
+                    { word: 'abscond', phonetic: '/əbˈskɒnd/', meaning: 'v. 潜逃', level: 'advanced' },
+                    { word: 'absolute', phonetic: '/ˈæbsəluːt/', meaning: 'adj. 绝对的', level: 'intermediate' },
+                    { word: 'absolve', phonetic: '/əbˈzɒlv/', meaning: 'v. 赦免', level: 'advanced' },
+                    { word: 'absorb', phonetic: '/əbˈzɔːrb/', meaning: 'v. 吸收', level: 'intermediate' },
+                    { word: 'abstract', phonetic: '/ˈæbstrækt/', meaning: 'adj. 抽象的', level: 'intermediate' },
+                    { word: 'abundant', phonetic: '/əˈbʌndənt/', meaning: 'adj. 丰富的', level: 'intermediate' },
+                    { word: 'academic', phonetic: '/ˌækəˈdemɪk/', meaning: 'adj. 学术的', level: 'intermediate' },
+                    { word: 'accentuate', phonetic: '/əkˈsentʃueɪt/', meaning: 'v. 强调', level: 'advanced' },
+                    { word: 'accommodate', phonetic: '/əˈkɒmədeɪt/', meaning: 'v. 适应', level: 'intermediate' },
+                    { word: 'accompany', phonetic: '/əˈkʌmpəni/', meaning: 'v. 陪伴', level: 'intermediate' },
+                    { word: 'accomplice', phonetic: '/əˈkʌmplɪs/', meaning: 'n. 同谋', level: 'advanced' },
+                    { word: 'accord', phonetic: '/əˈkɔːrd/', meaning: 'n. 协议', level: 'advanced' }
+                ],
+                'gre': [
+                    { word: 'aberrant', phonetic: '/æˈberənt/', meaning: 'adj. 异常的', level: 'advanced' },
+                    { word: 'abeyance', phonetic: '/əˈbeɪəns/', meaning: 'n. 中止', level: 'advanced' },
+                    { word: 'abscond', phonetic: '/əbˈskɒnd/', meaning: 'v. 潜逃', level: 'advanced' },
+                    { word: 'abstain', phonetic: '/əbˈsteɪn/', meaning: 'v. 戒除', level: 'advanced' },
+                    { word: 'accolade', phonetic: '/ˈækəleɪd/', meaning: 'n. 荣誉', level: 'advanced' },
+                    { word: 'acerbic', phonetic: '/əˈsɜːrbɪk/', meaning: 'adj. 尖酸的', level: 'advanced' },
+                    { word: 'acquiesce', phonetic: '/ˌækwiˈes/', meaning: 'v. 默许', level: 'advanced' },
+                    { word: 'acumen', phonetic: '/ˈækjʊmən/', meaning: 'n. 敏锐', level: 'advanced' },
+                    { word: 'admonish', phonetic: '/ədˈmɒnɪʃ/', meaning: 'v. 警告', level: 'advanced' },
+                    { word: 'aesthetic', phonetic: '/iːsˈθetɪk/', meaning: 'adj. 审美的', level: 'advanced' },
+                    { word: 'affable', phonetic: '/ˈæfəbl/', meaning: 'adj. 和蔼的', level: 'advanced' },
+                    { word: 'alacrity', phonetic: '/əˈlækrəti/', meaning: 'n. 敏捷', level: 'advanced' },
+                    { word: 'amalgamate', phonetic: '/əˈmælɡəmeɪt/', meaning: 'v. 合并', level: 'advanced' },
+                    { word: 'ambiguous', phonetic: '/æmˈbɪɡjuəs/', meaning: 'adj. 模糊的', level: 'advanced' },
+                    { word: 'ambivalent', phonetic: '/æmˈbɪvələnt/', meaning: 'adj. 矛盾的', level: 'advanced' },
+                    { word: 'ameliorate', phonetic: '/əˈmiːliəreɪt/', meaning: 'v. 改善', level: 'advanced' },
+                    { word: 'anachronism', phonetic: '/əˈnækrənɪzəm/', meaning: 'n. 时代错误', level: 'advanced' },
+                    { word: 'anathema', phonetic: '/əˈnæθəmə/', meaning: 'n. 诅咒', level: 'advanced' },
+                    { word: 'anecdote', phonetic: '/ˈænɪkdoʊt/', meaning: 'n. 趣闻', level: 'advanced' },
+                    { word: 'anguish', phonetic: '/ˈæŋɡwɪʃ/', meaning: 'n. 痛苦', level: 'advanced' }
+                ],
+                'business': [
+                    { word: 'account', phonetic: '/əˈkaʊnt/', meaning: 'n. 账户', level: 'intermediate' },
+                    { word: 'acquisition', phonetic: '/ˌækwɪˈzɪʃən/', meaning: 'n. 收购', level: 'advanced' },
+                    { word: 'agenda', phonetic: '/əˈdʒendə/', meaning: 'n. 议程', level: 'intermediate' },
+                    { word: 'agreement', phonetic: '/əˈɡriːmənt/', meaning: 'n. 协议', level: 'intermediate' },
+                    { word: 'audit', phonetic: '/ˈɔːdɪt/', meaning: 'n. 审计', level: 'advanced' },
+                    { word: 'benchmark', phonetic: '/ˈbentʃmɑːrk/', meaning: 'n. 基准', level: 'advanced' },
+                    { word: 'budget', phonetic: '/ˈbʌdʒɪt/', meaning: 'n. 预算', level: 'intermediate' },
+                    { word: 'capital', phonetic: '/ˈkæpɪtl/', meaning: 'n. 资本', level: 'intermediate' },
+                    { word: 'cash flow', phonetic: '/kæʃ floʊ/', meaning: '现金流', level: 'intermediate' },
+                    { word: 'CEO', phonetic: '/ˌsiː iː ˈoʊ/', meaning: '首席执行官', level: 'beginner' },
+                    { word: 'CFO', phonetic: '/ˌsiː ef ˈoʊ/', meaning: '首席财务官', level: 'intermediate' },
+                    { word: 'collaborate', phonetic: '/kəˈlæbəreɪt/', meaning: 'v. 合作', level: 'intermediate' },
+                    { word: 'commission', phonetic: '/kəˈmɪʃən/', meaning: 'n. 佣金', level: 'intermediate' },
+                    { word: 'compensation', phonetic: '/ˌkɒmpenˈseɪʃən/', meaning: 'n. 薪酬', level: 'advanced' },
+                    { word: 'competitor', phonetic: '/kəmˈpetɪtər/', meaning: 'n. 竞争对手', level: 'intermediate' },
+                    { word: 'contract', phonetic: '/ˈkɒntrækt/', meaning: 'n. 合同', level: 'intermediate' },
+                    { word: 'corporate', phonetic: '/ˈkɔːrpərət/', meaning: 'adj. 公司的', level: 'intermediate' },
+                    { word: 'credential', phonetic: '/krəˈdenʃəl/', meaning: 'n. 资质', level: 'advanced' },
+                    { word: 'dividend', phonetic: '/ˈdɪvɪdend/', meaning: 'n. 股息', level: 'advanced' },
+                    { word: 'equity', phonetic: '/ˈekwɪti/', meaning: 'n. 股权', level: 'advanced' }
+                ],
+                'daily': [
+                    { word: 'hello', phonetic: '/həˈloʊ/', meaning: 'int. 你好', level: 'beginner' },
+                    { word: 'goodbye', phonetic: '/ɡʊdˈbaɪ/', meaning: 'int. 再见', level: 'beginner' },
+                    { word: 'thanks', phonetic: '/θæŋks/', meaning: 'int. 谢谢', level: 'beginner' },
+                    { word: 'sorry', phonetic: '/ˈsɒri/', meaning: 'adj. 对不起', level: 'beginner' },
+                    { word: 'please', phonetic: '/pliːz/', meaning: 'adv. 请', level: 'beginner' },
+                    { word: 'excuse me', phonetic: '/ɪkˈskjuːz mi/', meaning: '劳驾', level: 'beginner' },
+                    { word: 'how are you', phonetic: '/haʊ ɑːr juː/', meaning: '你好吗', level: 'beginner' },
+                    { word: 'nice to meet you', phonetic: '/naɪs tuː miːt juː/', meaning: '很高兴见到你', level: 'beginner' },
+                    { word: 'what time is it', phonetic: '/wɒt taɪm ɪz ɪt/', meaning: '现在几点', level: 'beginner' },
+                    { word: 'where is the bathroom', phonetic: '/wer ɪz ðə ˈbæθruːm/', meaning: '洗手间在哪', level: 'beginner' },
+                    { word: 'how much', phonetic: '/haʊ mʌtʃ/', meaning: '多少钱', level: 'beginner' },
+                    { word: 'can you help me', phonetic: '/kæn juː help miː/', meaning: '你能帮我吗', level: 'beginner' },
+                    { word: 'I dont understand', phonetic: '/aɪ doʊnt ˌʌndərˈstænd/', meaning: '我不懂', level: 'beginner' },
+                    { word: 'could you repeat', phonetic: '/kʊd juː rɪˈpiːt/', meaning: '请再说一遍', level: 'intermediate' },
+                    { word: 'what do you mean', phonetic: '/wɒt duː juː miːn/', meaning: '你什么意思', level: 'intermediate' },
+                    { word: 'I think', phonetic: '/aɪ θɪŋk/', meaning: '我认为', level: 'beginner' },
+                    { word: 'in my opinion', phonetic: '/ɪn maɪ əˈpɪnjən/', meaning: '在我看来', level: 'intermediate' },
+                    { word: 'to be honest', phonetic: '/tuː biː ˈɒnɪst/', meaning: '说实话', level: 'intermediate' },
+                    { word: 'by the way', phonetic: '/baɪ ðə weɪ/', meaning: '顺便问一下', level: 'intermediate' },
+                    { word: 'as a matter of fact', phonetic: '/æz ə ˈmætər əv fækt/', meaning: '事实上', level: 'intermediate' }
                 ]
             };
             return bookWordMap[bookId] || [];
@@ -1863,6 +2039,52 @@
                         <div style="font-size:16px;font-weight:bold;color:#667eea;">${data.total || 0}</div>
                         <div style="font-size:10px;color:#666;">总计</div>
                     </div>
+                </div>
+            `;
+        }
+        
+        // ====== 每日一词 ======
+        function getWordOfDay() {
+            const today = new Date().toDateString();
+            const saved = localStorage.getItem('wordAI_wotd_date');
+            const word = localStorage.getItem('wordAI_wotd_word');
+            
+            if (saved === today && word) {
+                return JSON.parse(word);
+            }
+            
+            // 从词书随机选择
+            const allWords = [];
+            const wordBooksList = ['cet4', 'cet6', 'ielts', 'toefl', 'gre', 'tech'];
+            wordBooksList.forEach(bookId => {
+                const words = getBookWords(bookId);
+                allWords.push(...words);
+            });
+            
+            const randomWord = allWords[Math.floor(Math.random() * allWords.length)];
+            const wotd = { ...randomWord, date: today };
+            
+            localStorage.setItem('wordAI_wotd_date', today);
+            localStorage.setItem('wordAI_wotd_word', JSON.stringify(wotd));
+            
+            return wotd;
+        }
+        
+        function renderWordOfDay() {
+            const container = document.getElementById('wordOfDay');
+            if (!container) return;
+            
+            const wotd = getWordOfDay();
+            container.innerHTML = `
+                <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:12px;color:white;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <span style="font-size:12px;opacity:0.9;">🌟 每日一词</span>
+                        <span style="font-size:10px;opacity:0.7;">${wotd.date}</span>
+                    </div>
+                    <div style="font-size:20px;font-weight:bold;margin-bottom:4px;">${wotd.word}</div>
+                    <div style="font-size:12px;opacity:0.9;margin-bottom:4px;">${wotd.phonetic}</div>
+                    <div style="font-size:13px;opacity:0.9;">${wotd.meaning}</div>
+                    <button onclick="playPronunciation('${wotd.word}')" style="margin-top:8px;padding:4px 12px;background:rgba(255,255,255,0.2);border:none;border-radius:15px;color:white;font-size:11px;cursor:pointer;">🔊 朗读</button>
                 </div>
             `;
         }
@@ -3724,6 +3946,9 @@
 
         <div class="stats" id="quickStats" style="display:none;"></div>
         
+        <!-- 每日一词 -->
+        <div id="wordOfDay" style="padding:10px 15px;"></div>
+        
         <div class="stats">
             <div class="stat-item"><div class="stat-value" id="total">0</div><div class="stat-label">已学习</div></div>
             <div class="stat-item"><div class="stat-value" id="correct">0</div><div class="stat-label">正确</div></div>
@@ -4445,6 +4670,7 @@
             showCard();
             updateStats();
             renderHistory();
+            renderWordOfDay(); // 每日一词
             updateProfile();
             
             // 初始化键盘快捷键
