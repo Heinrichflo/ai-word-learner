@@ -1873,11 +1873,74 @@
             { level: 2, name: '入门', exp: 100, icon: '📖' },
             { level: 3, name: '进阶', exp: 300, icon: '📚' },
             { level: 4, name: '熟练', exp: 600, icon: '💪' },
-            { level', exp: : 5, name: '精通', exp: 1000, icon: '🏆' },
+            { level: 5, name: '精通', exp: 1000, icon: '🏆' },
             { level: 6, name: '专家', exp: 1500, icon: '🎓' },
             { level: 7, name: '大师', exp: 2200, icon: '👑' },
             { level: 8, name: '王者', exp: 3000, icon: '💎' }
         ];
+        
+        // ====== 单词闯关关卡数据 ======
+        const levelWords = {
+            1: [  // 初学者
+                { word: "hello", phonetic: "/həˈloʊ/", meaning: "int. 你好" },
+                { word: "world", phonetic: "/wɜːrld/", meaning: "n. 世界" },
+                { word: "book", phonetic: "/bʊk/", meaning: "n. 书" },
+                { word: "water", phonetic: "/ˈwɔːtər/", meaning: "n. 水" },
+                { word: "food", phonetic: "/fuːd/", meaning: "n. 食物" }
+            ],
+            2: [  // 入门
+                { word: "friend", phonetic: "/frend/", meaning: "n. 朋友" },
+                { word: "family", phonetic: "/ˈfæməli/", meaning: "n. 家庭" },
+                { word: "school", phonetic: "/skuːl/", meaning: "n. 学校" },
+                { word: "time", phonetic: "/taɪm/", meaning: "n. 时间" },
+                { word: "money", phonetic: "/ˈmʌni/", meaning: "n. 钱" }
+            ],
+            3: [  // 进阶
+                { word: "code", phonetic: "/koʊd/", meaning: "n. 代码" },
+                { word: "web", phonetic: "/web/", meaning: "n. 网页" },
+                { word: "data", phonetic: "/ˈdeɪtə/", meaning: "n. 数据" },
+                { word: "bug", phonetic: "/bʌɡ/", meaning: "n. 缺陷" },
+                { word: "network", phonetic: "/ˈnetwɜːrk/", meaning: "n. 网络" }
+            ],
+            4: [  // 熟练
+                { word: "server", phonetic: "/ˈsɜːrvər/", meaning: "n. 服务器" },
+                { word: "client", phonetic: "/ˈklaɪənt/", meaning: "n. 客户端" },
+                { word: "database", phonetic: "/ˈdeɪtəbeɪs/", meaning: "n. 数据库" },
+                { word: "function", phonetic: "/ˈfʌŋkʃən/", meaning: "n. 功能" },
+                { word: "interface", phonetic: "/ˈɪntəfeɪs/", meaning: "n. 界面" }
+            ],
+            5: [  // 精通
+                { word: "framework", phonetic: "/ˈfreɪmwɜːk/", meaning: "n. 框架" },
+                { word: "algorithm", phonetic: "/ˈælɡərɪðəm/", meaning: "n. 算法" },
+                { word: "cloud", phonetic: "/klaʊd/", meaning: "n. 云" },
+                { word: "security", phonetic: "/sɪˈkjʊrəti/", meaning: "n. 安全" },
+                { word: "intelligence", phonetic: "/ɪnˈtelɪdʒəns/", meaning: "n. 智能" }
+            ],
+            6: [  // 专家
+                { word: "artificial", phonetic: "/ˌɑːrtɪˈfɪʃl/", meaning: "adj. 人工的" },
+                { word: "machine", phonetic: "/məˈʃiːn/", meaning: "n. 机器" },
+                { word: "execute", phonetic: "/ˈeksɪkjuːt/", meaning: "v. 执行" },
+                { word: "compile", phonetic: "/kəmˈpaɪl/", meaning: "v. 编译" },
+                { word: "optimize", phonetic: "/ˈɑːptɪmaɪz/", meaning: "v. 优化" }
+            ],
+            7: [  // 大师
+                { word: "architecture", phonetic: "/ˈɑːrkɪtektʃər/", meaning: "n. 架构" },
+                { word: "microservice", phonetic: "/ˌmaɪkroʊˈsɜːrvɪs/", meaning: "n. 微服务" },
+                { word: "container", phonetic: "/kənˈteɪnər/", meaning: "n. 容器" },
+                { word: "scalability", phonetic: "/ˌskeɪləˈbɪləti/", meaning: "n. 可扩展性" },
+                { word: "blockchain", phonetic: "/ˈblɒktʃeɪn/", meaning: "n. 区块链" }
+            ],
+            8: [  // 王者
+                { word: "deployment", phonetic: "/dɪˈplɔɪmənt/", meaning: "n. 部署" },
+                { word: "concurrent", phonetic: "/kənˈkɜːrənt/", meaning: "adj. 并发的" },
+                { word: "paradigm", phonetic: "/ˈpærədaɪm/", meaning: "n. 范式" },
+                { word: "strategy", phonetic: "/ˈstrætədʒi/", meaning: "n. 战略" },
+                { word: "investment", phonetic: "/ɪnˈvestmənt/", meaning: "n. 投资" }
+            ]
+        };
+        
+        // 当前闯关状态
+        let currentLevelChallenge = null;
         
         function loadUserLevel() {
             return parseInt(localStorage.getItem('wordAI_userLevel') || '1');
@@ -1963,11 +2026,214 @@
         }
         
         function selectLevel(level) {
-            alert(`选择关卡 ${level} - ${levels[level - 1].name}\n\n功能开发中，敬请期待！`);
+            const currentLevel = loadUserLevel();
+            if (level > currentLevel) {
+                alert(`需要达到 Lv.${level} ${levels[level-1].name} 才能解锁此关卡！`);
+                return;
+            }
+            
+            // 显示关卡详情弹窗
+            const words = levelWords[level];
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width:350px;">
+                    <div class="modal-title">${levels[level-1].icon} ${levels[level-1].name} - 关卡 ${level}</div>
+                    <div style="text-align:center;margin:15px 0;">
+                        <div style="font-size:48px;">${levels[level-1].icon}</div>
+                        <div style="font-size:14px;color:#666;margin-top:10px;">共 ${words.length} 个单词</div>
+                    </div>
+                    <div style="background:#f9f9f9;border-radius:10px;padding:12px;max-height:150px;overflow-y:auto;">
+                        ${words.map(w => `<div style="font-size:13px;padding:4px 0;border-bottom:1px solid #eee;">${w.word} - ${w.meaning}</div>`).join('')}
+                    </div>
+                    <div style="display:flex;gap:10px;margin-top:15px;">
+                        <button class="btn" style="flex:1;background:#666;color:white;" onclick="this.closest('.modal').remove()">取消</button>
+                        <button class="btn btn-primary" style="flex:1;" onclick="this.closest('.modal').remove();startLevelChallenge(${level})">开始闯关</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
         }
         
-        function startLevelChallenge() {
-            alert('单词闯关模式即将上线！敬请期待~');
+        function startLevelChallenge(level) {
+            // 如果没有指定级别，使用当前用户等级
+            if (!level) {
+                level = loadUserLevel();
+            }
+            
+            const words = levelWords[level];
+            if (!words || words.length === 0) {
+                alert('暂无关卡数据');
+                return;
+            }
+            
+            // 初始化闯关状态
+            currentLevelChallenge = {
+                level: level,
+                words: words.map(w => ({...w, answered: false})),
+                currentIndex: 0,
+                correct: 0,
+                wrong: 0,
+                score: 0
+            };
+            
+            showLevelChallengeUI();
+        }
+        
+        function showLevelChallengeUI() {
+            const challenge = currentLevelChallenge;
+            if (!challenge) return;
+            
+            const word = challenge.words[challenge.currentIndex];
+            
+            // 创建闯关界面
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'levelChallengeModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width:380px;padding:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                        <div style="font-size:14px;font-weight:600;">${levels[challenge.level-1].icon} ${levels[challenge.level-1].name} 闯关</div>
+                        <div style="font-size:12px;color:#666;">${challenge.currentIndex + 1}/${challenge.words.length}</div>
+                    </div>
+                    <div class="level-progress" style="margin-bottom:20px;">
+                        <div class="level-progress-fill" style="width:${((challenge.currentIndex) / challenge.words.length) * 100}%"></div>
+                    </div>
+                    
+                    <div class="card" style="min-height:120px;margin-bottom:15px;">
+                        <div class="word" style="font-size:28px;">${word.word}</div>
+                        <div class="phonetic">${word.phonetic}</div>
+                    </div>
+                    
+                    <div id="challengeOptions" class="quiz-options" style="padding:0;"></div>
+                    
+                    <div style="display:flex;justify-content:space-around;margin-top:15px;">
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:bold;color:#10b981;">${challenge.correct}</div>
+                            <div style="font-size:11px;color:#666;">正确</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:bold;color:#ef4444;">${challenge.wrong}</div>
+                            <div style="font-size:11px;color:#666;">错误</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:bold;color:#667eea;">${challenge.score}</div>
+                            <div style="font-size:11px;color:#666;">得分</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // 生成选项
+            generateChallengeOptions(word);
+        }
+        
+        function generateChallengeOptions(word) {
+            const challenge = currentLevelChallenge;
+            const words = challenge.words;
+            
+            // 随机选择3个错误选项
+            const otherWords = words.filter(w => w.word !== word.word);
+            const wrongOptions = otherWords.sort(() => Math.random() - 0.5).slice(0, 3);
+            
+            // 合并并打乱
+            const options = [word, ...wrongOptions].sort(() => Math.random() - 0.5);
+            
+            const container = document.getElementById('challengeOptions');
+            container.innerHTML = options.map(opt => 
+                `<button class="quiz-option" onclick="checkChallengeAnswer('${opt.word}', '${word.word}', this)">${opt.meaning}</button>`
+            ).join('');
+        }
+        
+        function checkChallengeAnswer(selected, correct, btn) {
+            const challenge = currentLevelChallenge;
+            const isCorrect = selected === correct;
+            
+            // 禁用所有按钮
+            document.querySelectorAll('#challengeOptions .quiz-option').forEach(b => {
+                b.disabled = true;
+                if (b.textContent === challenge.words[challenge.currentIndex].meaning) {
+                    b.classList.add('correct');
+                }
+            });
+            
+            if (isCorrect) {
+                challenge.correct++;
+                challenge.score += 10;
+                btn.classList.add('correct');
+            } else {
+                challenge.wrong++;
+                challenge.score = Math.max(0, challenge.score - 5);
+                btn.classList.add('wrong');
+            }
+            
+            challenge.words[challenge.currentIndex].answered = true;
+            
+            // 延迟进入下一题
+            setTimeout(() => {
+                challenge.currentIndex++;
+                
+                if (challenge.currentIndex >= challenge.words.length) {
+                    // 闯关完成
+                    completeLevelChallenge();
+                } else {
+                    showLevelChallengeUI();
+                }
+            }, 1000);
+        }
+        
+        function completeLevelChallenge() {
+            const challenge = currentLevelChallenge;
+            const total = challenge.words.length;
+            const correct = challenge.correct;
+            const accuracy = Math.round((correct / total) * 100);
+            
+            // 计算奖励经验值
+            let expReward = 0;
+            if (accuracy >= 80) {
+                expReward = 50 + (challenge.level * 10);  // 优秀额外奖励
+            } else if (accuracy >= 60) {
+                expReward = 30 + (challenge.level * 5);
+            } else {
+                expReward = 10 + (challenge.level * 2);
+            }
+            
+            // 添加经验值
+            addExp(expReward);
+            
+            // 显示结果
+            const modal = document.getElementById('levelChallengeModal');
+            if (modal) {
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width:350px;text-align:center;padding:30px;">
+                        <div style="font-size:48px;margin-bottom:15px;">${accuracy >= 60 ? '🎉' : '💪'}</div>
+                        <div style="font-size:20px;font-weight:bold;margin-bottom:10px;">${accuracy >= 80 ? '完美通关！' : accuracy >= 60 ? '闯关成功！' : '继续努力！'}</div>
+                        <div style="background:#f9f9f9;border-radius:12px;padding:20px;margin:20px 0;">
+                            <div style="display:flex;justify-content:space-around;">
+                                <div>
+                                    <div style="font-size:24px;font-weight:bold;color:#10b981;">${correct}</div>
+                                    <div style="font-size:12px;color:#666;">正确</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:24px;font-weight:bold;color:#ef4444;">${total - correct}</div>
+                                    <div style="font-size:12px;color:#666;">错误</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:24px;font-weight:bold;color:#667eea;">${accuracy}%</div>
+                                    <div style="font-size:12px;color:#666;">正确率</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="background:#fef3c7;border-radius:8px;padding:12px;margin-bottom:20px;">
+                            <div style="font-size:14px;">🎁 获得 <b style="color:#f59e0b;">${expReward}</b> 经验值奖励！</div>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;" onclick="this.closest('.modal').remove();renderLevelList();">完成</button>
+                    </div>
+                `;
+            }
+            
+            currentLevelChallenge = null;
         }
         
         // ====== 学习周报 ======
