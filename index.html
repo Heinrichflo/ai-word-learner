@@ -120,6 +120,35 @@
         }
         .tts-btn:hover { background: #e0e0e0; transform: scale(1.1); }
         
+        /* 笔记按钮 */
+        .note-btn {
+            background: #fef3c7;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: all 0.3s;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+        .note-btn:hover { background: #fcd34d; transform: scale(1.1); }
+        .note-btn.has-note { background: #dbeafe; }
+        
+        .word-note {
+            background: #fef9c3;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+            text-align: left;
+            border-left: 3px solid #f59e0b;
+        }
+        
         .btn-group { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; padding: 15px 20px; border-top: 1px solid #eee; }
         .btn { padding: 10px 16px; border: none; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.3s; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
@@ -336,6 +365,7 @@
         .word-card-meaning { font-size: 12px; color: #999; }
         .word-card-actions { display: flex; gap: 8px; }
         .word-card-btn { padding: 4px 8px; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; }
+        .word-card-btn:hover { transform: scale(1.05); }
         .btn-remove { background: #fff1f0; color: #ff4d4f; }
         .btn-review { background: #e6f7ff; color: #1890ff; }
         
@@ -1724,9 +1754,61 @@
                         </div>
                     </div>
                     
+                    <div style="margin-top:15px;">
+                        <div style="font-size:14px;font-weight:600;margin-bottom:10px;">📝 我的笔记</div>
+                        <div class="export-option" onclick="showAllNotes()">
+                            <div class="export-icon" style="background:#fef3c7;">💡</div>
+                            <div style="flex:1;">
+                                <div style="font-size:14px;">查看所有笔记</div>
+                                <div style="font-size:12px;color:#666;">管理单词笔记</div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <button class="btn btn-primary" style="width:100%;margin-top:20px;" onclick="this.closest('.modal').remove()">完成</button>
                 </div>
             `;
+            document.body.appendChild(modal);
+        }
+        
+        // ====== 查看所有笔记 ======
+        function showAllNotes() {
+            const noteData = JSON.parse(localStorage.getItem('wordAI_wordNotes') || '{}');
+            const notes = Object.entries(noteData);
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            
+            if (notes.length === 0) {
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width:360px;">
+                        <div class="modal-title">📝 我的笔记</div>
+                        <div style="text-align:center;padding:30px;color:#666;">
+                            <div style="font-size:40px;margin-bottom:15px;">📝</div>
+                            <div>还没有笔记</div>
+                            <div style="font-size:12px;margin-top:5px;">在学习单词时可以添加笔记</div>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;" onclick="this.closest('.modal').remove()">关闭</button>
+                    </div>
+                `;
+            } else {
+                const notesHtml = notes.map(([word, note]) => `
+                    <div style="background:#fef9c3;padding:12px;border-radius:8px;margin-bottom:8px;">
+                        <div style="font-weight:bold;color:#667eea;margin-bottom:4px;">${word}</div>
+                        <div style="font-size:13px;color:#666;">${note}</div>
+                    </div>
+                `).join('');
+                
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width:360px;max-height:80vh;overflow-y:auto;">
+                        <div class="modal-title">📝 我的笔记 (${notes.length})</div>
+                        <div style="max-height:400px;overflow-y:auto;">
+                            ${notesHtml}
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;margin-top:15px;" onclick="this.closest('.modal').remove()">关闭</button>
+                    </div>
+                `;
+            }
             document.body.appendChild(modal);
         }
         
@@ -2150,7 +2232,19 @@
             md += `- 正确数: **${correct}** 个\n`;
             md += `- 正确率: **${total > 0 ? Math.round((correct/total)*100) : 0}%**\n`;
             md += `- 连续学习: **${streak}** 天\n`;
-            md += `- 今日学习: **${data.today || 0}** 个\n\n';
+            md += `- 今日学习: **${data.today || 0}** 个\n`;
+            md += `- 笔记数量: **${Object.keys(JSON.parse(localStorage.getItem("wordAI_wordNotes") || "{}")).length}** 条\n\n`;
+            
+            // 导出笔记
+            const noteData = JSON.parse(localStorage.getItem('wordAI_wordNotes') || '{}');
+            const notes = Object.entries(noteData);
+            if (notes.length > 0) {
+                md += '## 我的笔记\n\n';
+                notes.forEach(([word, note]) => {
+                    md += `- **${word}**: ${note}\n`;
+                });
+                md += '\n';
+            }
             
             md += '## 收藏的单词\n\n';
             favorites.forEach(w => {
@@ -2850,7 +2944,7 @@
                         <div style="text-align:center;"><div style="font-weight:bold;font-size:16px;color:#667eea;" id="statTotalWords">${words.length}</div><div style="color:#999;">单词总数</div></div>
                         <div style="text-align:center;"><div style="font-weight:bold;font-size:16px;color:#10b981;" id="statFavorites">${favorites.length}</div><div style="color:#999;">收藏数</div></div>
                         <div style="text-align:center;"><div style="font-weight:bold;font-size:16px;color:#f59e0b;" id="statWrong">${wrongWords.length}</div><div style="color:#999;">错题数</div></div>
-                        <div style="text-align:center;"><div style="font-weight:bold;font-size:16px;color:#667eea;" id="statStreak">${streak}</div><div style="color:#999;">连续天数</div></div>
+                        <div style="text-align:center;"><div style="font-weight:bold;font-size:16px;color:#8b5cf6;" id="statNotes">${Object.keys(JSON.parse(localStorage.getItem('wordAI_wordNotes') || '{}')).length}</div><div style="color:#999;">笔记数</div></div>
                     </div>
                 </div>
                 
@@ -4155,21 +4249,27 @@
         
         function renderFavorites() {
             const list = document.getElementById('collectionList');
+            const noteData = JSON.parse(localStorage.getItem('wordAI_wordNotes') || '{}');
+            
             if (favorites.length === 0) {
                 list.innerHTML = '<div class="empty-state">暂无收藏单词</div>';
                 return;
             }
-            list.innerHTML = favorites.map(w => `
+            list.innerHTML = favorites.map(w => {
+                const note = noteData[w.word] || '';
+                return `
                 <div class="word-card">
-                    <div>
+                    <div style="flex:1;">
                         <div class="word-card-word">${w.word}</div>
                         <div class="word-card-meaning">${w.meaning}</div>
+                        ${note ? `<div class="word-note">💡 ${note}</div>` : ''}
                     </div>
                     <div class="word-card-actions">
+                        <button class="word-card-btn" onclick="showNoteModal('${w.word}')">📝</button>
                         <button class="word-card-btn btn-remove" onclick="removeFavorite('${w.word}')">删除</button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
         
         // ====== 生词本 ======
@@ -4407,6 +4507,8 @@
         function renderWrongWords() {
             const list = document.getElementById('wrongList');
             document.getElementById('wrongCount').textContent = wrongWords.length + ' 题';
+            const noteData = JSON.parse(localStorage.getItem('wordAI_wordNotes') || '{}');
+            
             if (wrongWords.length === 0) {
                 list.innerHTML = '<div class="empty-state">暂无错题</div>';
                 return;
@@ -4414,13 +4516,16 @@
             list.innerHTML = wrongWords.map(w => {
                 // 生成记忆技巧
                 const tip = generateMemoryTip(w.word, w.meaning);
+                const note = noteData[w.word] || '';
                 return `
                     <div class="error-detail" onclick="toggleErrorDetail(this)">
                         <div class="error-word">${w.word}</div>
                         <div class="error-meaning">${w.phonetic || ''} ${w.meaning}</div>
                         <div class="error-tip" style="display:none;">💡 ${tip}</div>
+                        ${note ? `<div class="word-note" style="margin-top:8px;">💡 ${note}</div>` : ''}
                     </div>
                     <div class="word-card-actions" style="margin-top:-8px;margin-bottom:12px;">
+                        <button class="btn" style="font-size:12px;padding:6px 12px;background:#fef3c7;color:#f59e0b;" onclick="event.stopPropagation();showNoteModal('${w.word}')">📝笔记</button>
                         <button class="btn" style="font-size:12px;padding:6px 12px;background:#f0f7ff;color:#667eea;" onclick="event.stopPropagation();practiceWrongWord('${w.word}')">练习</button>
                         <button class="btn" style="font-size:12px;padding:6px 12px;background:#f6ffed;color:#52C41A;" onclick="event.stopPropagation();removeWrongWord('${w.word}')">掌握</button>
                     </div>
@@ -5065,12 +5170,68 @@
                 return;
             }
             const w = words[currentIndex];
+            // 获取笔记
+            const noteData = JSON.parse(localStorage.getItem('wordAI_wordNotes') || '{}');
+            const note = noteData[w.word] || '';
+            const hasNote = note ? 'has-note' : '';
+            
             card.innerHTML = `
+                <button class="note-btn ${hasNote}" onclick="showNoteModal('${w.word}')" title="添加笔记">📝</button>
                 <button class="tts-btn" onclick="playTTS('${w.word}', event)">🔊</button>
                 <div class="word">${w.word}</div>
                 <div class="phonetic">${w.phonetic}</div>
                 <div class="meaning">${w.meaning}</div>
+                ${note ? `<div class="word-note">💡 ${note}</div>` : ''}
             `;
+        }
+        
+        // ====== 单词笔记功能 ======
+        function showNoteModal(word) {
+            const noteData = JSON.parse(localStorage.getItem('wordAI_wordNotes') || '{}');
+            const currentNote = noteData[word] || '';
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width:360px;">
+                    <div class="modal-title">📝 单词笔记</div>
+                    <div style="text-align:center;margin-bottom:15px;">
+                        <div style="font-size:24px;font-weight:bold;color:#667eea;">${word}</div>
+                    </div>
+                    <div class="input-group">
+                        <textarea id="wordNoteInput" rows="4" placeholder="添加你的笔记、助记法或例句..." style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:14px;resize:none;">${currentNote}</textarea>
+                    </div>
+                    <div style="display:flex;gap:10px;">
+                        <button class="btn" style="flex:1;background:#ef4444;color:white;" onclick="deleteNote('${word}');this.closest('.modal').remove();">删除笔记</button>
+                        <button class="btn btn-primary" style="flex:1;" onclick="saveNote('${word}');this.closest('.modal').remove();">保存笔记</button>
+                    </div>
+                    <button class="btn" style="width:100%;margin-top:10px;" onclick="this.closest('.modal').remove()">取消</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function saveNote(word) {
+            const note = document.getElementById('wordNoteInput').value.trim();
+            const noteData = JSON.parse(localStorage.getItem('wordAI_wordNotes') || '{}');
+            
+            if (note) {
+                noteData[word] = note;
+            } else {
+                delete noteData[word];
+            }
+            
+            localStorage.setItem('wordAI_wordNotes', JSON.stringify(noteData));
+            showCard(); // 刷新卡片显示
+            showToast('笔记已保存！');
+        }
+        
+        function deleteNote(word) {
+            const noteData = JSON.parse(localStorage.getItem('wordAI_wordNotes') || '{}');
+            delete noteData[word];
+            localStorage.setItem('wordAI_wordNotes', JSON.stringify(noteData));
+            showCard();
+            showToast('笔记已删除');
         }
 
         function playTTS(word, event, lang = 'en') {
