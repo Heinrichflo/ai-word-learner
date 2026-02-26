@@ -3287,13 +3287,50 @@
         };
         
         // 用户经验值数据
+        // ====== Storage 工具类 ======
+        const Storage = {
+            prefix: 'wordAI_',
+            get(key, defaultValue = null) {
+                try {
+                    const value = localStorage.getItem(this.prefix + key);
+                    return value ? JSON.parse(value) : defaultValue;
+                } catch (e) {
+                    console.error('Storage get error:', e);
+                    return defaultValue;
+                }
+            },
+            set(key, value) {
+                try {
+                    localStorage.setItem(this.prefix + key, JSON.stringify(value));
+                    return true;
+                } catch (e) {
+                    console.error('Storage set error:', e);
+                    return false;
+                }
+            },
+            remove(key) {
+                localStorage.removeItem(this.prefix + key);
+            },
+            getString(key, defaultValue = '') {
+                return localStorage.getItem(this.prefix + key) || defaultValue;
+            },
+            getNumber(key, defaultValue = 0) {
+                const value = localStorage.getItem(this.prefix + key);
+                return value ? parseFloat(value) : defaultValue;
+            },
+            getBoolean(key, defaultValue = false) {
+                const value = localStorage.getItem(this.prefix + key);
+                return value === 'true' ? true : (value === 'false' ? false : defaultValue);
+            }
+        };
+        
         let userExp = {
             total: 0,
             level: 1,
             todayExp: 0
         };
         
-        const MINIMAX_API_KEY = localStorage.getItem('wordAI_apiKey') || ''; // 填入你的 MiniMax API Key
+        const MINIMAX_API_KEY = Storage.getString('apiKey', '');
         const MINIMAX_BASE_URL = 'https://api.minimax.chat/v1';
         
         // ====== 单词库 ======
