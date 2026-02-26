@@ -3308,6 +3308,12 @@
                     <input type="file" id="importFile" style="display:none;" accept=".json" onchange="importAllData(this)">
                 </div>
                 
+                <h3 style="margin-top:20px;">📊 CSV 导出</h3>
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                    <button class="btn" style="flex:1;background:#f0fdf4;color:#16a34a;font-size:12px;padding:10px;" onclick="exportWordsToCSV()">📄 单词</button>
+                    <button class="btn" style="flex:1;background:#f0f9ff;color:#0284c7;font-size:12px;padding:10px;" onclick="exportHistoryToCSV()">📈 历史</button>
+                </div>
+                
                 <div class="sync-status">
                     <div class="sync-dot synced" id="syncDot"></div>
                     <span id="syncText">数据已自动同步到本地存储</span>
@@ -4624,6 +4630,10 @@
         function showNextWord() {
             currentIndex = (currentIndex + 1) % words.length;
             showCard();
+            // 检查成就
+            if (typeof checkAndShowAchievements === 'function') {
+                setTimeout(checkAndShowAchievements, 500);
+            }
         }
         
         // ====== 主题切换 ======
@@ -5225,6 +5235,120 @@
             a.click();
             URL.revokeObjectURL(url);
             alert('数据导出成功！');
+        }
+        
+        // ====== CSV导出功能 ======
+        function exportWordsToCSV() {
+            if (words.length === 0) {
+                alert('没有可导出的单词');
+                return;
+            }
+            const headers = ['单词', '音标', '含义', '状态', '学习次数', '正确次数'];
+            const rows = words.map(w => [
+                w.word,
+                w.phonetic,
+                w.meaning,
+                w.status || 'new',
+                w.learned || 0,
+                w.correct || 0
+            ]);
+            const csvContent = '\ufeff' + [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'word-ai-words-' + new Date().toISOString().split('T')[0] + '.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('单词已导出为CSV格式！');
+        }
+        
+        // ====== 导出学习历史为CSV ======
+        function exportHistoryToCSV() {
+            if (history.length === 0) {
+                alert('没有可导出的学习历史');
+                return;
+            }
+            const headers = ['日期', '学习单词数', '正确数', '正确率'];
+            const rows = history.map(h => [
+                h.date,
+                h.total,
+                h.correct,
+                h.total > 0 ? Math.round((h.correct / h.total) * 100) + '%' : '0%'
+            ]);
+            const csvContent = '\ufeff' + [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'word-ai-history-' + new Date().toISOString().split('T')[0] + '.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('学习历史已导出为CSV格式！');
+        }
+        
+        // ====== 成就解锁通知 ======
+        function showAchievementNotification(achievement) {
+            const existing = document.querySelector('.achievement-notification');
+            if (existing) existing.remove();
+            
+            const notif = document.createElement('div');
+            notif.className = 'achievement-notification';
+            notif.innerHTML = `
+                <div class="achievement-notif-icon">${achievement.icon}</div>
+                <div class="achievement-notif-content">
+                    <div class="achievement-notif-title">🏆 成就解锁！</div>
+                    <div class="achievement-notif-name">${achievement.name}</div>
+                    <div class="achievement-notif-desc">${achievement.desc}</div>
+                </div>
+                <div class="achievement-notif-close" onclick="this.parentElement.remove()">×</div>
+            `;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.classList.add('show'), 10);
+            setTimeout(() => {
+                notif.classList.remove('show');
+                setTimeout(() => notif.remove(), 300);
+            }, 5000);
+            playAchievementSound();
+        }
+        
+        function playAchievementSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+                oscillator.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.5);
+            } catch(e) {}
+        }
+        
+        function checkAndShowAchievements() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayHistory = history.find(h => h.date === today);
+            const todayData = { 
+                total, correct, streak, 
+                accuracy: total > 0 ? Math.round((correct / total) * 100) : 0, 
+                today: todayHistory ? todayHistory.total : 0, 
+                mastered: words.filter(w => w.status === 'mastered').length,
+                favorites: favorites.length,
+                wrongCount: wrongWords.length,
+                languages: 1
+            };
+            const unlocked = JSON.parse(localStorage.getItem('wordAI_unlockedAchievements') || '[]');
+            achievements.forEach(a => {
+                if (!unlocked.includes(a.id) && a.condition(todayData)) {
+                    unlocked.push(a.id);
+                    localStorage.setItem('wordAI_unlockedAchievements', JSON.stringify(unlocked));
+                    showAchievementNotification(a);
+                }
+            });
         }
         
         function importAllData(input) {
@@ -6301,6 +6425,31 @@ ${statusText}
                 <style>
                     @keyframes bounceIn {0%{transform:scale(0.3);opacity:0;}50%{transform:scale(1.05);}70%{transform:scale(0.9);}100%{transform:scale(1);opacity:1;}}
                     @keyframes fadeIn {from{opacity:0;}to{opacity:1;}}
+                    .achievement-notification {
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        background: linear-gradient(135deg, #667eea, #764ba2);
+                        border-radius: 16px;
+                        padding: 16px 20px;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+                        z-index: 10000;
+                        transform: translateX(120%);
+                        transition: transform 0.3s ease;
+                    }
+                    .achievement-notification.show { transform: translateX(0); }
+                    .achievement-notif-icon { font-size: 36px; animation: bounceIn 0.5s; }
+                    .achievement-notif-content { color: white; }
+                    .achievement-notif-title { font-size: 12px; opacity: 0.9; }
+                    .achievement-notif-name { font-size: 16px; font-weight: bold; }
+                    .achievement-notif-desc { font-size: 11px; opacity: 0.8; }
+                    .achievement-notif-close { 
+                        position: absolute; top: 8px; right: 12px; 
+                        color: white; opacity: 0.6; cursor: pointer; font-size: 18px; 
+                    }
                 </style>
             `;
             document.body.appendChild(modal);
