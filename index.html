@@ -1765,6 +1765,31 @@
                         </div>
                     </div>
                     
+                    <div style="margin-top:15px;">
+                        <div style="font-size:14px;font-weight:600;margin-bottom:10px;">💾 数据备份与恢复</div>
+                        <div class="export-option" onclick="exportAllData()">
+                            <div class="export-icon" style="background:#f6ffed;">💾</div>
+                            <div style="flex:1;">
+                                <div style="font-size:14px;">完整数据备份</div>
+                                <div style="font-size:12px;color:#666;">导出所有数据(JSON)</div>
+                            </div>
+                        </div>
+                        <div class="export-option" onclick="importAllData()">
+                            <div class="export-icon" style="background:#e6f7ff;">📥</div>
+                            <div style="flex:1;">
+                                <div style="font-size:14px;">从备份恢复</div>
+                                <div style="font-size:12px;color:#666;">导入JSON备份文件</div>
+                            </div>
+                        </div>
+                        <div class="export-option" onclick="clearAllData()" style="border:2px solid #ffccc7;">
+                            <div class="export-icon" style="background:#fff1f0;">🗑️</div>
+                            <div style="flex:1;">
+                                <div style="font-size:14px;color:#ff4d4f;">清除所有数据</div>
+                                <div style="font-size:12px;color:#666;">危险操作，不可恢复</div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <button class="btn btn-primary" style="width:100%;margin-top:20px;" onclick="this.closest('.modal').remove()">完成</button>
                 </div>
             `;
@@ -2261,6 +2286,92 @@
             link.href = URL.createObjectURL(blob);
             link.download = `AI背单词_学习报告_${new Date().toLocaleDateString()}.md`;
             link.click();
+        }
+        
+        // ====== [新增] 完整数据备份功能 ======
+        function exportAllData() {
+            const backupData = {
+                version: '1.0',
+                exportTime: new Date().toISOString(),
+                words: words,
+                favorites: favorites,
+                wrongWords: wrongWords,
+                newWords: newWords,
+                history: history,
+                stats: loadStats(),
+                user: user,
+                notes: JSON.parse(localStorage.getItem('wordAI_wordNotes') || '{}'),
+                review: JSON.parse(localStorage.getItem('wordAI_review') || '[]'),
+                bookProgress: JSON.parse(localStorage.getItem('wordAI_bookProgress') || '{}'),
+                settings: {
+                    dailyGoal: localStorage.getItem('wordAI_dailyGoal'),
+                    notifications: localStorage.getItem('wordAI_notifications'),
+                    theme: localStorage.getItem('wordAI_theme'),
+                    autoDark: localStorage.getItem('wordAI_autoDark')
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `AI背单词_完整备份_${new Date().toISOString().slice(0,10)}.json`;
+            link.click();
+            alert('✅ 数据备份成功！建议妥善保存此文件。');
+        }
+        
+        // ====== [新增] 从备份恢复数据 ======
+        function importAllData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                try {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+                    
+                    if (!data.version) {
+                        alert('❌ 无效的备份文件格式');
+                        return;
+                    }
+                    
+                    if (confirm('⚠️ 导入将覆盖当前所有数据！\n\n确认继续吗？')) {
+                        if (data.words) { words = data.words; localStorage.setItem('wordAI_words', JSON.stringify(words)); }
+                        if (data.favorites) { favorites = data.favorites; localStorage.setItem('wordAI_favorites', JSON.stringify(favorites)); }
+                        if (data.wrongWords) { wrongWords = data.wrongWords; localStorage.setItem('wordAI_wrongWords', JSON.stringify(wrongWords)); }
+                        if (data.newWords) { newWords = data.newWords; localStorage.setItem('wordAI_newWords', JSON.stringify(newWords)); }
+                        if (data.history) { history = data.history; localStorage.setItem('wordAI_history', JSON.stringify(history)); }
+                        if (data.notes) { localStorage.setItem('wordAI_wordNotes', JSON.stringify(data.notes)); }
+                        if (data.review) { localStorage.setItem('wordAI_review', JSON.stringify(data.review)); }
+                        if (data.bookProgress) { localStorage.setItem('wordAI_bookProgress', JSON.stringify(data.bookProgress)); }
+                        if (data.settings) {
+                            if (data.settings.dailyGoal) localStorage.setItem('wordAI_dailyGoal', data.settings.dailyGoal);
+                            if (data.settings.notifications) localStorage.setItem('wordAI_notifications', data.settings.notifications);
+                            if (data.settings.theme) localStorage.setItem('wordAI_theme', data.settings.theme);
+                            if (data.settings.autoDark) localStorage.setItem('wordAI_autoDark', data.settings.autoDark);
+                        }
+                        alert('✅ 数据恢复成功！页面将刷新。');
+                        setTimeout(() => location.reload(), 1000);
+                    }
+                } catch (err) {
+                    alert('❌ 导入失败：文件格式错误');
+                }
+            };
+            input.click();
+        }
+        
+        // ====== [新增] 清除所有数据 ======
+        function clearAllData() {
+            if (confirm('⚠️ 危险操作！\n\n这将清除所有学习数据，包括：\n- 单词记录\n- 学习历史\n- 笔记\n- 收藏\n\n此操作不可恢复！\n\n确认清除吗？')) {
+                if (confirm('最后一次确认：清除所有数据？')) {
+                    const keys = ['wordAI_words', 'wordAI_favorites', 'wordAI_wrongWords', 'wordAI_newWords', 'wordAI_history', 'wordAI_wordNotes', 'wordAI_review', 'wordAI_bookProgress', 'wordAI_user', 'wordAI_dailyGoal', 'wordAI_notifications', 'wordAI_streak', 'wordAI_lastCheckin', 'wordAI_checkinHistory'];
+                    keys.forEach(k => localStorage.removeItem(k));
+                    alert('✅ 数据已清除，页面将刷新。');
+                    setTimeout(() => location.reload(), 1000);
+                }
+            }
         }
         
         // ====== 单词本管理 ======
