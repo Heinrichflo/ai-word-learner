@@ -1683,6 +1683,13 @@
                     
                     <div style="margin-top:15px;">
                         <div style="font-size:14px;font-weight:600;margin-bottom:10px;">🎨 主题设置</div>
+                        <div class="export-option" onclick="toggleManualTheme()">
+                            <div class="export-icon" style="background:#f0f7ff;" id="themeToggleIcon">🌓</div>
+                            <div style="flex:1;">
+                                <div style="font-size:14px;" id="themeToggleText">切换到深色模式</div>
+                                <div style="font-size:12px;color:#666;">点击手动切换</div>
+                            </div>
+                        </div>
                         <div class="export-option" onclick="toggleAutoDarkMode()">
                             <div class="export-icon" style="background:#fff7e6;">🌙</div>
                             <div style="flex:1;">
@@ -3904,6 +3911,9 @@
             
             // 检查自动夜间模式
             checkAutoDarkMode();
+            
+            // 初始化手动主题设置
+            initManualTheme();
             
             // 渲染快速统计
             renderQuickStats();
@@ -7321,6 +7331,10 @@ ${statusText}
         function checkAutoDarkMode() {
             const hour = new Date().getHours();
             const autoDarkEnabled = localStorage.getItem('wordAI_autoDarkMode') === 'true';
+            const manualTheme = localStorage.getItem('wordAI_manualTheme');
+            
+            // 如果用户手动设置了主题，不自动切换
+            if (manualTheme) return;
             
             if (autoDarkEnabled) {
                 // 晚上10点到早上6点自动开启暗色模式
@@ -7346,6 +7360,49 @@ ${statusText}
             const current = localStorage.getItem('wordAI_autoDarkMode') === 'true';
             localStorage.setItem('wordAI_autoDarkMode', (!current).toString());
             alert((!current ? '开启' : '关闭') + '自动夜间模式成功！\n将在22:00-06:00自动切换暗色主题');
+        }
+        
+        // ====== 手动主题切换 ======
+        function toggleManualTheme() {
+            const isDark = document.body.classList.contains('dark-theme');
+            const newTheme = !isDark;
+            
+            if (newTheme) {
+                document.body.classList.add('dark-theme');
+                localStorage.setItem('wordAI_manualTheme', 'dark');
+            } else {
+                document.body.classList.remove('dark-theme');
+                localStorage.setItem('wordAI_manualTheme', 'light');
+            }
+            
+            // 更新UI显示
+            updateThemeToggleUI();
+        }
+        
+        function updateThemeToggleUI() {
+            const isDark = document.body.classList.contains('dark-theme');
+            const iconEl = document.getElementById('themeToggleIcon');
+            const textEl = document.getElementById('themeToggleText');
+            
+            if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
+            if (textEl) textEl.textContent = isDark ? '切换到浅色模式' : '切换到深色模式';
+        }
+        
+        // 初始化时恢复手动主题设置
+        function initManualTheme() {
+            const manualTheme = localStorage.getItem('wordAI_manualTheme');
+            const autoDark = localStorage.getItem('wordAI_autoDarkMode') === 'true';
+            
+            // 如果有手动设置，优先使用手动设置
+            if (manualTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+            } else if (manualTheme === 'light') {
+                document.body.classList.remove('dark-theme');
+            } else if (autoDark) {
+                checkAutoDarkMode();
+            }
+            
+            updateThemeToggleUI();
         }
         
         // 每分钟检查一次是否需要切换主题
