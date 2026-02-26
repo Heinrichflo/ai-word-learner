@@ -1210,6 +1210,21 @@
             info(msg) { this.show(msg, 2000, 'info'); }
         };
         
+        // ====== Alert兼容函数 - 将alert替换为Toast ======
+        function alertToToast(msg) {
+            if (!msg) return;
+            // 判断消息类型
+            if (msg.includes('✅') || msg.includes('成功') || msg.includes('已保存') || msg.includes('已切换')) {
+                Toast.success(msg.replace(/^[✅❌⚔️📚]\s*/, ''));
+            } else if (msg.includes('❌') || msg.includes('失败') || msg.includes('错误') || msg.includes('无效')) {
+                Toast.error(msg.replace(/^[✅❌]\s*/, ''));
+            } else if (msg.includes('⚔️') || msg.includes('规则') || msg.includes('请')) {
+                Toast.info(msg);
+            } else {
+                Toast.info(msg);
+            }
+        }
+        
         function showTab(tabId) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -1238,6 +1253,81 @@
                 el.classList.add('updated');
                 setTimeout(() => el.classList.remove('updated'), 300);
             }
+        }
+        
+        // ====== 学习趋势分析 ======
+        function analyzeLearningTrend() {
+            const history = JSON.parse(localStorage.getItem('wordAI_history') || '[]');
+            if (history.length < 3) return null;
+            
+            const last7Days = history.slice(-7);
+            const prev7Days = history.slice(-14, -7) || [];
+            
+            const thisWeekAvg = last7Days.reduce((a, b) => a + (b.count || 0), 0) / Math.max(last7Days.length, 1);
+            const prevWeekAvg = prev7Days.length > 0 ? prev7Days.reduce((a, b) => a + (b.count || 0), 0) / prev7Days.length : thisWeekAvg;
+            
+            const trend = prevWeekAvg > 0 ? ((thisWeekAvg - prevWeekAvg) / prevWeekAvg * 100).toFixed(1) : 0;
+            const trendType = trend > 0 ? 'up' : trend < 0 ? 'down' : 'stable';
+            
+            // 计算最佳学习时间段
+            const hourCounts = {};
+            history.forEach(h => {
+                if (h.hour !== undefined) {
+                    hourCounts[h.hour] = (hourCounts[h.hour] || 0) + 1;
+                }
+            });
+            const bestHour = Object.entries(hourCounts).sort((a, b) => b[1] - a[1])[0];
+            
+            return {
+                thisWeekAvg: Math.round(thisWeekAvg),
+                prevWeekAvg: Math.round(prevWeekAvg),
+                trend: Math.abs(trend),
+                trendType,
+                bestHour: bestHour ? parseInt(bestHour[0]) : null,
+                totalDays: history.length
+            };
+        }
+        
+        // ====== 智能复习建议 ======
+        function getSmartReviewSuggestion() {
+            const reviewData = JSON.parse(localStorage.getItem('wordAI_review') || '[]');
+            const wrongBook = JSON.parse(localStorage.getItem('wordAI_wrongBook') || '[]');
+            const favorites = JSON.parse(localStorage.getItem('wordAI_favorites') || '[]');
+            
+            let suggestion = { type: 'normal', message: '继续加油！', priority: 0 };
+            
+            // 优先复习错题
+            if (wrongBook.length > 0) {
+                suggestion = { 
+                    type: 'wrong', 
+                    message: `你有 ${wrongBook.length} 个错题需要复习`, 
+                    priority: 3,
+                    action: () => showTab('tab-review')
+                };
+            }
+            // 其次复习收藏单词
+            else if (favorites.length > 5) {
+                suggestion = { 
+                    type: 'favorite', 
+                    message: `你有 ${favorites.length} 个收藏单词可以复习`, 
+                    priority: 2,
+                    action: () => showTab('tab-favorites')
+                };
+            }
+            // 复习遗忘曲线单词
+            else if (reviewData.length > 0) {
+                const dueCount = reviewData.filter(r => r.nextReview && new Date(r.nextReview) <= new Date()).length;
+                if (dueCount > 0) {
+                    suggestion = { 
+                        type: 'review', 
+                        message: `今日有 ${dueCount} 个单词需要复习`, 
+                        priority: 1,
+                        action: () => showTab('tab-review')
+                    };
+                }
+            }
+            
+            return suggestion;
         }
         
         // ====== 年度学习报告 ======
@@ -2020,6 +2110,21 @@
             
             const data = loadStats();
             const level = loadUserLevel();
+            const trend = analyzeLearningTrend();
+            const suggestion = getSmartReviewSuggestion();
+            
+            let trendHtml = '';
+            if (trend && trend.trendType !== 'stable') {
+                const trendIcon = trend.trendType === 'up' ? '📈' : '📉';
+                const trendColor = trend.trendType === 'up' ? '#10b981' : '#ef4444';
+                trendHtml = `<div style="font-size:10px;color:${trendColor};margin-top:4px;">${trendIcon} ${trend.trend}% vs上周</div>`;
+            }
+            
+            let suggestionHtml = '';
+            if (suggestion && suggestion.priority > 0) {
+                const typeIcon = { wrong: '❌', favorite: '⭐', review: '📖' }[suggestion.type] || '💡';
+                suggestionHtml = `<div onclick="${suggestion.action ? suggestion.action.name + '()' : ''}" style="font-size:11px;background:#fef3c7;color:#92400e;padding:4px 8px;border-radius:8px;margin-top:8px;cursor:pointer;text-align:center;">${typeIcon} ${suggestion.message}</div>`;
+            }
             
             container.innerHTML = `
                 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;">
@@ -2040,6 +2145,8 @@
                         <div style="font-size:10px;color:#666;">总计</div>
                     </div>
                 </div>
+                ${trendHtml}
+                ${suggestionHtml}
             `;
         }
         
@@ -2804,7 +2911,7 @@
             link.href = URL.createObjectURL(blob);
             link.download = `AI背单词_完整备份_${new Date().toISOString().slice(0,10)}.json`;
             link.click();
-            alert('✅ 数据备份成功！建议妥善保存此文件。');
+            alertToToast('✅ 数据备份成功！建议妥善保存此文件。');
         }
         
         // ====== [新增] 从备份恢复数据 ======
@@ -2840,11 +2947,11 @@
                             if (data.settings.theme) localStorage.setItem('wordAI_theme', data.settings.theme);
                             if (data.settings.autoDark) localStorage.setItem('wordAI_autoDark', data.settings.autoDark);
                         }
-                        alert('✅ 数据恢复成功！页面将刷新。');
+                        alertToToast('✅ 数据恢复成功！页面将刷新。');
                         setTimeout(() => location.reload(), 1000);
                     }
                 } catch (err) {
-                    alert('❌ 导入失败：文件格式错误');
+                    alertToToast('❌ 导入失败：文件格式错误');
                 }
             };
             input.click();
@@ -2856,7 +2963,7 @@
                 if (confirm('最后一次确认：清除所有数据？')) {
                     const keys = ['wordAI_words', 'wordAI_favorites', 'wordAI_wrongWords', 'wordAI_newWords', 'wordAI_history', 'wordAI_wordNotes', 'wordAI_review', 'wordAI_bookProgress', 'wordAI_user', 'wordAI_dailyGoal', 'wordAI_notifications', 'wordAI_streak', 'wordAI_lastCheckin', 'wordAI_checkinHistory'];
                     keys.forEach(k => localStorage.removeItem(k));
-                    alert('✅ 数据已清除，页面将刷新。');
+                    alertToToast('✅ 数据已清除，页面将刷新。');
                     setTimeout(() => location.reload(), 1000);
                 }
             }
@@ -4484,7 +4591,7 @@
                 navigator.share({ title: 'AI背单词周报', text: text });
             } else {
                 navigator.clipboard.writeText(text).then(() => {
-                    alert('周报已复制到剪贴板！');
+                    alertToToast('周报已复制到剪贴板！');
                 });
             }
         }
@@ -4549,7 +4656,7 @@
             } else {
                 // 复制到剪贴板
                 navigator.clipboard.writeText(text).then(() => {
-                    alert('成就已复制到剪贴板！');
+                    alertToToast('成就已复制到剪贴板！');
                 });
             }
         }
@@ -5061,7 +5168,7 @@
             // Switch to learn tab with new words
             words = [...newWords];
             showCard();
-            alert('已切换到生词本复习模式！');
+            alertToToast('已切换到生词本复习模式！');
         }
         
         function switchCollectionTab(tab) {
@@ -5275,7 +5382,7 @@
                     }
                 });
             }
-            alert('提醒设置已保存！');
+            alertToToast('提醒设置已保存！');
         }
         
         function scheduleNotification(time) {
@@ -5460,7 +5567,7 @@
             a.download = 'word-ai-backup-' + new Date().toISOString().split('T')[0] + '.json';
             a.click();
             URL.revokeObjectURL(url);
-            alert('数据导出成功！');
+            alertToToast('数据导出成功！');
         }
         
         // ====== CSV导出功能 ======
@@ -5486,7 +5593,7 @@
             a.download = 'word-ai-words-' + new Date().toISOString().split('T')[0] + '.csv';
             a.click();
             URL.revokeObjectURL(url);
-            alert('单词已导出为CSV格式！');
+            alertToToast('单词已导出为CSV格式！');
         }
         
         // ====== 导出学习历史为CSV ======
@@ -5510,7 +5617,7 @@
             a.download = 'word-ai-history-' + new Date().toISOString().split('T')[0] + '.csv';
             a.click();
             URL.revokeObjectURL(url);
-            alert('学习历史已导出为CSV格式！');
+            alertToToast('学习历史已导出为CSV格式！');
         }
         
         // ====== 成就解锁通知 ======
@@ -5589,9 +5696,9 @@
                     if (data.wrongWords) { wrongWords = data.wrongWords; saveWrongWords(); }
                     if (data.history) { history = data.history; localStorage.setItem('wordAI_history', JSON.stringify(history)); }
                     if (data.total !== undefined) { total = data.total; correct = data.correct; streak = data.streak; }
-                    alert('数据导入成功！');
+                    alertToToast('数据导入成功！');
                     location.reload();
-                } catch(err) { alert('导入失败，文件格式错误'); }
+                } catch(err) { alertToToast('导入失败，文件格式错误'); }
             };
             reader.readAsText(file);
             input.value = '';
@@ -7138,7 +7245,7 @@ ${statusText}
             event.target.closest('.lang-card').classList.add('active');
             words = [...languageWords[lang]];
             showCard();
-            alert('已切换到' + {en:'英语',ja:'日语',ko:'韩语',fr:'法语'}[lang] + '学习模式！');
+            alertToToast('已切换到' + {en:'英语',ja:'日语',ko:'韩语',fr:'法语'}[lang] + '学习模式！');
         }
         
         // ====== 学习小组 ======
